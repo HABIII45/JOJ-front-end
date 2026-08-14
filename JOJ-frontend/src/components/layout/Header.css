@@ -1,0 +1,208 @@
+
+
+.header {
+    width: 100%;
+    height: 80px;
+    padding: 0 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    background-color: #ffffff;
+    box-sizing: border-box;
+
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+
+
+
+.logo {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.logo img {
+    width: 65px;
+    height: 65px;
+    object-fit: contain;
+}
+
+
+
+.nav {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+}
+
+.nav a {
+    position: relative;
+
+    color: #222222;
+    text-decoration: none;
+
+    font-size: 15px;
+    font-weight: 500;
+
+    transition: color 0.3s ease;
+}
+
+
+
+.nav a:hover {
+    color: #f28c28;
+}
+
+
+
+
+.nav a::after {
+    content: "";
+
+    position: absolute;
+    left: 0;
+    bottom: -6px;
+
+    width: 0;
+    height: 2px;
+
+    background-color: #f28c28;
+
+    transition: width 0.3s ease;
+}
+
+.nav a:hover::after {
+    width: 100%;
+}
+
+.search {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search input {
+    width: 260px;
+    height: 40px;
+
+    box-sizing: border-box;
+
+    padding: 0 42px 0 16px;
+
+    border: 1px solid #e1e5ea;
+    border-radius: 22px;
+
+    background-color: #f8f9fa;
+
+    color: #333;
+    font-size: 14px;
+
+    outline: none;
+}
+
+.search input::placeholder {
+    color: #9da6b2;
+}
+
+.search input:focus {
+    border-color: #d5dbe2;
+    box-shadow: none;
+}
+
+.search-icon {
+    position: absolute;
+
+    right: 14px;
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    color: #8d98a6;
+
+    pointer-events: none;
+}
+
+
+
+@media (max-width: 1100px) {
+
+    .header {
+        padding: 0 25px;
+    }
+
+    .nav {
+        gap: 18px;
+    }
+
+    .nav a {
+        font-size: 14px;
+    }
+
+    .search input {
+        width: 150px;
+    }
+}
+
+
+@media (max-width: 900px) {
+
+    .header {
+        height: auto;
+        min-height: 80px;
+
+        flex-wrap: wrap;
+
+        gap: 15px;
+
+        padding: 15px 20px;
+    }
+
+    .nav {
+        order: 3;
+
+        width: 100%;
+
+        justify-content: center;
+
+        flex-wrap: wrap;
+
+        gap: 20px;
+    }
+
+    .search {
+        margin-left: auto;
+    }
+}
+
+
+@media (max-width: 600px) {
+
+    .header {
+        justify-content: center;
+    }
+
+    .logo {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .search {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .search input {
+        width: 200px;
+    }
+
+    .nav {
+        gap: 15px;
+    }
+
+    .nav a {
+        font-size: 13px;
+    }
+}
