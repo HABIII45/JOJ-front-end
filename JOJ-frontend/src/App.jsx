@@ -1,20 +1,17 @@
-/**
- * Routage JOJ_Events :
- *  - Routes publiques (page d'accueil + sections) avec PublicLayout
- *  - Route /dashboard avec AdminLayout
- * Design : référence maquettes fournies (orange #C25B1E, noir, Poppins).
- * @module App
- */
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Dashboard from "./pages/admin/Dashboard";
 
-export default function App() {
+// import { Footer } from "./components/layout/Footer"
+// import { Header } from "./components/layout/Header"
+// import { Sidebar } from "./components/layout/Sidebar"
+import AppRoutes from "./routes/AppRoutes";
+
+function App() {
   return (
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-        </Routes>
-      </BrowserRouter>
-
+    <>
+      {/* <Header /> */}
+      <AppRoutes />
+      {/* <Footer /> */}
+    </>
   );
 }
+
+
