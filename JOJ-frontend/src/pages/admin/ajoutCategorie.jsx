@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-
+import AdminLayout from "../../components/layouts/AdminLayout";
 export function AjoutCategorie() {
     // Stocke les données saisies dans le formulaire
     const [nom, setNom] = useState("");
@@ -96,6 +96,7 @@ export function AjoutCategorie() {
     };
 
     return (
+        <AdminLayout>
         <div className=" min-h-screen bg-[#f8f9fa] px-10 py-10">
 
             {/* En-tête de la page */}
@@ -233,5 +234,6 @@ export function AjoutCategorie() {
                 </form>
             </div>
         </div>
+        </AdminLayout>
     );
 }

@@ -37,12 +37,12 @@ export function Sidebar() {
                     <span>Sites</span>
                 </NavLink>
 
-                <NavLink to="/categories">
+                <NavLink to="admin/categories">
                     <Tags size={19} />
                     <span>Catégories</span>
                 </NavLink>
 
-                <NavLink to="/actualites">
+                <NavLink to="/admin/actualites">
                     <Newspaper size={19} />
                     <span>Actualités</span>
                 </NavLink>

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import AdminLayout from "../../components/layouts/AdminLayout";
 import {
   FiUploadCloud,
   FiPlus,
@@ -174,6 +175,7 @@ export default function CreerActualite() {
   };
 
   return (
+   <AdminLayout>
     <main className="create-news-page">
       <div className="create-news-content">
         {/* HEADER */}
@@ -440,5 +442,7 @@ export default function CreerActualite() {
         </form>
       </div>
     </main>
+    </AdminLayout>
+
   );
 }
