@@ -7,12 +7,14 @@
  */
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/admin/Dashboard";
+import Disciplines from "./pages/admin/Games";
 
 export default function App() {
   return (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path={"/disciplines"} element={<Disciplines />} />
         </Routes>
       </BrowserRouter>
 
