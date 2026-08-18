@@ -60,9 +60,9 @@ function ApercuBoutons({ modeEdition = false, epreuve, statut, ongletActif, donn
 
       {/* Boutons */}
       <div className="flex gap-4">
-        {/* Annuler — retour sans enregistrer */}
+        {/* Annuler — retour vers /resultats sans enregistrer */}
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate("/resultats")}
           className="px-8 py-3 bg-white rounded-xl border-2 border-[#c85f18] cursor-pointer hover:bg-orange-50 transition-colors"
         >
           <span className="text-[#c85f18] font-medium text-base tracking-[0.27px]">

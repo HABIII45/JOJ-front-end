@@ -16,7 +16,7 @@ function GestionResultat() {
 
         <HeaderResultat />
 
-        <main className="flex-1 max-w-[70em] w-full mx-auto pt-[28px] pb-[80px]">
+        <main className="flex-1 max-w-[55em] w-full mx-auto pt-[28px] pb-[80px]">
           <TitreResultat />
           <CartesStatResultat />
           <ListeResultats />
