@@ -11,6 +11,7 @@ const AppRoutes = () => {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register-result" element={<RegisterResultPage />} />
       <Route path="/payment/summary" element={<PaymentSummary />} />
+      <Route path="*" element={<Navigate to="/register-result" replace />} />
     </Routes>
   );
 };
