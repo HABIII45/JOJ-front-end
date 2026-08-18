@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Sidebar } from "../layout/Sidebar";
 import FilAriane from "./FilAriane";
 import OngletsBascule from "./OngletsBascule";
@@ -9,16 +10,24 @@ import ApercuBoutons from "./ApercuBoutons";
 
 function RegisterResult() {
   const [ongletActif, setOngletActif] = useState("individuel");
+  const [searchParams] = useSearchParams();
+  const modeEdition = searchParams.get("mode") === "edition";
+
+  // État partagé remontés ici pour que ApercuBoutons puisse les lire
+  const [epreuve, setEpreuve] = useState("");
+  const [statut,  setStatut]  = useState(modeEdition ? "publie" : "");
+
+  // Référence vers les données de saisie (participants ou matchs)
+  const [donneesIndividuel, setDonneesIndividuel] = useState(null);
+  const [donneesCollectif,  setDonneesCollectif]  = useState(null);
 
   return (
     <div className="flex min-h-screen bg-[#f4f4f4]">
-      {/* Sidebar fixe */}
       <Sidebar />
 
-      {/* Contenu principal décalé de la largeur du sidebar (240px) */}
       <main className="flex-1 ml-[240px] p-20">
         <div className="max-w-screen-xl mx-auto">
-          <FilAriane />
+          <FilAriane modeEdition={modeEdition} />
 
           <OngletsBascule
             ongletActif={ongletActif}
@@ -26,19 +35,31 @@ function RegisterResult() {
           />
 
           <div className="flex gap-8">
-            {/* Colonne gauche — min-w-0 empêche le flex de déborder */}
             <div className="flex-1 min-w-0">
-              <EpreuveSelectionnee ongletActif={ongletActif} />
+              <EpreuveSelectionnee
+                ongletActif={ongletActif}
+                modeEdition={modeEdition}
+                epreuve={epreuve}
+                setEpreuve={setEpreuve}
+                statut={statut}
+                setStatut={setStatut}
+              />
 
               {ongletActif === "individuel" ? (
-                <SaisieIndividuel />
+                <SaisieIndividuel onDonneesChange={setDonneesIndividuel} />
               ) : (
-                <SaisieCollectif />
+                <SaisieCollectif onDonneesChange={setDonneesCollectif} />
               )}
             </div>
 
-            {/* Colonne droite */}
-            <ApercuBoutons />
+            <ApercuBoutons
+              modeEdition={modeEdition}
+              epreuve={epreuve}
+              statut={statut}
+              ongletActif={ongletActif}
+              donneesIndividuel={donneesIndividuel}
+              donneesCollectif={donneesCollectif}
+            />
           </div>
         </div>
       </main>
