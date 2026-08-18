@@ -1,22 +1,27 @@
-import { Footer } from "./components/layout/Footer"
-import { Header } from "./components/layout/Header"
-import { Sidebar } from "./components/layout/Sidebar"
-import { AjoutCategorie } from "./pages/admin/ajoutCategorie"
-import CreerActualite from "./pages/admin/actualites"
-function App() {
-  
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+import { Header } from "./components/layout/Header";
+import { Footer } from "./components/layout/Footer";
+import { Sidebar } from "./components/layout/Sidebar";
+
+import { AjoutCategorie } from "./pages/admin/ajoutCategorie";
+import CreerActualite from "./pages/admin/actualites";
+import Dashboard from "./pages/admin/Dashboard";
+
+function App() {
   return (
-    <>
-     <Header /> 
-    <AjoutCategorie />
-    {/* <CreerActualite/> */}
-     <Footer />
-      {/* <Header />  */}
-     {/* <Sidebar/> */}
-     
-    </>
-  )
+    <BrowserRouter>
+      <Header />
+
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+       
+      </Routes>
+
+      <Sidebar />
+      <Footer />
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
