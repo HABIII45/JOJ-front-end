@@ -1,4 +1,4 @@
-function FilAriane() {
+function FilAriane({ modeEdition = false }) {
   return (
     <div className="mb-10">
       {/* Breadcrumb */}
@@ -7,7 +7,23 @@ function FilAriane() {
         <svg className="w-2.5 h-2.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
         </svg>
-        <span className="text-sm font-medium text-[#c85f18]">Résultats</span>
+        <span className="text-sm font-medium text-gray-500">Résultats</span>
+        {modeEdition && (
+          <>
+            <svg className="w-2.5 h-2.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+            </svg>
+            <span className="text-sm font-medium text-[#c85f18]">Détail</span>
+          </>
+        )}
+        {!modeEdition && (
+          <>
+            <svg className="w-2.5 h-2.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+            </svg>
+            <span className="text-sm font-medium text-[#c85f18]">Nouveau</span>
+          </>
+        )}
       </div>
 
       {/* Titre */}
@@ -15,7 +31,9 @@ function FilAriane() {
         Résultats de l'événement
       </h1>
       <p className="text-base font-medium text-gray-400 m-0">
-        Gérez et publiez les classements officiels de la compétition.
+        {modeEdition
+          ? "Consultez et modifiez les résultats de cette épreuve."
+          : "Gérez et publiez les classements officiels de la compétition."}
       </p>
     </div>
   );
