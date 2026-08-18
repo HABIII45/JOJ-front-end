@@ -1,20 +1,20 @@
 // src/components/billets/index.jsx
-import React from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import EnteteBillet from './EnteteBillet';
 import CarteBillet from './CarteBillet';
 import CarteQR from './CarteQR';
+import CarouselIndicateur from './CarouselIndicateur';
+import { BILLETS } from './donnesBillets';
 
 const Billets = () => {
   const navigate = useNavigate();
+  const [billetActif, setBilletActif] = useState(0);
 
-  const handleTelecharger = () => {
-    console.log('Téléchargement du billet PDF');
-  };
+  const billet = BILLETS[billetActif];
 
-  const handleTelechargerTous = () => {
-    console.log('Téléchargement de tous les billets PDF');
-  };
+  const allerAuPrecedent = () => setBilletActif((i) => Math.max(i - 1, 0));
+  const allerAuSuivant   = () => setBilletActif((i) => Math.min(i + 1, BILLETS.length - 1));
 
   return (
     <div className="min-h-screen bg-gray-50 p-6 md:p-12 font-sans antialiased">
@@ -22,18 +22,28 @@ const Billets = () => {
 
         <EnteteBillet />
 
+        {/* Flèches de navigation — au-dessus des deux colonnes */}
+        <CarouselIndicateur
+          total={BILLETS.length}
+          actif={billetActif}
+          onPrecedent={allerAuPrecedent}
+          onSuivant={allerAuSuivant}
+        />
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-          {/* Colonne gauche */}
-          <CarteBillet onTelechargerTous={handleTelechargerTous} />
+          {/* Colonne gauche — image du site + infos du billet */}
+          <CarteBillet
+            billet={billet}
+            onTelechargerTous={() => console.log('Télécharger tous les billets PDF')}
+          />
 
-          {/* Colonne droite */}
-          <div className="flex flex-col gap-4">
-            <CarteQR
-              onTelecharger={handleTelecharger}
-              onAccueil={() => navigate('/')}
-            />
-          </div>
+          {/* Colonne droite — QR unique + boutons */}
+          <CarteQR
+            billet={billet}
+            onTelecharger={() => console.log(`Télécharger PDF — ${billet.id}`)}
+            onAccueil={() => navigate('/')}
+          />
 
         </div>
       </div>
