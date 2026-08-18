@@ -194,166 +194,174 @@ export default function Disciplines() {
 
   return (
     <AdminLayout>
-      {/* 1. Conteneur externe de la page (Fond léger/Gris) */}
-      <div className="min-h-screen bg-[#F8FAFC] -m-6 p-6 md:p-10">
-        
-        {/* 2. Carte Blanche Principale qui englobe TOUT le contenu comme sur la maquette */}
-        <div className="max-w-7xl mx-auto bg-white rounded-[2rem] border border-gray-100/80 shadow-sm p-6 md:p-8">
-          
-          {/* En-tête : Titre + Bouton d'action */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-            <div>
-              <h1 className="font-display text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">
-                Liste des Disciplines
-              </h1>
-              <p className="text-gray-400 text-xs md:text-sm mt-1">
-                Gérez l'ensemble des disciplines et épreuves programmées pour Dakar 2026.
-              </p>
-            </div>
-            
-            <button
-              onClick={ouvrirModalAjout}
-              className="inline-flex items-center justify-center gap-2 bg-[#D96B27] hover:bg-[#c25b1e] text-white rounded-xl px-5 py-3 text-sm font-semibold transition-colors duration-200 shadow-sm shrink-0"
+      <div>
+        {/* En-tête */}
+        <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
+          <div>
+            <h1 className="font-display text-2xl md:text-3xl font-extrabold text-gray-900">
+              Liste des Disciplines
+            </h1>
+            <p className="text-gray-500 text-sm mt-1">
+              Gérez l'ensemble des disciplines et épreuves programmées pour Dakar 2026.
+            </p>
+          </div>
+          <button
+            onClick={ouvrirModalAjout}
+            className="inline-flex items-center gap-2 bg-[#f28c28] hover:bg-[#d8781a] text-white rounded-full px-5 py-2.5 text-sm font-semibold transition-colors duration-200 shadow-sm"
+          >
+            <Plus className="w-4 h-4" />
+            Ajouter une discipline
+          </button>
+        </div>
+
+        {/* Filtres : Recherche à gauche, Sélecteurs alignés à droite */}
+<div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+  
+  {/* Champ de recherche à gauche avec largeur maximale */}
+  <div className="flex items-center bg-[#F8FAFC] rounded-2xl px-4 py-3 gap-3 w-full md:max-w-md border border-gray-100 shadow-sm">
+    <Search className="w-4 h-4 text-gray-400 shrink-0" />
+    <input
+      type="text"
+      value={recherche}
+      onChange={(e) => setRecherche(e.target.value)}
+      placeholder="Rechercher une discipline (ex: Judo, Natation...)"
+      className="bg-transparent outline-none text-xs w-full text-gray-700 placeholder:text-gray-400"
+    />
+  </div>
+
+          {/* Filtres alignés à droite */}
+          <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+            <select
+              value={categorieFiltre}
+              onChange={(e) => setCategorieFiltre(e.target.value)}
+              className="rounded-2xl border border-gray-200 bg-white text-xs font-medium text-gray-700 px-4 py-3 outline-none focus:ring-2 focus:ring-[#f28c28]/30 shadow-sm cursor-pointer min-w-[170px]"
             >
-              <Plus className="w-4 h-4" />
-              Ajouter une discipline
-            </button>
+              <option value="Toutes">Catégories: Toutes</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.nom}>{c.nom}</option>
+              ))}
+            </select>
+
+            <select
+              value={statutFiltre}
+              onChange={(e) => setStatutFiltre(e.target.value)}
+              className="rounded-2xl border border-gray-200 bg-white text-xs font-medium text-gray-700 px-4 py-3 outline-none focus:ring-2 focus:ring-[#f28c28]/30 shadow-sm cursor-pointer min-w-[130px]"
+            >
+              <option value="Tous">Statut: Tous</option>
+              <option value="Actif">Active</option>
+              <option value="Inactif">Inactive</option>
+            </select>
           </div>
 
-          {/* Barre de Filtres : Recherche à gauche & Sélecteurs à droite */}
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
-            {/* Champ de recherche */}
-            <div className="flex items-center bg-[#F8FAFC] rounded-xl px-4 py-3 gap-3 w-full md:max-w-md border border-gray-100">
-              <Search className="w-4 h-4 text-gray-400 shrink-0" />
-              <input
-                type="text"
-                value={recherche}
-                onChange={(e) => setRecherche(e.target.value)}
-                placeholder="Rechercher une discipline (ex: Judo, Natation...)"
-                className="bg-transparent outline-none text-xs w-full text-gray-700 placeholder:text-gray-400"
-              />
-            </div>
+        </div>
 
-            {/* Sélecteurs alignés à droite */}
-            <div className="flex items-center gap-3 w-full md:w-auto justify-end">
-              <select
-                value={categorieFiltre}
-                onChange={(e) => setCategorieFiltre(e.target.value)}
-                className="rounded-xl border border-gray-200 bg-white text-xs font-medium text-gray-600 px-4 py-3 outline-none focus:ring-2 focus:ring-[#D96B27]/20 cursor-pointer min-w-[170px]"
-              >
-                <option value="Toutes">Catégories: Toutes</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.nom}>{c.nom}</option>
-                ))}
-              </select>
-
-              <select
-                value={statutFiltre}
-                onChange={(e) => setStatutFiltre(e.target.value)}
-                className="rounded-xl border border-gray-200 bg-white text-xs font-medium text-gray-600 px-4 py-3 outline-none focus:ring-2 focus:ring-[#D96B27]/20 cursor-pointer min-w-[130px]"
-              >
-                <option value="Tous">Statut: Tous</option>
-                <option value="Actif">Active</option>
-                <option value="Inactif">Inactive</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Tableau des Disciplines */}
-          <div className="rounded-2xl border border-gray-100 overflow-hidden bg-white mb-6">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-[#FAFBFD] border-b border-gray-100 text-[11px] font-bold uppercase tracking-wider text-gray-400 text-left">
-                    <th className="px-6 py-4">Nom de la discipline</th>
-                    <th className="px-6 py-4">Catégorie</th>
-                    <th className="px-6 py-4">Site principal</th>
-                    <th className="px-6 py-4">Statut</th>
-                    <th className="px-6 py-4 text-right">Actions</th>
+        {/* Tableau */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100 text-[11px] font-bold uppercase tracking-wider text-gray-400 text-left">
+                  <th className="px-5 py-3.5">Nom de la discipline</th>
+                  <th className="px-5 py-3.5">Catégorie</th>
+                  <th className="px-5 py-3.5">Site principal</th>
+                  <th className="px-5 py-3.5">Statut</th>
+                  <th className="px-5 py-3.5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pageDisciplines.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-5 py-14 text-center text-gray-500">
+                      Aucune discipline trouvée.
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {pageDisciplines.map((d) => (
-                    <tr key={d.id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3.5">
+                )}
+                {pageDisciplines.map((d) => {
+                  const actif = nbCompetiteurs(d) > 0;
+                  return (
+                    <tr
+                      key={d.id}
+                      className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-3">
                           {iconeDiscipline(d.id, d.nom)}
                           <div>
-                            <p className="font-bold text-gray-900 leading-tight">{d.nom}</p>
-                            <p className="text-[11px] text-gray-400 mt-0.5">15-18 Mai 2026</p>
+                            <p className="font-semibold text-gray-900 leading-tight">{d.nom}</p>
+                            <p className="text-[11px] text-gray-400 mt-0.5">
+                              {actif ? `${nbCompetiteurs(d)} compétiteurs` : "Aucun compétiteur"}
+                            </p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-gray-600 font-medium text-xs">{nomCategorie(d)}</td>
-                      <td className="px-6 py-4">
-                        <p className="font-semibold text-gray-800 text-xs">{siteDiscipline(d)}</p>
-                        <p className="text-[11px] text-gray-400">12 épreuves</p>
+                      <td className="px-5 py-3.5 text-gray-600">{nomCategorie(d)}</td>
+                      <td className="px-5 py-3.5">
+                        <p className="font-medium text-gray-800 leading-tight">{siteDiscipline(d)}</p>
                       </td>
-                      <td className="px-6 py-4">
-                        <BadgeStatut actif={nbCompetiteurs(d) > 0} />
+                      <td className="px-5 py-3.5">
+                        <BadgeStatut actif={actif} />
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-end gap-2">
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center justify-end gap-1.5">
                           <button
                             onClick={() => ouvrirModalEdition(d)}
-                            className="p-2 rounded-lg text-gray-400 hover:text-[#D96B27] hover:bg-orange-50 transition-colors"
+                            className="p-2 rounded-lg text-gray-400 hover:text-[#f28c28] hover:bg-orange-50 transition-colors"
+                            title="Modifier"
                           >
                             <Pencil className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => supprimerDiscipline(d)}
-                            className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                            className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                            title="Supprimer"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
 
-          {/* Pagination intégrée au bas de la carte principale */}
-          <div className="flex items-center justify-between pt-2">
-            <p className="text-xs text-gray-400">
-              Affichage de <span className="font-bold text-gray-700">{debut + 1}–{Math.min(debut + PAR_PAGE, total)}</span> sur <span className="font-bold text-gray-700">{total}</span> disciplines
+          {/* Pagination */}
+          <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 border-t border-gray-100 bg-white">
+            <p className="text-xs text-gray-500">
+              Affichage de <span className="font-semibold">{total > 0 ? debut + 1 : 0}</span>–
+              <span className="font-semibold">{Math.min(debut + PAR_PAGE, total)}</span> sur{" "}
+              <span className="font-semibold">{total}</span> disciplines
             </p>
-            
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={pageCourante === 1}
-                className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-40"
+                className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-[#f28c28] disabled:opacity-40 transition-colors"
               >
+                <ChevronLeft className="w-4 h-4" />
                 Précédent
               </button>
-              
-              <button className="w-8 h-8 rounded-lg bg-[#D96B27] text-white text-xs font-bold flex items-center justify-center">
-                1
-              </button>
-              
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={pageCourante === totalPages}
-                className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-40"
+                className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-[#f28c28] disabled:opacity-40 transition-colors"
               >
                 Suivant
+                <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           </div>
-
         </div>
-      </div>
 
-      {/* Modal Popup */}
-      <DisciplineModal
-        isOpen={modalOuverte}
-        discipline={disciplineSelectionnee}
-        onClose={() => setModalOuverte(false)}
-        onSuccess={chargerDonnees}
-      />
+        {/* Modal de création / modification */}
+        <DisciplineModal
+          isOpen={modalOuverte}
+          discipline={disciplineSelectionnee}
+          onClose={() => setModalOuverte(false)}
+          onSuccess={chargerDonnees}
+        />
+      </div>
     </AdminLayout>
   );
 }

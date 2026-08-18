@@ -8,20 +8,17 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/admin/Dashboard";
 import Disciplines from "./pages/admin/Games";
-import DisciplineForm from "./pages/admin/DisciplineForm";
+import AdminSites from "./pages/admin/AdminSites";
+import SiteDetail from "./pages/admin/SitesDetail";
 export default function App() {
   return (
-      <BrowserRouter>
-        <Routes>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path={"/disciplines"} element={<Disciplines />} />
-          {/* Route pour afficher le formulaire de création */}
-        <Route path="/admin/disciplines/nouvelle" element={<DisciplineForm />} />
-
-        {/* Route pour afficher le formulaire de modification (avec l'ID) */}
-        <Route path="/admin/disciplines/:id/modifier" element={<DisciplineForm />} />
-        </Routes>
-      </BrowserRouter>
-
+    <BrowserRouter>
+      <Routes>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path={"/disciplines"} element={<Disciplines />} />
+        <Route path={"/sites"} element={<AdminSites />} />
+        <Route path="/sites/:id" element={<SiteDetail />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
