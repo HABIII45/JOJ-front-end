@@ -1,8 +1,7 @@
 // src/components/Sidebar.jsx
 import "./Sidebar.css";
 import JOJlogo from "../../assets/images/JOJlogo.jpg";
-import { useAuth } from "../../contexts/AuthContext"; 
-
+import { useAuth } from "../../contexts/useAuth";
 import {
   LayoutDashboard,
   CalendarDays,

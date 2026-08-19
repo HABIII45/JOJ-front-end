@@ -10,6 +10,7 @@ import DetailSite from '../pages/public/DetailSite';
 import SiteForm from '../pages/admin/SiteForm';
 import CompetiteurForm from '../pages/admin/CompetiteurForm';
 import GamesList from '../pages/admin/Games';
+import { adminRoutes } from './ProtectedRoutes';
 const AppRoutes = () => {
   return (
     <Routes>
@@ -28,7 +29,7 @@ const AppRoutes = () => {
       {/* COMPETITEURS SECTION */}
       <Route path='/competiteurs' element = {<GamesList/>}></Route>
       <Route path='/competiteurs/ajout' element = {<CompetiteurForm/>}></Route>
-
+      <adminRoutes/>
     </Routes>
   );
 };
