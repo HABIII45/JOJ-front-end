@@ -246,3 +246,89 @@ export const adminDemo = {
   role: "SUPERADMIN",
   full_name: "Admin JOJ",
 };
+
+export const RESULTATS_DEMO_ENRICHIS = [
+  {
+    id: 1,
+    score: "1-0",
+    competiteur: { id: 1, nom: "Joueur", prenom: "T. Abe", pays: "JP" },
+    adversaire: { nom: "Joueur", prenom: "J. Lima", pays: "BR" },
+    evenement: { id: 1, titre: "Finale - Hommes -66kg", categorie: "Judo" },
+  },
+  {
+    id: 2,
+    score: "85-78",
+    competiteur: { id: 2, nom: "Équipe", prenom: "États-Unis", pays: "US" },
+    adversaire: { nom: "Équipe", prenom: "France", pays: "FR" },
+    evenement: { id: 2, titre: "Demi-finale - Femmes", categorie: "Basketball" },
+  },
+  {
+    id: 3,
+    score: "10.05",
+    competiteur: { id: 3, nom: "Athlète", prenom: "L. Thompson", pays: "JM" },
+    evenement: { id: 3, titre: "100m - Hommes - Finale", categorie: "Athlétisme" },
+    position: 1,
+  },
+  {
+    id: 4,
+    score: "10.12",
+    competiteur: { id: 4, nom: "Athlète", prenom: "M. Davis", pays: "US" },
+    evenement: { id: 3, titre: "100m - Hommes - Finale", categorie: "Athlétisme" },
+    position: 2,
+  },
+  {
+    id: 5,
+    score: "10.18",
+    competiteur: { id: 5, nom: "Athlète", prenom: "A. Smith", pays: "CA" },
+    evenement: { id: 3, titre: "100m - Hommes - Finale", categorie: "Athlétisme" },
+    position: 3,
+  },
+  {
+    id: 6,
+    score: "2-1",
+    competiteur: { id: 6, nom: "Équipe", prenom: "Sénégal", pays: "SN" },
+    adversaire: { nom: "Équipe", prenom: "Japon", pays: "JP" },
+    evenement: { id: 6, titre: "Quart de finale - Hommes", categorie: "Football" },
+  },
+  {
+    id: 7,
+    score: "0.95",
+    competiteur: { id: 7, nom: "Athlète", prenom: "A. Ba", pays: "SN" },
+    evenement: { id: 7, titre: "50m Nage libre - Hommes", categorie: "Natation" },
+    position: 1,
+  },
+  {
+    id: 8,
+    score: "32-28",
+    competiteur: { id: 8, nom: "Équipe", prenom: "Égypte", pays: "EG" },
+    adversaire: { nom: "Équipe", prenom: "Corée", pays: "KR" },
+    evenement: { id: 8, titre: "Demi-finale - Femmes", categorie: "Handball" },
+  },
+];
+
+ export const DRAPEAUX = {
+  JP: "🇯🇵", BR: "🇧🇷", US: "🇺🇸", FR: "🇫🇷", JM: "🇯🇲", CA: "🇨🇦",
+  SN: "🇸🇳", EG: "🇪🇬", KR: "🇰🇷",
+};
+
+/**
+ * Nettoyage et dédoublonnage dynamique des filtres de disciplines
+ */
+export function pastillesInitiales(categorieNames) {
+  const ordonne = ["Football", "Basketball", "Athlétisme", "Natation", "Handball", "Judo"];
+  const reste = (categorieNames || []).filter(
+    (n) => !ordonne.includes(n) && !["Sports Collectifs", "Sports de Combat"].includes(n)
+  );
+  
+  // Array.from(new Set(...)) évite les entrées en double (ex: Judo répété)
+  return ["Tous", ...Array.from(new Set([...ordonne, ...reste]))];
+}
+
+export const ICONE_DISCIPLINE = {
+  Judo: "🥋",
+  Basketball: "🏀",
+  Football: "⚽",
+  Athlétisme: "⏱️",
+  Natation: "🏊",
+  Handball: "🤾",
+};
