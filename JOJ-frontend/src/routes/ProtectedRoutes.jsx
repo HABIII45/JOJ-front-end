@@ -13,7 +13,6 @@ import SiteForm from "../pages/admin/SiteForm";
 export const adminRoutes = [
   {
     path: "/admin",
-    // Le ProtectedRoute parent pour la section admin entière (optionnel si chaque route a sa propre protection)
     element: <ProtectedRoute permissionRequise="ADMIN" />, 
     children: [
       // Route par défaut du dashboard admin
@@ -54,13 +53,12 @@ export const adminRoutes = [
       {
         element: <ProtectedRoute permissionRequise="UTILISATEURS" />,
         children: [
-          { path: "utilisateurs", element: <GamesList /> }, // Ou un composant spécifique
+          { path: "utilisateurs", element: <GamesList /> }, 
           { path: "utilisateurs/ajout", element: <CompetiteurForm /> },
         ]
       },
       
-      // Superadmin : Si vous voulez une route spécifique, ou laissez les permissions ci-dessus gérer
-      // Le superadmin a accès à tout via la logique dans ProtectedRoute
+  
     ]
   }
 ];

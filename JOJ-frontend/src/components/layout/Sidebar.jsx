@@ -27,7 +27,6 @@ const routesBillets = ["/ventbillet"];
 export function Sidebar() {
   const location = useLocation();
 
-  // ✅ CORRECTION ICI : Utilisez le hook useAuth()
   const { utilisateur, seDeconnecter, chargement } = useAuth(); 
 
   // Gestion du chargement : si on est en train de charger, on affiche rien ou un spinner
@@ -49,7 +48,6 @@ export function Sidebar() {
   const handleDeconnexion = async (e) => {
     e.preventDefault(); 
     await seDeconnecter();
-    // Optionnel : rediriger vers la page de connexion ou le home
     window.location.href = "/"; 
   };
 
