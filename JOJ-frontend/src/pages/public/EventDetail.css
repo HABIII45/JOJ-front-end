@@ -1,0 +1,849 @@
+/* =========================================================
+   PAGE
+========================================================= */
+
+.event-detail-page {
+    min-height: 100vh;
+    background: #ffffff;
+    color: #171717;
+    font-family: Arial, Helvetica, sans-serif;
+    padding-bottom: 40px;
+}
+
+
+/* =========================================================
+   CHARGEMENT / ERREUR
+========================================================= */
+
+.event-detail-loading,
+.event-detail-error {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: #777;
+}
+
+.event-detail-error h2 {
+    font-size: 15px;
+    font-weight: 500;
+}
+
+
+/* =========================================================
+   HERO
+========================================================= */
+
+.event-detail-hero {
+    position: relative;
+
+    width: 100%;
+    height: 220px;
+
+    background-size: cover;
+    background-position: center;
+
+    display: flex;
+    align-items: flex-end;
+
+    overflow: hidden;
+}
+
+.event-detail-hero-overlay {
+    position: absolute;
+    inset: 0;
+
+    background:
+        linear-gradient(
+            to bottom,
+            rgba(0, 0, 0, 0.08),
+            rgba(0, 0, 0, 0.68)
+        );
+}
+
+.event-detail-hero-content {
+    position: relative;
+    z-index: 2;
+
+    width: 100%;
+    max-width: 1050px;
+
+    margin: 0 auto;
+
+    padding: 0 35px 28px;
+}
+
+
+/* =========================================================
+   BADGES
+========================================================= */
+
+.event-detail-badges {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    margin-bottom: 9px;
+}
+
+.event-category-badge {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 4px 10px;
+
+    border-radius: 20px;
+
+    background: #f28a24;
+    color: #ffffff;
+
+    font-size: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.event-type-badge {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 4px 10px;
+
+    border-radius: 20px;
+
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
+
+    font-size: 8px;
+}
+
+
+/* =========================================================
+   TITRE HERO
+========================================================= */
+
+.event-detail-hero-content h1 {
+    margin: 0;
+
+    max-width: 650px;
+
+    color: #ffffff;
+
+    font-size: 30px;
+    line-height: 1.05;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   INFORMATIONS RAPIDES
+========================================================= */
+
+.event-detail-info {
+    position: relative;
+    z-index: 5;
+
+    width: calc(100% - 70px);
+    max-width: 1050px;
+
+    min-height: 72px;
+
+    margin: -22px auto 0;
+
+    padding: 13px 20px;
+
+    background: #ffffff;
+
+    border-radius: 8px;
+
+    display: flex;
+    align-items: center;
+
+    box-shadow:
+        0 5px 18px rgba(0, 0, 0, 0.12);
+}
+
+.event-info-item {
+    flex: 1;
+
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+}
+
+.event-info-icon {
+    width: 25px;
+    height: 25px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #ed7d22;
+}
+
+.event-info-item span {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: #999;
+
+    font-size: 7px;
+    font-weight: 600;
+}
+
+.event-info-item strong {
+    display: block;
+
+    color: #151515;
+
+    font-size: 9px;
+    font-weight: 700;
+}
+
+.event-info-separator {
+    width: 1px;
+    height: 34px;
+
+    margin: 0 20px;
+
+    background: #eeeeee;
+}
+
+
+/* =========================================================
+   CONTENU PRINCIPAL
+========================================================= */
+
+.event-detail-content {
+    width: calc(100% - 70px);
+    max-width: 1050px;
+
+    margin: 30px auto 0;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        300px;
+
+    gap: 30px;
+
+    align-items: start;
+}
+
+.event-detail-main {
+    min-width: 0;
+}
+
+
+/* =========================================================
+   DESCRIPTION
+========================================================= */
+
+.event-description-section {
+    margin-bottom: 25px;
+}
+
+.event-description-section h2 {
+    margin: 0 0 12px;
+
+    color: #151515;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    text-transform: lowercase;
+}
+
+.event-description {
+    max-width: 700px;
+}
+
+.event-description p {
+    margin: 0 0 9px;
+
+    color: #777;
+
+    font-size: 9px;
+    line-height: 1.65;
+}
+
+
+/* =========================================================
+   SITE
+========================================================= */
+
+.event-site-section {
+    margin-top: 22px;
+}
+
+.event-site-section h2 {
+    margin: 0 0 12px;
+
+    color: #151515;
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.event-site-section h2 strong {
+    font-weight: 700;
+}
+
+.event-site-image {
+    display: block;
+
+    width: 100%;
+    height: 155px;
+
+    object-fit: cover;
+
+    border-radius: 8px;
+}
+
+
+/* =========================================================
+   CONFRONTATION
+========================================================= */
+
+.confrontation-card {
+    margin-top: 22px;
+
+    padding: 15px 18px;
+
+    background: #ffffff;
+
+    border: 1px solid #eeeeee;
+    border-radius: 9px;
+
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.035);
+}
+
+.confrontation-header {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    margin-bottom: 15px;
+}
+
+.confrontation-icon {
+    width: 22px;
+    height: 22px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 5px;
+
+    background: #fff2e7;
+    color: #ed7d22;
+}
+
+.confrontation-header h2 {
+    margin: 0;
+
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.confrontation-list {
+    display: flex;
+    flex-direction: column;
+
+    gap: 9px;
+}
+
+.confrontation-row {
+    display: grid;
+
+    grid-template-columns:
+        100px
+        1fr;
+
+    align-items: center;
+
+    min-height: 18px;
+
+    font-size: 8px;
+}
+
+.confrontation-row span {
+    color: #999;
+
+    font-size: 7px;
+}
+
+.confrontation-row strong {
+    color: #555;
+
+    font-size: 8px;
+}
+
+
+/* =========================================================
+   AUCUNE CONFRONTATION
+========================================================= */
+
+.event-no-confrontation {
+    margin-top: 22px;
+
+    min-height: 45px;
+
+    padding: 10px 13px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    background: #fafafa;
+
+    border: 1px solid #eeeeee;
+    border-radius: 8px;
+
+    color: #999;
+
+    font-size: 8px;
+}
+
+.event-no-confrontation-icon {
+    width: 22px;
+    height: 22px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 5px;
+
+    background: #fff2e7;
+    color: #ed7d22;
+}
+
+
+/* =========================================================
+   RÉSERVATION
+========================================================= */
+
+.reservation-card {
+    position: sticky;
+    top: 20px;
+
+    width: 100%;
+
+    padding: 16px;
+
+    background: #ffffff;
+
+    border: 1px solid #eeeeee;
+    border-radius: 10px;
+
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.07);
+}
+
+
+/* =========================================================
+   TITRE RÉSERVATION
+========================================================= */
+
+.reservation-header {
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+
+    margin-bottom: 17px;
+
+    color: #ed7d22;
+}
+
+.reservation-header h2 {
+    margin: 0;
+
+    color: #151515;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   TICKETS
+========================================================= */
+
+.ticket-item {
+    min-height: 58px;
+
+    margin-bottom: 7px;
+
+    padding: 9px 10px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+
+    background: #fafafa;
+
+    border-radius: 7px;
+}
+
+.ticket-item.ticket-standard {
+    background: #fff6ed;
+}
+
+.ticket-info {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 4px;
+}
+
+.ticket-info strong {
+    color: #222;
+
+    font-size: 8px;
+    font-weight: 700;
+}
+
+.ticket-info span {
+    max-width: 105px;
+
+    color: #999;
+
+    font-size: 6px;
+    line-height: 1.35;
+}
+
+
+/* =========================================================
+   PRIX + QUANTITÉ
+========================================================= */
+
+.ticket-actions {
+    display: flex;
+    flex-direction: column;
+
+    align-items: flex-end;
+
+    gap: 6px;
+}
+
+.ticket-actions > strong {
+    color: #ed7d22;
+
+    font-size: 8px;
+    font-weight: 700;
+
+    white-space: nowrap;
+}
+
+.quantity-control {
+    display: flex;
+    align-items: center;
+
+    gap: 6px;
+}
+
+.quantity-control button {
+    width: 17px;
+    height: 17px;
+
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #dedede;
+    border-radius: 50%;
+
+    background: #ffffff;
+
+    color: #777;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+.quantity-control button:last-child {
+    background: #ed7d22;
+    border-color: #ed7d22;
+
+    color: #ffffff;
+}
+
+.quantity-control button:hover {
+    transform: scale(1.08);
+}
+
+.quantity-control span {
+    min-width: 10px;
+
+    color: #444;
+
+    text-align: center;
+
+    font-size: 8px;
+}
+
+
+/* =========================================================
+   TOTAL
+========================================================= */
+
+.reservation-total {
+    margin-top: 13px;
+    padding-top: 12px;
+
+    border-top: 1px solid #eeeeee;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+}
+
+.reservation-total > div {
+    display: flex;
+    flex-direction: column;
+
+    gap: 4px;
+}
+
+.reservation-total span {
+    color: #777;
+
+    font-size: 7px;
+}
+
+.reservation-total small {
+    color: #aaa;
+
+    font-size: 5px;
+}
+
+.reservation-total > strong {
+    color: #151515;
+
+    font-size: 10px;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   FORMULAIRE
+========================================================= */
+
+.reservation-form {
+    margin-top: 13px;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.reservation-form label {
+    margin: 7px 0 4px;
+
+    color: #444;
+
+    font-size: 7px;
+    font-weight: 600;
+}
+
+.reservation-form input {
+    width: 100%;
+    height: 28px;
+
+    padding: 0 9px;
+
+    background: #fafafa;
+
+    border: 1px solid #eeeeee;
+    border-radius: 6px;
+
+    outline: none;
+
+    color: #222;
+
+    font-size: 7px;
+}
+
+.reservation-form input::placeholder {
+    color: #aaa;
+}
+
+.reservation-form input:focus {
+    background: #ffffff;
+
+    border-color: #ed7d22;
+}
+
+
+/* =========================================================
+   BOUTON RÉSERVER
+========================================================= */
+
+.reserve-button {
+    width: 100%;
+    height: 32px;
+
+    margin-top: 13px;
+
+    border: none;
+    border-radius: 6px;
+
+    background: #050505;
+
+    color: #ffffff;
+
+    font-size: 7px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.reserve-button:hover:not(:disabled) {
+    background: #ed7d22;
+
+    transform: translateY(-1px);
+}
+
+.reserve-button:disabled {
+    background: #cccccc;
+
+    cursor: not-allowed;
+}
+
+
+/* =========================================================
+   RESPONSIVE TABLETTE
+========================================================= */
+
+@media (max-width: 900px) {
+
+    .event-detail-content {
+        grid-template-columns: 1fr;
+
+        gap: 25px;
+    }
+
+    .reservation-card {
+        position: relative;
+
+        top: auto;
+    }
+
+}
+
+
+/* =========================================================
+   RESPONSIVE MOBILE
+========================================================= */
+
+@media (max-width: 650px) {
+
+    .event-detail-hero {
+        height: 190px;
+    }
+
+    .event-detail-hero-content {
+        padding: 0 20px 22px;
+    }
+
+    .event-detail-hero-content h1 {
+        font-size: 23px;
+    }
+
+
+    .event-detail-info {
+        width: calc(100% - 30px);
+
+        margin-top: -15px;
+
+        padding: 15px;
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 11px;
+    }
+
+    .event-info-item {
+        width: 100%;
+    }
+
+    .event-info-separator {
+        width: 100%;
+        height: 1px;
+
+        margin: 0;
+    }
+
+
+    .event-detail-content {
+        width: calc(100% - 30px);
+
+        margin-top: 25px;
+    }
+
+
+    .event-site-image {
+        height: 180px;
+    }
+
+
+    .confrontation-row {
+        grid-template-columns: 80px 1fr;
+    }
+
+}
+
+
+/* =========================================================
+   TRÈS PETITS ÉCRANS
+========================================================= */
+
+@media (max-width: 420px) {
+
+    .event-detail-hero-content h1 {
+        font-size: 21px;
+    }
+
+    .event-category-badge,
+    .event-type-badge {
+        font-size: 7px;
+    }
+
+    .event-detail-info {
+        width: calc(100% - 20px);
+    }
+
+    .event-detail-content {
+        width: calc(100% - 20px);
+    }
+
+    .ticket-item {
+        padding: 8px;
+    }
+
+}
