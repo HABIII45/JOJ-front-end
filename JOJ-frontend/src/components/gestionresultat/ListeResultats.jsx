@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../../api/api";
+import { supprimerResultat, fetchEvenements } from "../../api/resultats";
 
 const IconVoir = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -18,42 +20,86 @@ const IconSupprimer = () => (
   </svg>
 );
 
-const STATUTS = {
-  publie:    { label: "Publié",     style: "bg-[#d9f8e4] text-[#20a35b] w-[54px]" },
-  brouillon: { label: "Brouillon",  style: "bg-[#ffecd5] text-[#e87820] w-[66px]" },
-  attente:   { label: "En attente", style: "bg-[#f0f1f3] text-[#4b5563] w-[74px]" },
-};
+const colsGrid = "grid-cols-[2fr_1.3fr_1fr_.6fr]";
 
-const donneesInitiales = [
-  { id: 1, evenement: "Qualifications Hommes — Course", date: "12 oct 2026, 14:30", statut: "publie" },
-  { id: 2, evenement: "Basket-ball Finale",             date: "11 oct 2026, 18:45", statut: "brouillon" },
-  { id: 3, evenement: "100m Hommes - Finale",           date: "10 oct 2026, 10:00", statut: "attente" },
-];
-
-const colsGrid = "grid-cols-[2.3fr_1.15fr_.85fr_.8fr]";
+/** Formate une date ISO en "12 oct 2026, 14:30" */
+function formaterDate(dateStr) {
+  if (!dateStr) return "—";
+  try {
+    return new Date(dateStr).toLocaleString("fr-FR", {
+      day: "2-digit", month: "short", year: "numeric",
+      hour: "2-digit", minute: "2-digit",
+    });
+  } catch {
+    return dateStr;
+  }
+}
 
 function ListeResultats() {
   const navigate = useNavigate();
-  const [resultats, setResultats]             = useState(donneesInitiales);
-  const [filtreEvenement, setFiltreEvenement] = useState("");
-  const [filtreStatut, setFiltreStatut]       = useState("");
-  const [voirArchives, setVoirArchives]       = useState(false);
-  const [aSupprimer, setASupprimer]           = useState(null); // id en attente de confirmation
 
-  /* ---- Filtrage ---- */
+  const [resultats,        setResultats]        = useState([]);
+  const [evenements,       setEvenements]        = useState([]);
+  const [chargement,       setChargement]        = useState(true);
+  const [erreur,           setErreur]            = useState("");
+  const [filtreEvenement,  setFiltreEvenement]   = useState("");
+  const [aSupprimer,       setASupprimer]        = useState(null);
+  const [suppressionEnCours, setSuppressionEnCours] = useState(false);
+  const [voirTous,         setVoirTous]          = useState(false);
+
+  const charger = useCallback(async () => {
+    setChargement(true);
+    setErreur("");
+    try {
+      // Charge en parallèle les résultats et les événements (pour le filtre)
+      const [{ data: dataRes }, evts] = await Promise.all([
+        api.get("/api/resultats/"),
+        fetchEvenements(),
+      ]);
+      const tous = Array.isArray(dataRes) ? dataRes : dataRes.results ?? [];
+      setResultats(tous);
+      setEvenements(evts);
+    } catch {
+      setErreur("Impossible de charger les résultats.");
+    } finally {
+      setChargement(false);
+    }
+  }, []);
+
+  useEffect(() => { charger(); }, [charger]);
+
+  /* ── Filtrage ── */
   const affichees = resultats.filter((r) => {
-    const matchEvt    = filtreEvenement === "" || r.evenement === filtreEvenement;
-    const matchStatut = filtreStatut    === "" || r.statut    === filtreStatut;
-    return matchEvt && matchStatut;
+    if (filtreEvenement === "") return true;
+    return String(r.evenement) === String(filtreEvenement);
   });
 
-  const evenementsUniques = [...new Set(donneesInitiales.map((r) => r.evenement))];
+  const aAfficher = voirTous ? affichees : affichees.slice(0, 10);
 
-  /* ---- Suppression ---- */
-  const confirmerSuppression = () => {
-    setResultats((prev) => prev.filter((r) => r.id !== aSupprimer));
-    setASupprimer(null);
+  /* ── Suppression réelle en base ── */
+  const confirmerSuppression = async () => {
+    setSuppressionEnCours(true);
+    try {
+      await supprimerResultat(aSupprimer);
+      setResultats((prev) => prev.filter((r) => r.id !== aSupprimer));
+    } catch (err) {
+      setErreur(
+        err?.response?.data?.detail ?? "Échec de la suppression. Veuillez réessayer."
+      );
+    } finally {
+      setSuppressionEnCours(false);
+      setASupprimer(null);
+    }
   };
+
+  /** Nom de l'événement depuis son ID */
+  const nomEvenement = (evenementId) => {
+    const ev = evenements.find((e) => String(e.id) === String(evenementId));
+    return ev?.titre ?? `Épreuve #${evenementId}`;
+  };
+
+  /** Nom du compétiteur depuis info_competiteur */
+  const nomCompetiteur = (r) => r.info_competiteur?.nom_complet ?? "—";
 
   return (
     <>
@@ -61,31 +107,27 @@ function ListeResultats() {
 
         {/* En-tête */}
         <div className="h-[64px] px-[27px] flex items-center justify-between">
-          <h2 className="text-[18px] font-semibold text-[#15171a]">Liste des Résultats</h2>
+          <h2 className="text-[18px] font-semibold text-[#15171a]">
+            Liste des Résultats
+            {!chargement && (
+              <span className="ml-2 text-[14px] font-normal text-[#9ca3af]">
+                ({affichees.length})
+              </span>
+            )}
+          </h2>
 
           <div className="flex items-center gap-[8px]">
             {/* Filtre par événement */}
             <select
               value={filtreEvenement}
               onChange={(e) => setFiltreEvenement(e.target.value)}
-              className="h-[32px] px-[11px] rounded-[6px] border border-[#e5e7eb] bg-[#fafbfc] text-[13px] text-[#4b5563] outline-none cursor-pointer"
+              disabled={chargement}
+              className="h-[32px] px-[11px] rounded-[6px] border border-[#e5e7eb] bg-[#fafbfc] text-[13px] text-[#4b5563] outline-none cursor-pointer disabled:opacity-60"
             >
               <option value="">Par événement</option>
-              {evenementsUniques.map((evt) => (
-                <option key={evt} value={evt}>{evt}</option>
+              {evenements.map((ev) => (
+                <option key={ev.id} value={ev.id}>{ev.titre}</option>
               ))}
-            </select>
-
-            {/* Filtre par statut */}
-            <select
-              value={filtreStatut}
-              onChange={(e) => setFiltreStatut(e.target.value)}
-              className="h-[32px] px-[11px] rounded-[6px] border border-[#e5e7eb] bg-[#fafbfc] text-[13px] text-[#4b5563] outline-none cursor-pointer"
-            >
-              <option value="">Par statut</option>
-              <option value="publie">Publié</option>
-              <option value="brouillon">Brouillon</option>
-              <option value="attente">En attente</option>
             </select>
           </div>
         </div>
@@ -93,67 +135,87 @@ function ListeResultats() {
         {/* Header colonnes */}
         <div className={`h-[44px] bg-[#fafbfc] border-y border-[#edf0f2] grid ${colsGrid} items-center px-[27px] text-[13px] font-medium text-[#727a86]`}>
           <span>Événement</span>
-          <span>Date de l'épreuve</span>
-          <span>Statut</span>
+          <span>Compétiteur</span>
+          <span>Score</span>
           <span>Actions</span>
         </div>
 
-        {/* Lignes */}
-        {affichees.length === 0 && (
+        {/* État chargement */}
+        {chargement && (
+          <div className="h-[80px] flex items-center justify-center text-[14px] text-[#9ca3af]">
+            Chargement…
+          </div>
+        )}
+
+        {/* Erreur */}
+        {!chargement && erreur && (
+          <div className="h-[62px] flex items-center justify-center gap-4">
+            <span className="text-[14px] text-red-500">{erreur}</span>
+            <button onClick={charger} className="text-[13px] text-[#d96814] hover:underline">
+              Réessayer
+            </button>
+          </div>
+        )}
+
+        {/* Aucun résultat */}
+        {!chargement && !erreur && affichees.length === 0 && (
           <div className="h-[62px] flex items-center justify-center text-[14px] text-[#9ca3af]">
             Aucun résultat trouvé
           </div>
         )}
 
-        {affichees.map((r) => {
-          const s = STATUTS[r.statut];
-          return (
-            <div
-              key={r.id}
-              className={`h-[66px] grid ${colsGrid} items-center px-[27px] border-b border-[#edf0f2]`}
-            >
-              <span className="text-[15px] text-[#303846]">{r.evenement}</span>
-              <span className="text-[15px] text-[#303846]">{r.date}</span>
-              <span className={`${s.style} h-[22px] rounded-full text-[12px] flex items-center justify-center`}>
-                {s.label}
-              </span>
-              <div className="flex items-center gap-[13px] text-[#9aa2ad]">
-                {/* Oeil — voir / éditer */}
-                <button
-                  onClick={() => navigate(`/register-result?id=${r.id}&mode=edition`)}
-                  className="hover:text-[#d96814] transition-colors"
-                  title="Voir / Modifier"
-                >
-                  <IconVoir />
-                </button>
-                {/* Supprimer */}
-                <button
-                  onClick={() => setASupprimer(r.id)}
-                  className="hover:text-red-500 transition-colors"
-                  title="Supprimer"
-                >
-                  <IconSupprimer />
-                </button>
-              </div>
-            </div>
-          );
-        })}
-
-        {/* Footer */}
-        <div className="h-[52px] flex items-center justify-center">
-          <button
-            onClick={() => setVoirArchives((v) => !v)}
-            className="text-[15px] font-medium text-[#d96814] hover:underline"
+        {/* Lignes */}
+        {!chargement && !erreur && aAfficher.map((r) => (
+          <div
+            key={r.id}
+            className={`h-[66px] grid ${colsGrid} items-center px-[27px] border-b border-[#edf0f2]`}
           >
-            {voirArchives ? "Masquer les résultats archivés" : "Voir tous les résultats archivés"}
-          </button>
-        </div>
+            <div className="min-w-0">
+              <p className="text-[15px] text-[#303846] truncate">{nomEvenement(r.evenement)}</p>
+            </div>
 
-        {/* Section archives (simulée) */}
-        {voirArchives && (
-          <div className="border-t border-[#edf0f2] px-[27px] py-[18px]">
-            <p className="text-[14px] text-[#9ca3af] italic">Aucun résultat archivé pour le moment.</p>
+            <span className="text-[14px] text-[#303846]">{nomCompetiteur(r)}</span>
+
+            <span className="text-[15px] font-semibold text-[#15171a]">{r.score ?? "—"}</span>
+
+            <div className="flex items-center gap-[13px] text-[#9aa2ad]">
+              {/* Voir / Éditer */}
+              <button
+                onClick={() => navigate(`/register-result?id=${r.evenement}&mode=edition`)}
+                className="hover:text-[#d96814] transition-colors"
+                title="Voir / Modifier l'épreuve"
+              >
+                <IconVoir />
+              </button>
+              {/* Supprimer */}
+              <button
+                onClick={() => setASupprimer(r.id)}
+                className="hover:text-red-500 transition-colors"
+                title="Supprimer ce résultat"
+              >
+                <IconSupprimer />
+              </button>
+            </div>
           </div>
+        ))}
+
+        {/* Footer — voir tous / réduire */}
+        {!chargement && !erreur && affichees.length > 10 && (
+          <div className="h-[52px] flex items-center justify-center">
+            <button
+              onClick={() => setVoirTous((v) => !v)}
+              className="text-[15px] font-medium text-[#d96814] hover:underline"
+            >
+              {voirTous
+                ? "Réduire la liste"
+                : `Voir tous les résultats (${affichees.length})`}
+            </button>
+          </div>
+        )}
+
+        {/* Footer vide pour garder la hauteur */}
+        {(!chargement && !erreur && affichees.length <= 10) && (
+          <div className="h-[52px]" />
         )}
 
       </section>
@@ -162,22 +224,26 @@ function ListeResultats() {
       {aSupprimer !== null && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-8 w-[360px] shadow-xl">
-            <h3 className="text-[18px] font-bold text-[#111214] mb-2">Supprimer ce résultat ?</h3>
+            <h3 className="text-[18px] font-bold text-[#111214] mb-2">
+              Supprimer ce résultat ?
+            </h3>
             <p className="text-[14px] text-[#68717e] mb-6">
-              Cette action est irréversible. Le résultat sera définitivement supprimé.
+              Cette action est irréversible. Le résultat sera définitivement supprimé de la base de données.
             </p>
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setASupprimer(null)}
-                className="px-5 py-2 rounded-lg border border-[#e5e7eb] text-[14px] text-[#4b5563] hover:bg-gray-50"
+                disabled={suppressionEnCours}
+                className="px-5 py-2 rounded-lg border border-[#e5e7eb] text-[14px] text-[#4b5563] hover:bg-gray-50 disabled:opacity-60"
               >
                 Annuler
               </button>
               <button
                 onClick={confirmerSuppression}
-                className="px-5 py-2 rounded-lg bg-red-500 text-white text-[14px] font-semibold hover:bg-red-600"
+                disabled={suppressionEnCours}
+                className="px-5 py-2 rounded-lg bg-red-500 text-white text-[14px] font-semibold hover:bg-red-600 disabled:opacity-60"
               >
-                Supprimer
+                {suppressionEnCours ? "Suppression…" : "Supprimer"}
               </button>
             </div>
           </div>

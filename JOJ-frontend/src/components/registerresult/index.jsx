@@ -9,15 +9,17 @@ import SaisieCollectif from "./SaisieCollectif";
 import ApercuBoutons from "./ApercuBoutons";
 
 function RegisterResult() {
-  const [ongletActif, setOngletActif] = useState("individuel");
   const [searchParams] = useSearchParams();
   const modeEdition = searchParams.get("mode") === "edition";
 
-  // État partagé remontés ici pour que ApercuBoutons puisse les lire
-  const [epreuve, setEpreuve] = useState("");
-  const [statut,  setStatut]  = useState(modeEdition ? "publie" : "");
+  const [ongletActif, setOngletActif] = useState("individuel");
 
-  // Référence vers les données de saisie (participants ou matchs)
+  // ID de l'événement sélectionné dans le dropdown — partagé avec les enfants
+  const [evenementId,     setEvenementId]     = useState("");
+  const [evenementObjet,  setEvenementObjet]  = useState(null); // objet complet { id, titre, image, … }
+  const [statut,          setStatut]          = useState(modeEdition ? "publie" : "");
+
+  // Données de saisie remontées par les composants enfants
   const [donneesIndividuel, setDonneesIndividuel] = useState(null);
   const [donneesCollectif,  setDonneesCollectif]  = useState(null);
 
@@ -36,25 +38,36 @@ function RegisterResult() {
 
           <div className="flex gap-8">
             <div className="flex-1 min-w-0">
+              {/* Sélection de l'épreuve — contrôlée par evenementId */}
               <EpreuveSelectionnee
                 ongletActif={ongletActif}
                 modeEdition={modeEdition}
-                epreuve={epreuve}
-                setEpreuve={setEpreuve}
+                evenementId={evenementId}
+                setEvenementId={setEvenementId}
+                setEvenementObjet={setEvenementObjet}
                 statut={statut}
                 setStatut={setStatut}
               />
 
+              {/* Saisie : individuel ou collectif — reçoit l'evenementId pour pré-charger les résultats existants */}
               {ongletActif === "individuel" ? (
-                <SaisieIndividuel onDonneesChange={setDonneesIndividuel} />
+                <SaisieIndividuel
+                  evenementId={evenementId}
+                  onDonneesChange={setDonneesIndividuel}
+                />
               ) : (
-                <SaisieCollectif onDonneesChange={setDonneesCollectif} />
+                <SaisieCollectif
+                  evenementId={evenementId}
+                  onDonneesChange={setDonneesCollectif}
+                />
               )}
             </div>
 
+            {/* Panneau droite : résumé + boutons de publication */}
             <ApercuBoutons
               modeEdition={modeEdition}
-              epreuve={epreuve}
+              evenementId={evenementId}
+              evenementObjet={evenementObjet}
               statut={statut}
               ongletActif={ongletActif}
               donneesIndividuel={donneesIndividuel}

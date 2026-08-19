@@ -1,8 +1,7 @@
 // src/components/Sidebar.jsx
 import "./Sidebar.css";
 import JOJlogo from "../../assets/images/JOJlogo.jpg";
-// ❌ SUPPRIMEZ CETTE LIGNE : import { AuthProvider } from "../../contexts/AuthContext";
-import { useAuth } from "../../contexts/AuthContext"; // ✅ AJOUTEZ CECI
+import { useAuth } from "../../contexts/AuthContext"; 
 
 import {
   LayoutDashboard,
@@ -85,6 +84,15 @@ export function Sidebar() {
               <MapPin size={19} />
               <span>Sites</span>
             </NavLink>
+                <NavLink to="admin/categories">
+                    <Tags size={19} />
+                    <span>Catégories</span>
+                </NavLink>
+
+                <NavLink to="/admin/actualites">
+                    <Newspaper size={19} />
+                    <span>Actualités</span>
+                </NavLink>
 
             <NavLink to="/admin/categories">
               <Tags size={19} />

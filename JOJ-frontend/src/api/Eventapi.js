@@ -1,87 +1,77 @@
 const API_URL = "http://127.0.0.1:8000/api";
 
-//recuperer la liste des evenements
+// ── Récupérer la liste des événements (paginée + filtres) ─────────────────────
 export async function getEvents(params = {}) {
+  const queryParams = new URLSearchParams();
 
-    const queryParams = new URLSearchParams();
+  if (params.recherche) queryParams.append("recherche", params.recherche);
+  if (params.site_id)   queryParams.append("site_id",   params.site_id);
+  if (params.page)      queryParams.append("page",      params.page);
 
-    if (params.recherche) {
-        queryParams.append("recherche", params.recherche);
-    }
+  const response = await fetch(
+    `${API_URL}/events/?${queryParams.toString()}`
+  );
 
-    if (params.page) {
-        queryParams.append("page", params.page);
-    }
+  if (!response.ok) {
+    throw new Error("Erreur lors de la récupération des événements");
+  }
 
-    const response = await fetch(
-        `http://127.0.0.1:8000/api/events/?${queryParams.toString()}`
-    );
-
-    if (!response.ok) {
-        throw new Error("Erreur lors de la récupération des événements");
-    }
-
-    return await response.json();
+  return response.json(); // { count, next, previous, results: [...] }
 }
 
-// Récupérer les catégories
+// ── Récupérer les catégories ──────────────────────────────────────────────────
 export async function getCategories() {
-    const response = await fetch(`${API_URL}/categories/`);
+  const response = await fetch(`${API_URL}/categories/`);
 
-    if (!response.ok) {
-        throw new Error(
-            "Erreur lors de la récupération des catégories"
-        );
-    }
+  if (!response.ok) {
+    throw new Error("Erreur lors de la récupération des catégories");
+  }
 
-    return response.json();
+  const data = await response.json();
+  // Normalise : tableau direct ou paginé { results: [...] }
+  return Array.isArray(data) ? data : data.results ?? [];
 }
 
-
-// Récupérer les sites
+// ── Récupérer les sites ───────────────────────────────────────────────────────
 export async function getSites() {
-    const response = await fetch(`${API_URL}/sites/`);
+  const response = await fetch(`${API_URL}/sites/`);
 
-    if (!response.ok) {
-        throw new Error(
-            "Erreur lors de la récupération des sites"
-        );
-    }
+  if (!response.ok) {
+    throw new Error("Erreur lors de la récupération des sites");
+  }
 
-    return response.json();
+  const data = await response.json();
+  // L'endpoint /api/sites/ renvoie { count, results: [...] }
+  return Array.isArray(data) ? data : data.results ?? [];
 }
 
-
-// Récupérer les compétiteurs
+// ── Récupérer les compétiteurs ────────────────────────────────────────────────
 export async function getCompetiteurs() {
-    const response = await fetch(`${API_URL}/competiteurs/`);
+  const response = await fetch(`${API_URL}/competiteurs/`);
 
-    if (!response.ok) {
-        throw new Error(
-            "Erreur lors de la récupération des compétiteurs"
-        );
-    }
+  if (!response.ok) {
+    throw new Error("Erreur lors de la récupération des compétiteurs");
+  }
 
-    return response.json();
+  const data = await response.json();
+  return Array.isArray(data) ? data : data.results ?? [];
 }
 
-
-// Créer un événement
+// ── Créer un événement ────────────────────────────────────────────────────────
 export async function createEvent(eventData) {
-    const response = await fetch(`${API_URL}/events/`, {
-        method: "POST",
-        body: eventData
-    });
+  const token = localStorage.getItem("access_token");
 
-    if (!response.ok) {
-        const errorData = await response.json();
+  const response = await fetch(`${API_URL}/events/`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: eventData, // FormData — ne pas mettre Content-Type manuellement
+  });
 
-        console.error("Erreur backend :", errorData);
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    console.error("Erreur backend :", errorData);
+    throw new Error("Erreur lors de la création de l'événement");
+  }
 
-        throw new Error(
-            "Erreur lors de la création de l'événement"
-        );
-    }
-
-    return response.json();
+  return response.json();
 }
