@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { fetchResultatsParEvenement } from "../../api/resultats";
-import api from "../../api/api";
+import { fetchResultats } from "../../api/resultats";
 
 function CartesStatResultat() {
   const [stats,      setStats]      = useState(null);
@@ -10,9 +9,7 @@ function CartesStatResultat() {
     const charger = async () => {
       setChargement(true);
       try {
-        // Récupère tous les résultats (pas de filtre événement)
-        const { data } = await api.get("/api/resultats/");
-        const tous = Array.isArray(data) ? data : data.results ?? [];
+        const tous = await fetchResultats();
 
         // Le modèle Resultat n'a pas de champ statut en base —
         // on calcule depuis les données disponibles
