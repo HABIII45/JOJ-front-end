@@ -6,6 +6,7 @@ import LoginPage from '../pages/public/LoginPage';
 import RegisterResultPage from '../pages/public/RegisterResultPage';
 import VenteBilletPage from '../pages/public/VenteBilletPage';
 import GestionResultatPage from '../pages/public/GestionResultatPage';
+import ParamsPage from '../pages/public/ParamsPage';
 
 const AppRoutes = () => {
   return (
@@ -16,6 +17,7 @@ const AppRoutes = () => {
       <Route path="/resultats" element={<GestionResultatPage />} />
       <Route path="/payment/summary" element={<PaymentSummary />} />
       <Route path="*" element={<Navigate to="/resultats" replace />} />
+      <Route path="/parametres" element={<ParamsPage />} />
     </Routes>
   );
 };
