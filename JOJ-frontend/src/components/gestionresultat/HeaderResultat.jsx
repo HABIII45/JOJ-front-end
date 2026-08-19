@@ -1,4 +1,31 @@
+import { useAuth } from "../../contexts/AuthContext";
+
 function HeaderResultat() {
+  const { utilisateur } = useAuth();
+
+  const nomAffiche = utilisateur
+    ? `${utilisateur.first_name ?? ""} ${utilisateur.last_name ?? ""}`.trim() ||
+      utilisateur.username ||
+      "Administrateur"
+    : "Administrateur";
+
+  const roleAffiche =
+    utilisateur?.role ??
+    (utilisateur?.is_superuser
+      ? "Super Administrateur"
+      : utilisateur?.is_staff
+      ? "Administrateur"
+      : "Utilisateur");
+
+  const avatarUrl = utilisateur?.avatar ?? null;
+
+  const initiales = nomAffiche
+    .split(" ")
+    .map((m) => m[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
   return (
     <header className="h-[72px] bg-white border-b border-[#e8e9ec]">
       <div className="h-full px-[28px] flex items-center justify-between">
@@ -30,17 +57,19 @@ function HeaderResultat() {
 
           <div className="h-[32px] w-px bg-[#e5e7eb]" />
 
-          {/* Admin */}
+          {/* Utilisateur connecté */}
           <div className="ml-[18px] flex items-center">
             <div className="text-right mr-[10px]">
-              <p className="text-[14px] font-semibold text-[#171717] leading-[14px]">Admin JOJ</p>
-              <p className="text-[12px] text-[#777f8a] mt-[2px]">Super Administrateur</p>
+              <p className="text-[14px] font-semibold text-[#171717] leading-[14px]">{nomAffiche}</p>
+              <p className="text-[12px] text-[#777f8a] mt-[2px]">{roleAffiche}</p>
             </div>
-            <img
-              src="https://i.pravatar.cc/80?img=12"
-              alt="Admin"
-              className="w-[34px] h-[34px] rounded-full object-cover border-[2px] border-[#e66a16]"
-            />
+            <div className="w-[34px] h-[34px] rounded-full overflow-hidden border-[2px] border-[#e66a16] bg-[#fff0e7] flex items-center justify-center shrink-0">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={nomAffiche} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-xs font-bold text-[#d96814]">{initiales}</span>
+              )}
+            </div>
           </div>
 
         </div>

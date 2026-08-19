@@ -14,8 +14,9 @@ import EventDetail from "../pages/public/EventsDetails";
 
 // Pages admin
 import SiteForm from "../pages/admin/SiteForm";
-import FormEvent from "../pages/admin/EventForm";
+
 import { GestionEvents } from "../pages/admin/GestionEvents";
+import { FormEvent } from "../pages/admin/EventForm";
 
 const AppRoutes = () => {
   return (
@@ -41,6 +42,8 @@ const AppRoutes = () => {
       <Route path="/events" element={<GestionEvents />} />
       <Route path="/events/create" element={<FormEvent />} />
       <Route path="/events/:id" element={<EventDetail />} />
+      <Route path="/events/:id/edit" element={<FormEvent />} />
+
 
       {/* Paramètres */}
       <Route path="/parametres" element={<ParamsPage />} />

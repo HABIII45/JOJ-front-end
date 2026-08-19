@@ -57,6 +57,28 @@ export const ENDPOINTS = {
     /** GET  /api/payments/:id/    — résumé d'un paiement */
     detail:  (id) => `/api/payments/${id}/`,
   },
+  evenements: {
+    /** GET  /api/events/          — liste des événements */
+    liste:   "/api/events/",
+    /** GET  /api/events/:id/      — détail */
+    detail:  (id) => `/api/events/${id}/`,
+  },
+  resultats: {
+    /** GET/POST /api/resultats/   — liste et création */
+    liste:        "/api/resultats/",
+    /** GET/PUT/DELETE /api/resultats/:id/ */
+    detail:        (id) => `/api/resultats/${id}/`,
+    /** GET /api/resultats/?evenement=:id */
+    parEvenement:  (id) => `/api/resultats/?evenement=${id}`,
+  },
+  joueurs: {
+    liste:  "/api/joueurs/",
+    detail: (id) => `/api/joueurs/${id}/`,
+  },
+  equipes: {
+    liste:  "/api/equipes/",
+    detail: (id) => `/api/equipes/${id}/`,
+  },
 };
 
 export default api;
