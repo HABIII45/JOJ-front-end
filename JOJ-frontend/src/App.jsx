@@ -10,6 +10,8 @@ import Dashboard from "./pages/admin/Dashboard";
 import Disciplines from "./pages/admin/Games";
 import AdminSites from "./pages/admin/AdminSites";
 import SiteDetail from "./pages/admin/SitesDetail";
+import Utilisateurs from "./pages/admin/Users";
+import Home from "./pages/public/Home";
 export default function App() {
   return (
     <BrowserRouter>
@@ -18,6 +20,8 @@ export default function App() {
         <Route path={"/disciplines"} element={<Disciplines />} />
         <Route path={"/sites"} element={<AdminSites />} />
         <Route path="/sites/:id" element={<SiteDetail />} />
+        <Route path={"/utilisateurs"} element={<Utilisateurs/>} />
+        <Route path={"/"} element={<Home/>} />
       </Routes>
     </BrowserRouter>
   );
