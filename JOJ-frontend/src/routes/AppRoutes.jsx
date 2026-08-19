@@ -9,6 +9,8 @@ import GestionResultatPage from '../pages/public/GestionResultatPage';
 import Sites from '../pages/public/Site';
 import DetailSite from '../pages/public/DetailSite';
 import SiteForm from '../pages/admin/SiteForm';
+import ParamsPage from '../pages/public/ParamsPage';
+
 const AppRoutes = () => {
   return (
     <Routes>
@@ -21,6 +23,7 @@ const AppRoutes = () => {
       <Route path='/sites' element = {<Sites/>}></Route>
       <Route path='/sites/:id' element = {<DetailSite/>}></Route>
       <Route path='/sites/ajout' element = {<SiteForm/>}></Route>
+      <Route path="/parametres" element={<ParamsPage />} />
     </Routes>
   );
 };
