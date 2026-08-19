@@ -14,6 +14,49 @@ export const createGamer = async (payload) => {
 };
 
 
+// Retrieving gamers list
+export const getGamers = async() => {
+    try{
+        const response = await axios.get(GAMER_URL);
+        return response.data
+    }catch(error){
+        console.error("Error lors de la récupération des compétiteurs", error)
+        throw error
+    }
+}
+
+
+// Updating a gamer
+export const updateGamer = async(id, payload) => {
+    try{
+        const response = await axios.patch(`${GAMER_URL}${id}`, payload);        
+        return response.data
+    }catch(error){
+        console.error("Error lors d el mise à jour de ce compétiteur" + error)
+        throw error
+    }
+
+}
+
+
+//Deleting a gamer 
+export const deleteGamer = async(id) => {
+    try{
+        const response = await axios.delete(`${GAMER_URL}${id}`)
+        return response.data
+    }catch(error){
+        console.error("Error lors de la suppression de ce cmpétiteur" + error)
+        throw error
+    }
+
+
+
+}
+
+
+
+
+
 
 // Retrieving categories list
 
