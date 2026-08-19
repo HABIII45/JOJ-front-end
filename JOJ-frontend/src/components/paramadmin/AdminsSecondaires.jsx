@@ -1,5 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { fetchAdminsSecondaires, revoquerAccesAdmin } from "../../api/auth";
+import { useAuth } from "../../contexts/useAuth";
+import { isSuperAdmin } from "../../utils/permissions";
 
 const IconEditer = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -35,6 +38,10 @@ const connexionAdmin = (a) => {
 };
 
 function AdminsSecondaires() {
+  const navigate = useNavigate();
+  const { utilisateur } = useAuth();
+  const superAdmin = isSuperAdmin(utilisateur);
+
   const [admins,      setAdmins]      = useState([]);
   const [chargement,  setChargement]  = useState(true);
   const [erreur,      setErreur]      = useState("");
@@ -42,6 +49,8 @@ function AdminsSecondaires() {
   const [enCours,     setEnCours]     = useState(false);
 
   const chargerAdmins = useCallback(async () => {
+    // Si l'utilisateur n'est pas superadmin, on ne lance pas la requête
+    if (!superAdmin) return;
     setChargement(true);
     setErreur("");
     try {
@@ -52,9 +61,18 @@ function AdminsSecondaires() {
     } finally {
       setChargement(false);
     }
-  }, []);
+  }, [superAdmin]);
 
-  useEffect(() => { chargerAdmins(); }, [chargerAdmins]);
+  useEffect(() => {
+    if (superAdmin) {
+      chargerAdmins();
+    }
+  }, [superAdmin, chargerAdmins]);
+
+  // Si l'utilisateur connecté n'est pas superadministrateur, cette section est masquée
+  if (!superAdmin) {
+    return null;
+  }
 
   const confirmerRevocation = async () => {
     setEnCours(true);
@@ -62,7 +80,7 @@ function AdminsSecondaires() {
       await revoquerAccesAdmin(aRevoquer);
       // Met à jour l'état local : is_active → false
       setAdmins((prev) =>
-        prev.map((a) => a.id === aRevoquer ? { ...a, is_active: false } : a)
+        prev.map((a) => (a.id === aRevoquer ? { ...a, is_active: false } : a))
       );
     } catch (err) {
       setErreur(err?.response?.data?.erreur ?? "Échec de la révocation. Veuillez réessayer.");
@@ -90,7 +108,11 @@ function AdminsSecondaires() {
             <h2 className="m-0 text-lg font-semibold">Administrateurs</h2>
           </div>
 
-          <button className="flex items-center gap-[6px] text-sm text-[#d96814] font-semibold hover:underline cursor-pointer">
+          <button
+            type="button"
+            onClick={() => navigate("/parametres/ajouter-admin")}
+            className="flex items-center gap-[6px] text-sm text-[#d96814] font-semibold hover:underline cursor-pointer"
+          >
             <span className="w-[14px] h-[14px] rounded-full bg-[#d96814] text-white flex items-center justify-center text-xs font-bold">+</span>
             Ajouter un administrateur
           </button>

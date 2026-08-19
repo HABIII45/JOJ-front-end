@@ -21,6 +21,8 @@ export const AUTH_ENDPOINTS = {
   utilisateurs:      "/api/utilisateurs/utilisateurs/",
   revoquerAcces:     (id) => `/api/utilisateurs/revoquer-acces/${id}/`,
   reactiverAcces:    (id) => `/api/utilisateurs/reactiver-acces/${id}/`,
+  creerAdmin:        "/api/utilisateurs/creer-admin/",
+  creerSuperAdmin:   "/api/utilisateurs/creer-superadmin/",
 };
 
 // ── Helpers stockage tokens ──────────────────────────────────────────────────
@@ -157,3 +159,24 @@ export async function reactiverAccesAdmin(id) {
   const { data } = await api.post(AUTH_ENDPOINTS.reactiverAcces(id));
   return data;
 }
+
+/**
+ * Crée un nouvel administrateur avec des permissions spécifiques (réservé aux superadmins).
+ * @param {Object} donnees { username, email, first_name, last_name, tel, password, password2, permissions_app }
+ * @returns {Promise<Object>}
+ */
+export async function creerAdmin(donnees) {
+  const { data } = await api.post(AUTH_ENDPOINTS.creerAdmin, donnees);
+  return data;
+}
+
+/**
+ * Crée un nouveau super-administrateur (réservé aux superadmins).
+ * @param {Object} donnees { username, email, first_name, last_name, tel, password, password2 }
+ * @returns {Promise<Object>}
+ */
+export async function creerSuperAdmin(donnees) {
+  const { data } = await api.post(AUTH_ENDPOINTS.creerSuperAdmin, donnees);
+  return data;
+}
+

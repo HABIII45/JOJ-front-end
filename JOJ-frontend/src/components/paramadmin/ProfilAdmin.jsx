@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../contexts/useAuth";
 import { updateProfil, uploadAvatar } from "../../api/auth";
+import { getPermissionsList, isSuperAdmin, PERMISSION_LABELS } from "../../utils/permissions";
 
 /** Construit le nom affiché depuis les vrais champs Django */
 const nomDepuisUser = (u) => {
@@ -249,6 +250,57 @@ function ProfilAdmin() {
                 />
               </div>
 
+            </div>
+          </div>
+
+          {/* Section Rôle et Droits d'accès */}
+          <div className="mt-5 pt-4 border-t border-[#edf0f2]">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="m-0 text-xs font-bold uppercase tracking-[0.05em] text-[#626c79]">
+                  Rôle & Droits d'accès attribués
+                </p>
+                <p className="m-0 mt-0.5 text-[0.7rem] text-[#8e98a5]">
+                  {isSuperAdmin(utilisateur)
+                    ? "En tant que Super Administrateur, vous disposez de tous les droits sur la plateforme."
+                    : "Voici les modules et fonctionnalités auxquels vous avez accès :"}
+                </p>
+              </div>
+              <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
+                isSuperAdmin(utilisateur) ? "bg-[#fff0e7] text-[#d96814] border border-[#fddac4]" : "bg-blue-50 text-blue-700 border border-blue-200"
+              }`}>
+                {roleAffiche}
+              </span>
+            </div>
+
+            {/* Badges des permissions */}
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {isSuperAdmin(utilisateur) ? (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#fff7f2] border border-[#fbd4bc] text-xs font-semibold text-[#d96814]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#d96814]" />
+                  Accès Total (Toutes les permissions)
+                </span>
+              ) : (
+                (() => {
+                  const perms = getPermissionsList(utilisateur);
+                  if (perms.length === 0) {
+                    return (
+                      <span className="text-xs text-gray-500 italic">
+                        Aucun droit spécifique supplémentaire attribué (Accès Dashboard & Paramètres).
+                      </span>
+                    );
+                  }
+                  return perms.map((p) => (
+                    <span
+                      key={p}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#f4f6f9] border border-[#e2e7ec] text-xs font-semibold text-[#2c3e50]"
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#2875db]" />
+                      {PERMISSION_LABELS[p] || p}
+                    </span>
+                  ));
+                })()
+              )}
             </div>
           </div>
 

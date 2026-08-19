@@ -20,6 +20,7 @@ import SiteDetail         from "../pages/admin/SitesDetail";
 import SiteForm           from "../pages/admin/SiteForm";
 import GestionEvents      from "../pages/admin/GestionEvents";
 import FormEvent          from "../pages/admin/EventForm";
+import AjoutAdminPage     from "../pages/admin/AjoutAdminPage";
 
 const AppRoutes = () => {
   return (
@@ -42,8 +43,10 @@ const AppRoutes = () => {
       {/* Événements publics */}
       <Route path="/evenements"        element={<Events />} />
 
-      {/* Paramètres */}
-      <Route path="/parametres"        element={<ParamsPage />} />
+      {/* Paramètres & Gestion admin */}
+      <Route path="/parametres"               element={<ParamsPage />} />
+      <Route path="/parametres/ajouter-admin" element={<AjoutAdminPage />} />
+      <Route path="/admin/ajouter-admin"      element={<AjoutAdminPage />} />
 
       {/* ── Admin ── */}
       <Route path="/dashboard"         element={<Dashboard />} />
