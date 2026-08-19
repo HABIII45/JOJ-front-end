@@ -25,3 +25,13 @@ export const getSpecificSite = async (id) =>{
 
 }
 
+// Creating a site
+export const createSite = async (payload) => { 
+    try {
+        const response = await axios.post(SITE_URL, payload);
+        return response.data;
+    } catch (error) {
+        console.error("Erreur lors de la création du site :", error);
+        throw error;
+    }
+};
