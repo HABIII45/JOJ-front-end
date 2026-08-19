@@ -5,21 +5,21 @@
  */
 
 export const IMAGES = {
-  mascotte: "/manus-storage/mascotte_lion_953015d2.png",
-  evAthletisme: "/manus-storage/ev_athletisme_eb1ce2da.jpg",
-  evFootball: "/manus-storage/ev_football_3916ad59.jpg",
-  evBoxe: "/manus-storage/ev_boxe_9915d0e0.jpg",
-  siteIbaMar: "/manus-storage/site_iba_mar_24a1dd9b.jpg",
-  siteDakarArena: "/manus-storage/site_dakar_arena_bf9c04da.jpg",
-  siteSaly: "/manus-storage/site_saly_de87c335.jpg",
-  discAthletisme: "/manus-storage/disc_athletisme_3f583514.jpg",
-  discBasket: "/manus-storage/disc_basket_b677790a.jpg",
-  discFootball: "/manus-storage/disc_football_43906f01.jpg",
-  discJudo: "/manus-storage/disc_judo_add68000.jpg",
-  newsClassement: "/manus-storage/news_classement_37b66b0a.jpg",
-  newsAcces: "/manus-storage/news_acces_cd449771.jpg",
-  newsProgramme: "/manus-storage/news_programme_58526905.jpg",
-  newsOrientation: "/manus-storage/news_orientation_5a2413b6.jpg",
+  mascotte:"/JOJ-frontend/src/assets/images/image.png",
+  evAthletisme: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=600&q=80",
+  evFootball: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80",
+  evBoxe: "https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=600&q=80",
+  siteIbaMar: "https://images.unsplash.com/photo-1577223625816-7546f13df25d?auto=format&fit=crop&w=800&q=80",
+  siteDakarArena: "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=800&q=80",
+  siteSaly: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+  discAthletisme: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=400&q=80",
+  discBasket: "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=400&q=80",
+  discFootball: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=400&q=80",
+  discJudo: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=400&q=80",
+  newsClassement: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80",
+  newsAcces: "https://images.unsplash.com/photo-1471295253337-4ceaaed65897?auto=format&fit=crop&w=800&q=80",
+  newsProgramme: "https://images.unsplash.com/photo-1508801239166-4335a0796937?auto=format&fit=crop&w=800&q=80",
+  newsOrientation: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80",
 };
 
 export const evenementsDemo = [

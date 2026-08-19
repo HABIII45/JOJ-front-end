@@ -2,6 +2,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 
 // ── Pages publiques ──────────────────────────────────────────────────────────
+import Home               from "../pages/public/Home";
 import LoginPage          from "../pages/public/LoginPage";
 import Events             from "../pages/public/Events";
 import EventDetail        from "../pages/public/EventsDetails";
@@ -12,6 +13,7 @@ import GestionResultatPage from "../pages/public/GestionResultatPage";
 import Sites              from "../pages/public/Site";
 import DetailSite         from "../pages/public/DetailSite";
 import ParamsPage         from "../pages/public/ParamsPage";
+import { DisciplinesGame } from "../pages/public/Game";
 
 // ── Pages admin ──────────────────────────────────────────────────────────────
 import Dashboard          from "../pages/admin/Dashboard";
@@ -38,7 +40,9 @@ const AppRoutes = () => {
   return (
     <Routes>
       {/* ── Accueil & Public ── */}
-      <Route path="/" element={<Navigate to="/events" replace />} />
+      <Route path="/" element={<Home />} />
+      <Route path="/disciplines" element={<DisciplinesGame />} />
+      <Route path="/jeux" element={<DisciplinesGame />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register-result" element={<RegisterResultPage />} />
       <Route path="/ventbillet" element={<VenteBilletPage />} />
