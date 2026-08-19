@@ -3,9 +3,20 @@ import JOJlogo from "../../assets/images/JOJlogo.jpg";
 
 import {LayoutDashboard,CalendarDays,Trophy,MapPin,Tags,Newspaper,Ticket,Users,UserRound,Medal,Settings,LogOut} from "lucide-react";
 
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
+
+// Pages considérées comme sous-pages de "Résultats"
+const routesResultats = ["/resultats", "/register-result"];
+
+// Pages considérées comme sous-pages de "Billets"
+const routesBillets = ["/ventbillet"];
 
 export function Sidebar() {
+    const location = useLocation();
+
+    const isResultatsActif = routesResultats.some((r) => location.pathname.startsWith(r));
+    const isBilletsActif   = routesBillets.some((r) => location.pathname.startsWith(r));
+
     return (
         <div className="sidebar">
 
@@ -22,7 +33,7 @@ export function Sidebar() {
                     <span>Dashboard</span>
                 </NavLink>
 
-                <NavLink to="/evenements">
+                <NavLink to="/events">
                     <CalendarDays size={19} />
                     <span>Événements</span>
                 </NavLink>
@@ -37,17 +48,20 @@ export function Sidebar() {
                     <span>Sites</span>
                 </NavLink>
 
-                <NavLink to="/categories">
+                <NavLink to="admin/categories">
                     <Tags size={19} />
                     <span>Catégories</span>
                 </NavLink>
 
-                <NavLink to="/actualites">
+                <NavLink to="/admin/actualites">
                     <Newspaper size={19} />
                     <span>Actualités</span>
                 </NavLink>
 
-                <NavLink to="/billets">
+                <NavLink
+                    to="/ventbillet"
+                    className={isBilletsActif ? "active" : ""}
+                >
                     <Ticket size={19} />
                     <span>Billets</span>
                 </NavLink>
@@ -62,7 +76,10 @@ export function Sidebar() {
                     <span>Équipes</span>
                 </NavLink>
 
-                <NavLink to="/resultats">
+                <NavLink
+                    to="/resultats"
+                    className={isResultatsActif ? "active" : ""}
+                >
                     <Medal size={19} />
                     <span>Résultats</span>
                 </NavLink>

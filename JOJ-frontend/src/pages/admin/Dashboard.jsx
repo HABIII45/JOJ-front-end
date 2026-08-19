@@ -38,13 +38,7 @@ export default function Dashboard() {
             Voici les statistiques clés de JOJ Events en temps réel.
           </p>
         </div>
-        <button
-          onClick={() => setCreerOuvert(!creerOuvert)}
-          className="inline-flex items-center gap-2 bg-[#C25B1E] hover:bg-[#A04816] text-white rounded-full px-5 py-2.5 text-xs font-bold transition-all shadow-sm active:scale-95"
-        >
-          <Plus className="w-4 h-4" />
-          Créer un événement
-        </button>
+
       </div>
 
       {/* Grid des cartes KPI */}
