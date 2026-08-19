@@ -11,6 +11,10 @@ import DetailSite from "../pages/public/DetailSite";
 import ParamsPage from "../pages/public/ParamsPage";
 import Events from "../pages/public/Events";
 import EventDetail from "../pages/public/EventsDetails";
+     import Dashboard from "./pages/admin/Dashboard";
+import Disciplines from "./pages/admin/Games";
+import AdminSites from "./pages/admin/AdminSites";
+import SiteDetail from "./pages/admin/SitesDetail";
 
 // Pages admin
 import SiteForm from "../pages/admin/SiteForm";
@@ -50,6 +54,11 @@ const AppRoutes = () => {
 
       {/* Route inconnue */}
       <Route path="*" element={<Navigate to="/resultats" replace />} />
+      {/* site admin */}
+       <Route path="/dashboard" element={<Dashboard />} />
+        <Route path={"/disciplines"} element={<Disciplines />} />
+        <Route path={"/sites"} element={<AdminSites />} />
+        <Route path="/sites/:id" element={<SiteDetail />} />
     </Routes>
   );
 };
