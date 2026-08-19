@@ -1,0 +1,134 @@
+
+
+.sidebar {
+    width: 240px;
+    height: 100vh;
+
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    box-sizing: border-box;
+
+    padding: 0 15px;
+
+    background-color: #111111;
+    color: white;
+
+    
+}
+
+
+
+
+.sidebar-logo {
+    width: 100%;
+    height: 120px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 25px;
+}
+
+.sidebar-logo img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: contain;
+
+    display: block;
+}
+
+
+
+
+.navigation {
+    display: flex;
+    flex-direction: column;
+
+    gap: 6px;
+}
+
+.navigation a,
+.sidebar-bottom a {
+    width: 100%;
+    height: 45px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 13px;
+
+    padding: 0 15px;
+
+    box-sizing: border-box;
+
+    border-radius: 8px;
+
+    color: #cfcfcf;
+
+    text-decoration: none;
+
+    font-size: 14px;
+    font-weight: 500;
+
+    transition: 0.2s ease;
+}
+
+
+
+
+.navigation a svg,
+.sidebar-bottom a svg {
+    flex-shrink: 0;
+}
+
+
+
+
+.navigation a:hover,
+.sidebar-bottom a:hover {
+    background-color: #222222;
+    color: white;
+}
+
+
+
+.navigation a.active,
+.sidebar-bottom a.active {
+    background-color: #f28c28;
+    color: white;
+
+    font-weight: 600;
+}
+
+
+
+
+.sidebar-bottom {
+    margin-top: auto;
+
+    padding-bottom: 20px;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 6px;
+}
+
+
+
+
+.sidebar-separator {
+    width: 100%;
+    height: 1px;
+
+    background-color: #333333;
+
+    margin-bottom: 15px;
+}

@@ -1,9 +1,17 @@
-import { BrowserRouter } from 'react-router-dom'
-import AppRoutes from './AppRoutes'
-export default function App() {
+
+// import { Footer } from "./components/layout/Footer"
+// import { Header } from "./components/layout/Header"
+// import { Sidebar } from "./components/layout/Sidebar"
+import AppRoutes from "./routes/AppRoutes";
+
+function App() {
   return (
-  <BrowserRouter>
-      <AppRoutes></AppRoutes>
-  </BrowserRouter>
-  )
+    <>
+      {/* <Header /> */}
+      <AppRoutes />
+      {/* <Footer /> */}
+    </>
+  );
 }
+
+
