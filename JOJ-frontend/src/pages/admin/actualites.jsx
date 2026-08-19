@@ -323,7 +323,9 @@ export default function CreerActualite() {
 
                     <button
                       type="button"
-                      onClick={ajouterLien}
+                      onClick={() =>
+                        execCommand("createLink")
+                      }
                     >
                       <FiLink />
                     </button>
