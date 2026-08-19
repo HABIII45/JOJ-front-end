@@ -4,7 +4,7 @@
 // import { Sidebar } from "./components/layout/Sidebar"
 import AppRoutes from "./routes/AppRoutes";
 
-function App() {
+export default function App() {
   return (
     <>
 
