@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../contexts/useAuth";
 import { updateProfil, uploadAvatar } from "../../api/auth";
 
 /** Construit le nom affiché depuis les vrais champs Django */
