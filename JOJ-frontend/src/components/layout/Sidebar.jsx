@@ -33,7 +33,7 @@ export function Sidebar() {
                     <span>Dashboard</span>
                 </NavLink>
 
-                <NavLink to="/evenements">
+                <NavLink to="/events">
                     <CalendarDays size={19} />
                     <span>Événements</span>
                 </NavLink>
@@ -48,12 +48,12 @@ export function Sidebar() {
                     <span>Sites</span>
                 </NavLink>
 
-                <NavLink to="/categories">
+                <NavLink to="admin/categories">
                     <Tags size={19} />
                     <span>Catégories</span>
                 </NavLink>
 
-                <NavLink to="/actualites">
+                <NavLink to="/admin/actualites">
                     <Newspaper size={19} />
                     <span>Actualités</span>
                 </NavLink>
