@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createGamer, getCategories } from '../../services/competiteur';
-
+import AdminLayout from '../../components/layouts/AdminLayout';
 const CompetiteurForm = () => {
   const [teamType, setTeamType] = useState('individuel');
   const [formData, setFormData] = useState({
@@ -77,6 +77,7 @@ const CompetiteurForm = () => {
   };
 
   return (
+  <> <AdminLayout/> 
     <div className="min-h-screen bg-gray-50 py-8">
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
         <h1 className="text-3xl font-bold text-center mb-8">Créer une nouvelle équipe</h1>
@@ -182,6 +183,7 @@ const CompetiteurForm = () => {
         </div>
       </main>
     </div>
+    </>
   );
 };
 
