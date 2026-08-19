@@ -83,7 +83,7 @@ export function getUserPermissions(identifier) {
     const registry = raw ? JSON.parse(raw) : {};
     const key = String(identifier).toLowerCase().trim();
     return registry[key] || [];
-  } catch (e) {
+  } catch {
     return [];
   }
 }
@@ -96,10 +96,25 @@ export function getUserPermissions(identifier) {
 export function isSuperAdmin(user) {
   if (!user) return false;
   if (user.is_superuser === true) return true;
-  if (user.role === ROLES.SUPERADMIN || user.role === "Super-administrateur" || user.role === "Super Administrateur") return true;
-  
-  const perms = getPermissionsList(user);
-  if (perms.includes(PERMISSIONS.TOUT)) return true;
+
+  const roleStr = String(user.role || "").toLowerCase().trim();
+  if (
+    roleStr === "superadmin" ||
+    roleStr === "super_admin" ||
+    roleStr === "super-administrateur" ||
+    roleStr === "super administrateur" ||
+    roleStr === "super admin"
+  ) {
+    return true;
+  }
+
+  // Vérifie si TOUT est présent dans les permissions
+  if (Array.isArray(user.permissions_app) && user.permissions_app.includes(PERMISSIONS.TOUT)) {
+    return true;
+  }
+  if (Array.isArray(user.permissions) && user.permissions.includes(PERMISSIONS.TOUT)) {
+    return true;
+  }
 
   return false;
 }
@@ -111,30 +126,37 @@ export function isSuperAdmin(user) {
  */
 export function getPermissionsList(user) {
   if (!user) return [];
-  if (user.is_superuser === true || user.role === ROLES.SUPERADMIN || user.role === "Super-administrateur" || user.role === "Super Administrateur") {
+  if (isSuperAdmin(user)) {
     return [PERMISSIONS.TOUT];
   }
 
-  // 1. Permissions directes depuis l'objet utilisateur
-  if (Array.isArray(user.permissions_app) && user.permissions_app.length > 0) {
-    return user.permissions_app;
+  const perms = new Set();
+
+  // 1. Directement depuis user.permissions_app
+  if (Array.isArray(user.permissions_app)) {
+    user.permissions_app.forEach((p) => perms.add(String(p).toUpperCase()));
   }
 
-  // 2. Recherche dans le registre local via username, email ou id
+  // 2. Directement depuis user.permissions
+  if (Array.isArray(user.permissions)) {
+    user.permissions.forEach((p) => perms.add(String(p).toUpperCase()));
+  }
+
+  // 3. Registre persistant local via username, email ou id
   const fromUsername = user.username ? getUserPermissions(user.username) : [];
-  if (fromUsername.length > 0) return fromUsername;
+  fromUsername.forEach((p) => perms.add(String(p).toUpperCase()));
 
   const fromEmail = user.email ? getUserPermissions(user.email) : [];
-  if (fromEmail.length > 0) return fromEmail;
+  fromEmail.forEach((p) => perms.add(String(p).toUpperCase()));
 
   const fromId = user.id ? getUserPermissions(user.id) : [];
-  if (fromId.length > 0) return fromId;
+  fromId.forEach((p) => perms.add(String(p).toUpperCase()));
 
-  return [];
+  return Array.from(perms);
 }
 
 /**
- * Vérifie si un utilisateur a une permission donnée
+ * Vérifie si un utilisateur a une permission donnée (stricte et sans confusion entre modules)
  * @param {Object|null} user 
  * @param {string|string[]} permission - Une permission ou un tableau de permissions
  * @returns {boolean}
@@ -146,8 +168,14 @@ export function hasPermission(user, permission) {
   const userPerms = getPermissionsList(user);
   if (userPerms.includes(PERMISSIONS.TOUT)) return true;
 
+  const verifierUnePermission = (pReq) => {
+    const pNorm = String(pReq).toUpperCase().trim();
+    return userPerms.includes(pNorm);
+  };
+
   if (Array.isArray(permission)) {
-    return permission.some((p) => userPerms.includes(p));
+    return permission.some((p) => verifierUnePermission(p));
   }
-  return userPerms.includes(permission);
+
+  return verifierUnePermission(permission);
 }

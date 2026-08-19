@@ -1,30 +1,25 @@
-function TitreVente() {
+import React from "react";
+import { Download } from "lucide-react";
+
+function TitreVente({ totalBillets = 0, onExport }) {
   return (
-    <section className="flex items-end justify-between">
+    <section className="flex items-center justify-between">
       <div>
-        <h1 className="text-[30px] leading-[34px] font-extrabold tracking-[-0.8px] text-[#101216]">
-          Gestion des Ventes de Billets
+        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+          Ventes & Billetterie
         </h1>
-        <p className="mt-[5px] text-[15px] leading-[17px] text-[#707782]">
-          Suivez les revenus et l'engagement de vos participants en temps réel.
+        <p className="text-xs text-gray-400 mt-1">
+          Suivez les ventes de billets, les revenus et les transactions en temps réel ({totalBillets} billet{totalBillets > 1 ? "s" : ""} enregistré{totalBillets > 1 ? "s" : ""}).
         </p>
       </div>
 
-      <div className="flex items-center gap-[10px]">
-        {/* Filtrer */}
-        <button className="h-[38px] cursor-pointer px-[16px] rounded-[7px] bg-[#f0f1f3] text-[13px] font-medium text-[#4b5563] flex items-center gap-[8px]">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" className="text-[#68717d]">
-            <path d="M3 5h18l-7 8v5l-4 2v-7L3 5z" />
-          </svg>
-          Filtrer par événement
-        </button>
-
-        {/* Exporter */}
-        <button className="h-[38px] px-[17px] cursor-pointer rounded-[7px] bg-[#e86b16] text-white text-[13px] font-semibold flex items-center gap-[8px]">
-          <span className="text-[18px] leading-none">+</span>
-          Exporter les ventes
-        </button>
-      </div>
+      <button
+        onClick={onExport}
+        className="h-10 px-5 rounded-2xl bg-[#C25B1E] hover:bg-[#A04816] text-white text-xs font-bold transition-all flex items-center gap-2 shadow-sm cursor-pointer"
+      >
+        <Download size={14} />
+        Exporter le rapport
+      </button>
     </section>
   );
 }

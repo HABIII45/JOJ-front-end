@@ -43,9 +43,32 @@ export const RESULTATS_ENDPOINTS = {
 
 // ── Événements ───────────────────────────────────────────────────────────────
 
-export async function fetchEvenements() {
+export async function fetchEvenements(recupererTout = true) {
   const { data } = await api.get(RESULTATS_ENDPOINTS.evenements);
-  return Array.isArray(data) ? data : data.results ?? [];
+  if (Array.isArray(data)) {
+    data.totalCount = data.length;
+    return data;
+  }
+
+  let tous = [...(data.results ?? [])];
+  tous.totalCount = typeof data.count === "number" ? data.count : tous.length;
+
+  if (recupererTout && data.next) {
+    let nextUrl = data.next;
+    while (nextUrl) {
+      try {
+        const resp = await api.get(nextUrl);
+        const nextData = resp.data;
+        const lot = Array.isArray(nextData) ? nextData : nextData.results ?? [];
+        tous = tous.concat(lot);
+        nextUrl = nextData.next;
+      } catch {
+        break;
+      }
+    }
+  }
+
+  return tous;
 }
 
 export async function fetchEvenement(id) {

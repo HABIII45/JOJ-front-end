@@ -1,142 +1,261 @@
-const IconEditer = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M12 20h9" />
-    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z" />
-  </svg>
-);
+import React, { useState, useMemo } from "react";
+import { Search, Filter, Trash2, Eye, QrCode, X, Ticket } from "lucide-react";
+import api from "../../api/api";
 
-const IconVoir = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" />
-    <circle cx="12" cy="12" r="2.5" />
-  </svg>
-);
+const STYLE_STATUT = {
+  VALIDE: "bg-emerald-100/60 text-emerald-600 font-bold",
+  UTILISE: "bg-blue-100/60 text-blue-600 font-bold",
+  EN_ATTENTE: "bg-amber-100/60 text-amber-600 font-bold",
+  EXPIRE: "bg-gray-100 text-gray-600 font-bold",
+  ANNULE: "bg-rose-100/60 text-rose-600 font-bold",
+};
 
-const IconSupprimer = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M4 7h16" />
-    <path d="M10 11v6" />
-    <path d="M14 11v6" />
-    <path d="M6 7l1 14h10l1-14" />
-    <path d="M9 7V4h6v3" />
-  </svg>
-);
+const LIBELLE_STATUT = {
+  VALIDE: "Confirmé",
+  UTILISE: "Utilisé",
+  EN_ATTENTE: "En attente",
+  EXPIRE: "Expiré",
+  ANNULE: "Annulé",
+};
 
-const colsGrid = "grid-cols-[1.55fr_1.45fr_.75fr_.9fr_1.2fr_1fr_.7fr]";
+function TableauTransactions({ billets = [], onRafraichir }) {
+  const [recherche, setRecherche] = useState("");
+  const [filtreStatut, setFiltreStatut] = useState("tous");
+  const [billetSelectionne, setBilletSelectionne] = useState(null);
 
-const transactions = [
-  {
-    id: 1,
-    avatar: "https://i.pravatar.cc/50?img=47",
-    nomLigne1: "Aminata",
-    nomLigne2: "Diallo",
-    evenement: "Basketball — Finale",
-    type: "VIP",
-    typeCouleur: "bg-[#edf4ff] text-[#3678c9]",
-    typeW: "w-[34px]",
-    prix: ["50.000", "FCFA"],
-    date: ["12 oct 2026,", "14:30"],
-    statut: "Confirmé",
-    statutCouleur: "bg-[#dff8e8] text-[#23a45c]",
-    statutW: "w-[62px]",
-  },
-  {
-    id: 2,
-    avatar: "https://i.pravatar.cc/50?img=44",
-    nomLigne1: "Fatou Ndiaye",
-    nomLigne2: null,
-    evenement: "Tournoi amical U15",
-    type: "Standard",
-    typeCouleur: "bg-[#f1f2f4] text-[#555b63]",
-    typeW: "w-[51px]",
-    prix: ["5.000 FCFA"],
-    date: ["11 oct 2026, 18:45"],
-    statut: "En attente",
-    statutCouleur: "bg-[#fff0df] text-[#e88127]",
-    statutW: "w-[72px]",
-  },
-];
+  const billetsFiltres = useMemo(() => {
+    return billets.filter((b) => {
+      if (filtreStatut !== "tous" && b.statut !== filtreStatut) {
+        return false;
+      }
+      if (recherche.trim()) {
+        const q = recherche.toLowerCase().trim();
+        const client = (b.spectateur_nom || `${b.spectateur?.prenom ?? ""} ${b.spectateur?.nom ?? ""}`).toLowerCase();
+        const ev = (b.evenement_titre || b.evenement?.titre || "").toLowerCase();
+        const code = (b.code_unique || "").toLowerCase();
+        return client.includes(q) || ev.includes(q) || code.includes(q);
+      }
+      return true;
+    });
+  }, [billets, recherche, filtreStatut]);
 
-function TableauTransactions() {
+  const supprimerBillet = async (b) => {
+    if (!window.confirm(`Supprimer le billet #${b.id} ? Cette action est irréversible.`)) {
+      return;
+    }
+    try {
+      await api.delete(`/api/tickets/${b.id}/`);
+      if (onRafraichir) onRafraichir();
+    } catch (err) {
+      console.error("Erreur suppression billet:", err);
+      alert("Erreur lors de la suppression du billet.");
+    }
+  };
+
   return (
-    <section className="mt-[21px] rounded-[21px] border border-[#e3e5e8] bg-white overflow-hidden">
+    <section className="mt-6 rounded-3xl border border-gray-100 bg-white p-6 shadow-sm overflow-hidden">
+      {/* En-tête du tableau */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <h2 className="text-lg font-bold text-gray-900">
+            Dernières Transactions de Billetterie
+          </h2>
+          <p className="text-xs text-gray-400 mt-0.5">
+            Historique des commandes et réservations ({billetsFiltres.length} affichée{billetsFiltres.length > 1 ? "s" : ""})
+          </p>
+        </div>
 
-      {/* Titre */}
-      <div className="h-[60px] px-[23px] flex items-center justify-between">
-        <h2 className="text-[18px] font-semibold text-[#191b20]">Dernières Transactions</h2>
-        <button className="h-[30px] px-[13px] rounded-[6px] bg-[#f2f3f5] text-[12px] text-[#4b5563] flex items-center gap-[6px]">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2">
-            <path d="M3 5h18l-7 8v5l-4 2v-7L3 5z" />
-          </svg>
-          Filtrer
-        </button>
+        <div className="flex items-center gap-3">
+          {/* Recherche */}
+          <div className="relative w-full sm:w-60">
+            <Search size={14} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              value={recherche}
+              onChange={(e) => setRecherche(e.target.value)}
+              placeholder="Rechercher client, code..."
+              className="w-full pl-9 pr-3 py-2 bg-[#F8FAFC] rounded-xl border border-transparent focus:border-gray-200 text-xs text-gray-800 outline-none"
+            />
+          </div>
+
+          {/* Filtre Statut */}
+          <select
+            value={filtreStatut}
+            onChange={(e) => setFiltreStatut(e.target.value)}
+            className="px-3 py-2 bg-[#F8FAFC] rounded-xl text-xs font-semibold text-gray-700 outline-none cursor-pointer"
+          >
+            <option value="tous">Tous statuts</option>
+            <option value="VALIDE">Confirmé</option>
+            <option value="EN_ATTENTE">En attente</option>
+            <option value="UTILISE">Utilisé</option>
+            <option value="ANNULE">Annulé</option>
+          </select>
+        </div>
       </div>
 
-      {/* Header colonnes */}
-      <div className={`h-[42px] bg-[#fafbfc] border-y border-[#eceef0] grid ${colsGrid} items-center px-[23px] text-[11px] font-medium text-[#737983]`}>
-        <span>Client</span>
-        <span>Événement</span>
-        <span>Type</span>
-        <span>Prix</span>
-        <span>Date</span>
-        <span>Statut</span>
-        <span>Actions</span>
+      {/* Tableau */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs text-left">
+          <thead>
+            <tr className="border-b border-gray-100 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+              <th className="pb-3 px-3">CLIENT</th>
+              <th className="pb-3 px-3">ÉVÉNEMENT</th>
+              <th className="pb-3 px-3">CATÉGORIE</th>
+              <th className="pb-3 px-3">PRIX</th>
+              <th className="pb-3 px-3">DATE COMMANDE</th>
+              <th className="pb-3 px-3">STATUT</th>
+              <th className="pb-3 px-3 text-right">ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-50">
+            {billetsFiltres.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="py-12 text-center text-gray-400">
+                  <Ticket size={28} className="text-gray-300 mx-auto mb-2" />
+                  <p className="font-semibold text-gray-600">Aucune réservation de billet enregistrée</p>
+                  <p className="text-[11px] text-gray-400 mt-0.5">Les commandes apparaîtront ici dès les premiers achats.</p>
+                </td>
+              </tr>
+            ) : (
+              billetsFiltres.map((b) => {
+                const nomClient = b.spectateur_nom || `${b.spectateur?.prenom ?? ""} ${b.spectateur?.nom ?? ""}`.trim() || "Spectateur";
+                const titreEv = b.evenement_titre || b.evenement?.titre || `Événement #${b.evenement}`;
+                const statut = b.statut || "EN_ATTENTE";
+                const prix = b.prix || (b.type_billet === "VIP" ? 15000 : 5000);
+
+                return (
+                  <tr key={b.id} className="hover:bg-gray-50/50 transition-colors">
+                    {/* Client */}
+                    <td className="py-3 px-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-full bg-orange-50 text-[#C25B1E] flex items-center justify-center font-bold text-[10px] shrink-0 border border-orange-200">
+                          {nomClient.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-bold text-gray-900 leading-tight">{nomClient}</p>
+                          <p className="text-[10px] text-gray-400">{b.spectateur?.email || `ID #${b.id}`}</p>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Événement */}
+                    <td className="py-3 px-3 font-semibold text-gray-800">
+                      {titreEv}
+                    </td>
+
+                    {/* Catégorie */}
+                    <td className="py-3 px-3">
+                      <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        b.type_billet === "VIP" ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-700"
+                      }`}>
+                        {b.type_billet || "Standard"}
+                      </span>
+                    </td>
+
+                    {/* Prix */}
+                    <td className="py-3 px-3 font-bold text-gray-900">
+                      {Number(prix).toLocaleString("fr-FR")} FCFA
+                    </td>
+
+                    {/* Date */}
+                    <td className="py-3 px-3 text-gray-600">
+                      {b.date_commande
+                        ? new Date(b.date_commande).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" })
+                        : "—"}
+                    </td>
+
+                    {/* Statut */}
+                    <td className="py-3 px-3">
+                      <span className={`inline-block rounded-full px-2.5 py-0.5 text-[9px] uppercase tracking-wider ${
+                        STYLE_STATUT[statut] || STYLE_STATUT.EN_ATTENTE
+                      }`}>
+                        {LIBELLE_STATUT[statut] || statut}
+                      </span>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="py-3 px-3">
+                      <div className="flex items-center justify-end gap-1 text-gray-400">
+                        <button
+                          onClick={() => setBilletSelectionne(b)}
+                          className="p-1 hover:text-gray-700 transition-colors cursor-pointer"
+                          title="Détail du billet & QR"
+                        >
+                          <Eye size={14} />
+                        </button>
+                        <button
+                          onClick={() => supprimerBillet(b)}
+                          className="p-1 hover:text-red-500 transition-colors cursor-pointer"
+                          title="Supprimer"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
       </div>
 
-      {/* Lignes */}
-      {transactions.map((t) => (
-        <div
-          key={t.id}
-          className={`h-[64px] grid ${colsGrid} items-center px-[23px] border-b border-[#edf0f2]`}
-        >
-          {/* Client */}
-          <div className="flex items-center gap-[9px]">
-            <img src={t.avatar} className="w-[28px] h-[28px] rounded-full object-cover" alt="" />
-            <div>
-              <p className="text-[12px] font-medium text-[#25282d]">{t.nomLigne1}</p>
-              {t.nomLigne2 && <p className="text-[12px] font-medium text-[#25282d]">{t.nomLigne2}</p>}
+      {/* Modale de Détail d'un Billet */}
+      {billetSelectionne && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+              <h3 className="font-bold text-gray-900 text-base">
+                Détail du Billet #{billetSelectionne.id}
+              </h3>
+              <button
+                onClick={() => setBilletSelectionne(null)}
+                className="w-7 h-7 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 flex items-center justify-center cursor-pointer"
+              >
+                <X size={14} />
+              </button>
+            </div>
+
+            <div className="py-4 space-y-3 text-xs">
+              <div className="flex justify-between">
+                <span className="text-gray-400">Titulaire :</span>
+                <span className="font-bold text-gray-900">
+                  {billetSelectionne.spectateur_nom || `${billetSelectionne.spectateur?.prenom ?? ""} ${billetSelectionne.spectateur?.nom ?? ""}`.trim() || "Spectateur"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Événement :</span>
+                <span className="font-bold text-gray-900">
+                  {billetSelectionne.evenement_titre || billetSelectionne.evenement?.titre || `Épreuve #${billetSelectionne.evenement}`}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Type de billet :</span>
+                <span className="font-bold text-[#C25B1E]">{billetSelectionne.type_billet || "Standard"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Place / Siège :</span>
+                <span className="font-semibold text-gray-800">{billetSelectionne.place || "Tribune générale"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">Code Unique (UUID) :</span>
+                <span className="font-mono text-[11px] text-gray-600 bg-gray-50 px-2 py-0.5 rounded">
+                  {billetSelectionne.code_unique || "—"}
+                </span>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-gray-100 flex justify-end">
+              <button
+                onClick={() => setBilletSelectionne(null)}
+                className="px-4 py-2 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-bold transition-colors cursor-pointer"
+              >
+                Fermer
+              </button>
             </div>
           </div>
-
-          {/* Événement */}
-          <span className="text-[12px] text-[#30343a]">{t.evenement}</span>
-
-          {/* Type */}
-          <span className={`${t.typeW} h-[18px] rounded-full ${t.typeCouleur} flex items-center justify-center text-[10px]`}>
-            {t.type}
-          </span>
-
-          {/* Prix */}
-          <div className="text-[12px] text-[#30343a]">
-            {t.prix.map((ligne, i) => <p key={i}>{ligne}</p>)}
-          </div>
-
-          {/* Date */}
-          <div className="text-[12px] text-[#30343a]">
-            {t.date.map((ligne, i) => <p key={i}>{ligne}</p>)}
-          </div>
-
-          {/* Statut */}
-          <span className={`${t.statutW} h-[18px] rounded-full ${t.statutCouleur} flex items-center justify-center text-[10px]`}>
-            {t.statut}
-          </span>
-
-          {/* Actions */}
-          <div className="flex items-center gap-[10px] text-[#8c949f]">
-            <button><IconEditer /></button>
-            <button><IconVoir /></button>
-            <button><IconSupprimer /></button>
-          </div>
         </div>
-      ))}
-
-      {/* Footer */}
-      <div className="h-[48px] flex items-center justify-center">
-        <button className="text-[13px] font-medium text-[#e86b16]">
-          Voir tous les détails des ventes
-        </button>
-      </div>
-
+      )}
     </section>
   );
 }

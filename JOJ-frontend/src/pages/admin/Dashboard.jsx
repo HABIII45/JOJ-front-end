@@ -1,53 +1,65 @@
-import React, { useState } from "react";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Plus, Trophy, Wallet, MapPin, FileText } from "lucide-react";
 import AdminLayout from "../../components/layouts/AdminLayout";
-import { Sidebar } from "../../components/layout/Sidebar";
 import { KpiCard } from "../../components/admin/KpiCard";
 import { VentesChart } from "../../components/admin/VentesChart";
 import { ActivitesCard } from "../../components/admin/ActivitesCard";
 import { useAdminData } from "../../hooks/useAdminData";
+import { useAuth } from "../../contexts/useAuth";
+import { isSuperAdmin, hasPermission, PERMISSIONS } from "../../utils/permissions";
 
 export default function Dashboard() {
-  const { chargement, kpi, ventes, activites } = useAdminData();
-  const [creerOuvert, setCreerOuvert] = useState(false);
+  const navigate = useNavigate();
+  const { utilisateur } = useAuth();
+  const { chargement, kpi, ventes, activites, toutesActivites } = useAdminData();
+
+  const superAdmin = isSuperAdmin(utilisateur);
+  const peutCreerEvenement = superAdmin || hasPermission(utilisateur, PERMISSIONS.EVENEMENTS);
 
   if (chargement) {
     return (
-      <Sidebar>
-        <div className="min-h-[60vh] flex items-center justify-center text-gray-400">
-          Chargement des données en temps réel...
+      <AdminLayout>
+        <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3 text-gray-400">
+          <span className="w-8 h-8 border-3 border-[#C25B1E] border-t-transparent rounded-full animate-spin"></span>
+          <span className="text-sm font-medium">Chargement des données du backend en temps réel…</span>
         </div>
-      </Sidebar>
+      </AdminLayout>
     );
   }
 
-  // Formatage personnalisé conforme à la maquette : 15.420.000
+  // Formatage des montants : 15.420.000 FCFA
   const formatFcfaPoint = (n) => {
-    return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    if (n == null || isNaN(n)) return "0";
+    return Number(n).toLocaleString("fr-FR");
   };
 
   return (
     <AdminLayout>
-      {/* Titre et Bouton d'Action */}
+      {/* Titre et Bouton d'Action conditionné aux droits d'accès */}
       <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
         <div>
           <h1 className="font-display text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">
-            Bienvenue sur votre Dashboard
+            Tableau de Bord JOJ 2026
           </h1>
           <p className="text-gray-500 text-xs mt-1">
-            Voici les statistiques clés de JOJ Events en temps réel.
+            Indicateurs de performance, statistiques et activités en temps réel synchronisés avec le backend.
           </p>
         </div>
-        <button
-          onClick={() => setCreerOuvert(!creerOuvert)}
-          className="inline-flex items-center gap-2 bg-[#C25B1E] hover:bg-[#A04816] text-white rounded-full px-5 py-2.5 text-xs font-bold transition-all shadow-sm active:scale-95"
-        >
-          <Plus className="w-4 h-4" />
-          Créer un événement
-        </button>
+
+        {/* Le bouton n'apparaît que pour le Superadmin et les admins ayant la permission Événements */}
+        {peutCreerEvenement && (
+          <button
+            onClick={() => navigate("/admin/evenements/ajout")}
+            className="inline-flex items-center gap-2 bg-[#C25B1E] hover:bg-[#A04816] text-white rounded-xl px-5 py-2.5 text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            Créer un événement
+          </button>
+        )}
       </div>
 
-      {/* Grid des cartes KPI */}
+      {/* Grid des cartes KPI dynamiques */}
       <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
         <KpiCard
           icone={<Trophy className="w-5 h-5" />}
@@ -67,14 +79,14 @@ export default function Dashboard() {
           icone={<MapPin className="w-5 h-5" />}
           libelle="Sites Actifs"
           valeur={String(kpi.sitesActifs)}
-          variation="Stable"
+          variation="En direct"
           variante="bleu"
         />
         <KpiCard
           icone={<FileText className="w-5 h-5" />}
-          libelle="Actualités Publiées"
+          libelle="Compétitions / Résultats"
           valeur={String(kpi.actualitesPubliees)}
-          variation="+5 aujourd'hui"
+          variation="En direct"
           variante="gris"
         />
       </div>
@@ -82,7 +94,7 @@ export default function Dashboard() {
       {/* Grid Graphique + Activités */}
       <div className="grid xl:grid-cols-[1.5fr_1fr] gap-6">
         <VentesChart data={ventes} />
-        <ActivitesCard activites={activites} />
+        <ActivitesCard activites={activites} toutesActivites={toutesActivites} />
       </div>
     </AdminLayout>
   );

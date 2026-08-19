@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../../api/api";
 import AdminLayout from "../../components/layouts/AdminLayout";
 export function AjoutCategorie() {
     // Stocke les données saisies dans le formulaire
@@ -20,10 +20,7 @@ export function AjoutCategorie() {
     useEffect(() => {
         const recupererDisciplines = async () => {
             try {
-                const response = await axios.get(
-                    "http://127.0.0.1:8000/api/disciplines/"
-                );
-
+                const response = await api.get("/api/disciplines/");
                 setDisciplines(response.data.results || response.data);
             } catch (error) {
                 console.error(
@@ -59,10 +56,7 @@ export function AjoutCategorie() {
             };
 
             // Envoi de la requête POST
-            await axios.post(
-                "http://127.0.0.1:8000/api/categories/",
-                data
-            );
+            await api.post("/api/categories/", data);
 
             setMessage("Catégorie enregistrée avec succès.");
 

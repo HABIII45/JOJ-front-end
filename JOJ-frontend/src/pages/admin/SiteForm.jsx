@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { createSite } from "../../services/sites";
+import AdminLayout from "../../components/layouts/AdminLayout";
 
 const SiteForm = () => {
   const [nom, setNom] = useState('');
@@ -10,7 +11,6 @@ const SiteForm = () => {
   const [longitude, setLongitude] = useState('');
   const [ville, setVille] = useState('');
   const [region, setRegion] = useState('');
-  const [adresse, setAdresse] = useState('');
   const [capaciteStandard, setCapaciteStandard] = useState('');
   const [capaciteVip, setCapaciteVip] = useState('');
   const [capacitePmr, setCapacitePmr] = useState('');
@@ -23,7 +23,6 @@ const SiteForm = () => {
     try {
       const siteData = {
         nom,
-        adresse,
         capacite: parseInt(capacite) || 0, 
         capaciteStandard: parseInt(capaciteStandard) || 0,
         capaciteVip: parseInt(capaciteVip) || 0,
@@ -41,7 +40,7 @@ const SiteForm = () => {
       
       setNom(''); setCapacite(''); setDescription(''); setService('');
       setLatitude(''); setLongitude(''); setVille(''); setRegion('');
-      setAdresse(''); setCapaciteStandard(''); setCapaciteVip(''); setCapacitePmr('');
+      setCapaciteStandard(''); setCapaciteVip(''); setCapacitePmr('');
       
     } catch (error) {
       console.error("Erreur lors de la création d'un nouveau site", error);
@@ -59,13 +58,13 @@ const SiteForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h1 className="text-2xl font-semibold text-gray-800 mb-2">
+    <AdminLayout>
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div className="bg-white rounded-3xl shadow-sm p-6 border border-gray-100">
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">
             Ajouter un nouveau site
           </h1>
-          <p className="text-gray-400">
+          <p className="text-xs text-gray-400">
             Configurez un nouveau lieu officiel pour les compétitions.
           </p>
         </div>
@@ -225,7 +224,7 @@ const SiteForm = () => {
           </div>
         </form>
       </div>
-    </div>
+    </AdminLayout>
   );
 };
 

@@ -1,72 +1,191 @@
-import { useEffect, useState } from "react";
-import { authService, dashboardService, isBackendConnected } from "../lib/api";
-import { activitesDemo, adminDemo, kpiDemo, ventesMensuellesDemo } from "../lib/demoData";
+import { useEffect, useState, useCallback } from "react";
+import api from "../api/api";
+import { fetchEvenements, fetchResultats } from "../api/resultats";
+import { fetchProfil } from "../api/auth";
 
 function libelleIlYa(dateISO) {
-  if (!dateISO) return "";
+  if (!dateISO) return "Aujourd'hui";
   const diffMin = Math.floor((Date.now() - new Date(dateISO).getTime()) / 60000);
-  if (diffMin < 0) return "À venir";
-  if (diffMin < 1) return "À L'INSTANT";
-  if (diffMin < 60) return `IL Y A ${diffMin} MIN`;
+  if (isNaN(diffMin) || diffMin < 0) return "À venir";
+  if (diffMin < 1) return "À l'instant";
+  if (diffMin < 60) return `Il y a ${diffMin} min`;
   const heures = Math.floor(diffMin / 60);
-  if (heures < 24) return `IL Y A ${heures} H`;
+  if (heures < 24) return `Il y a ${heures} h`;
   const jours = Math.floor(heures / 24);
-  return `IL Y A ${jours} J`;
+  return `Il y a ${jours} j`;
 }
+
+const NOMS_MOIS = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sept", "Oct", "Nov", "Déc"];
 
 export function useAdminData() {
   const [data, setData] = useState({
     chargement: true,
-    kpi: kpiDemo,
-    ventes: ventesMensuellesDemo,
-    activites: activitesDemo,
+    kpi: {
+      totalEvenements: 0,
+      variationEvenements: "0",
+      revenusBillets: 0,
+      variationRevenus: "0 FCFA",
+      sitesActifs: 0,
+      actualitesPubliees: 0,
+    },
+    ventes: NOMS_MOIS.map((mois) => ({ mois, montant: 0 })),
+    activites: [],
+    toutesActivites: [],
     utilisateur: null,
-    source: "demo",
+    source: "backend_reel",
   });
 
-  useEffect(() => {
-    let actif = true;
+  const chargerDonnees = useCallback(async () => {
+    try {
+      // Chargement direct des entités depuis la base de données Django
+      const [
+        profilRes,
+        evenementsRes,
+        resultatsRes,
+        sitesRes,
+        actualitesRes,
+        ticketsRes,
+        paiementsRes,
+      ] = await Promise.allSettled([
+        fetchProfil(),
+        fetchEvenements(true),
+        fetchResultats(),
+        api.get("/api/sites/").then((r) => r.data),
+        api.get("/api/actualites/").then((r) => r.data),
+        api.get("/api/tickets/").then((r) => r.data),
+        api.get("/api/payments/").then((r) => r.data),
+      ]);
 
-    if (!isBackendConnected()) {
+      const profil = profilRes.status === "fulfilled" ? profilRes.value : null;
+      const evenements = evenementsRes.status === "fulfilled" && Array.isArray(evenementsRes.value) ? evenementsRes.value : [];
+      const resultats = resultatsRes.status === "fulfilled" && Array.isArray(resultatsRes.value) ? resultatsRes.value : [];
+      
+      const sitesBruts = sitesRes.status === "fulfilled" ? sitesRes.value : [];
+      const sites = Array.isArray(sitesBruts) ? sitesBruts : sitesBruts?.results ?? [];
+
+      const actBrutes = actualitesRes.status === "fulfilled" ? actualitesRes.value : [];
+      const actualites = Array.isArray(actBrutes) ? actBrutes : actBrutes?.results ?? [];
+
+      const ticketsBruts = ticketsRes.status === "fulfilled" ? ticketsRes.value : [];
+      const tickets = Array.isArray(ticketsBruts) ? ticketsBruts : ticketsBruts?.results ?? [];
+
+      const paiementsBruts = paiementsRes.status === "fulfilled" ? paiementsRes.value : [];
+      const paiements = Array.isArray(paiementsBruts) ? paiementsBruts : paiementsBruts?.results ?? [];
+
+      // ── 1. Total Événements & Sites Réels (Prise en compte de la pagination Django) ──
+      const totalEvenements = evenements.totalCount ?? evenements.length;
+      const sitesActifs = typeof sitesBruts?.count === "number" ? sitesBruts.count : sites.length;
+      const actualitesPubliees = typeof actBrutes?.count === "number" 
+        ? actBrutes.count 
+        : (actualites.length > 0 ? actualites.length : resultats.length);
+
+      // ── 2. Calcul 100% Réel des Revenus Billets ──
+      let revenusBillets = 0;
+      const ventesParMois = {};
+      NOMS_MOIS.forEach((m) => { ventesParMois[m] = 0; });
+
+      if (paiements.length > 0) {
+        paiements.forEach((p) => {
+          const montant = Number(p.montant || p.amount || 0);
+          revenusBillets += montant;
+
+          if (p.date_creation || p.created_at) {
+            const date = new Date(p.date_creation || p.created_at);
+            const idxMois = date.getMonth();
+            if (idxMois >= 0 && idxMois < 12) {
+              ventesParMois[NOMS_MOIS[idxMois]] += montant;
+            }
+          }
+        });
+      } else if (tickets.length > 0) {
+        tickets.forEach((t) => {
+          let prix = 0;
+          if (t.type_billet === "VIP") prix = 15000;
+          else if (t.type_billet === "STANDARD") prix = 5000;
+          else if (t.prix) prix = Number(t.prix);
+
+          revenusBillets += prix;
+
+          if (t.date_commande || t.created_at) {
+            const date = new Date(t.date_commande || t.created_at);
+            const idxMois = date.getMonth();
+            if (idxMois >= 0 && idxMois < 12) {
+              ventesParMois[NOMS_MOIS[idxMois]] += prix;
+            }
+          }
+        });
+      }
+
+      const ventesArray = NOMS_MOIS.map((mois) => ({
+        mois,
+        montant: ventesParMois[mois],
+      }));
+
+      // ── 3. Activités Récentes & Historique Complet ──
+      const toutesActivites = [];
+
+      // Tous les événements réels
+      [...evenements].reverse().forEach((ev) => {
+        toutesActivites.push({
+          id: `ev-${ev.id}`,
+          type: "creation",
+          titre: `Événement : ${ev.titre}`,
+          detail: `Site : ${ev.site_nom || "Site principal"}${ev.categorie_nom ? ` • ${ev.categorie_nom}` : ""}`,
+          date: ev.date || ev.created_at,
+          ilYA: libelleIlYa(ev.date || ev.created_at),
+        });
+      });
+
+      // Tous les résultats réels
+      [...resultats].reverse().forEach((res, i) => {
+        const nomComp = res.info_competiteur?.nom_complet || "Athlète";
+        toutesActivites.push({
+          id: `res-${res.id || i}`,
+          type: "publication",
+          titre: `Résultat enregistré : ${nomComp}`,
+          detail: `Score : ${res.score || "—"} • Épreuve #${res.evenement}`,
+          date: res.created_at,
+          ilYA: "Résultat validé",
+        });
+      });
+
+      // Toutes les actualités réelles
+      [...actualites].reverse().forEach((act) => {
+        toutesActivites.push({
+          id: `act-${act.id}`,
+          type: "modification",
+          titre: `Actualité : ${act.titre}`,
+          detail: act.resume || act.contenu?.slice(0, 50) || "Publication d'actualité",
+          date: act.date_publication,
+          ilYA: libelleIlYa(act.date_publication),
+        });
+      });
+
       setData({
         chargement: false,
-        kpi: kpiDemo,
-        ventes: ventesMensuellesDemo,
-        activites: activitesDemo,
-        utilisateur: adminDemo,
-        source: "demo",
+        source: "backend_reel",
+        utilisateur: profil,
+        kpi: {
+          totalEvenements,
+          variationEvenements: totalEvenements > 0 ? `${totalEvenements} en base` : "Aucun",
+          revenusBillets,
+          variationRevenus: revenusBillets > 0 ? `${revenusBillets.toLocaleString("fr-FR")} FCFA` : "0 FCFA",
+          sitesActifs,
+          actualitesPubliees,
+        },
+        ventes: ventesArray,
+        activites: toutesActivites.slice(0, 5),
+        toutesActivites,
       });
-      return;
+    } catch (err) {
+      console.error("Erreur chargement données réelles dashboard:", err);
+      setData((prev) => ({ ...prev, chargement: false }));
     }
-
-    // Capture des requêtes sans faire crasher l'application si l'API renvoie 404/401
-    Promise.all([
-      authService.profil().catch(() => null),
-      dashboardService.kpis().catch(() => null),
-      dashboardService.activites().catch(() => null),
-    ]).then(([profil, kpis, activitesBrutes]) => {
-      if (!actif) return;
-
-      // Si l'API activités renvoie des données réelles, on les formates, sinon on prend activitesDemo
-      const activites = Array.isArray(activitesBrutes) && activitesBrutes.length > 0
-        ? activitesBrutes.map((a) => ({ ...a, ilYA: libelleIlYa(a.date) }))
-        : activitesDemo;
-
-      setData({
-        chargement: false,
-        source: "api",
-        utilisateur: profil || adminDemo,
-        // Fallback sur ventesMensuellesDemo pour que le graphique contienne toujours des points
-        ventes: ventesMensuellesDemo, 
-        activites,
-        kpi: kpis || kpiDemo,
-      });
-    });
-
-    return () => {
-      actif = false;
-    };
   }, []);
+
+  useEffect(() => {
+    chargerDonnees();
+  }, [chargerDonnees]);
 
   return data;
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import {CalendarDays,Clock3,MapPin,Minus, Plus,Trophy, Users,Ticket} from "lucide-react";
-import {getEvents,getCategories,getSites,getCompetiteurs} from "../../api/Eventapi";
+import { CalendarDays, Clock3, MapPin, Minus, Plus, Trophy, Users, Ticket } from "lucide-react";
+import { getEvents, getCategories, getSites, getCompetiteurs, getEventDetail } from "../../api/Eventapi";
 import "./EventDetail.css";
 
 export function EventDetail() {
@@ -18,106 +18,31 @@ export function EventDetail() {
         pmr: 0
     });
 
-
     // =====================================================
     // RÉCUPÉRATION DES DONNÉES
     // =====================================================
 
     useEffect(() => {
-
         const fetchData = async () => {
-
             try {
-
                 setLoading(true);
                 setError("");
 
-                /*
-                 * On récupère les catégories, les sites,
-                 * les compétiteurs et les événements.
-                 */
-                const [categoriesData,sitesData,competiteursData,firstEventsPage] = await Promise.all([getCategories(),getSites(),getCompetiteurs(),getEvents({page: 1})]);
-                setCategories(Array.isArray(categoriesData)? categoriesData: []);
-                setSites(Array.isArray(sitesData)? sitesData: []);
+                const [categoriesData, sitesData, competiteursData, eventFound] = await Promise.all([
+                    getCategories(),
+                    getSites(),
+                    getCompetiteurs(),
+                    getEventDetail(id).catch(() => null),
+                ]);
 
-                setCompetiteurs( Array.isArray(competiteursData)? competiteursData: []);
-
-                /*
-                 * getEvents() retourne normalement :
-                 *
-                 * {
-                 *     count: ...,
-                 *     results: [...]
-                 * }
-                 *
-                 * On cherche d'abord dans la première page.
-                 */
-                let events = firstEventsPage?.results || [];
-
-
-                let eventFound = events.find(
-                    (item) =>
-                        String(item.id) === String(id)
-                );
-
-
-                /*
-                 * Si l'événement n'est pas dans la première page,
-                 * on récupère les pages suivantes.
-                 *
-                 * Cela évite de mettre une fausse donnée.
-                 */
-                if (
-                    !eventFound &&
-                    firstEventsPage?.count
-                ) {
-
-                    const pageSize = events.length || 10;
-
-                    const totalPages = Math.ceil(
-                        firstEventsPage.count / pageSize
-                    );
-
-
-                    for (
-                        let page = 2;
-                        page <= totalPages;
-                        page++
-                    ) {
-
-                        const pageData = await getEvents({
-                            page
-                        });
-
-
-                        const pageEvents =
-                            pageData?.results || [];
-
-
-                        eventFound = pageEvents.find(
-                            (item) =>
-                                String(item.id) === String(id)
-                        );
-
-
-                        if (eventFound) {
-                            break;
-                        }
-
-                    }
-
-                }
-
+                setCategories(Array.isArray(categoriesData) ? categoriesData : []);
+                setSites(Array.isArray(sitesData) ? sitesData : []);
+                setCompetiteurs(Array.isArray(competiteursData) ? competiteursData : []);
 
                 if (!eventFound) {
-
-                    setError(
-                        "Événement introuvable."
-                    );
-
+                    setError("Événement introuvable.");
                     return;
                 }
-
 
                 setEvent(eventFound);
 

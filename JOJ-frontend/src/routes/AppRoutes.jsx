@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+// src/routes/AppRoutes.jsx
+import { Routes, Route, Navigate } from 'react-router-dom';
 
 // ── Pages publiques ──────────────────────────────────────────────────────────
 import LoginPage          from "../pages/public/LoginPage";
@@ -14,7 +15,8 @@ import ParamsPage         from "../pages/public/ParamsPage";
 
 // ── Pages admin ──────────────────────────────────────────────────────────────
 import Dashboard          from "../pages/admin/Dashboard";
-import Disciplines        from "../pages/admin/Games";
+import GamesList          from "../pages/admin/Games";
+import CompetiteurForm    from "../pages/admin/CompetiteurForm";
 import AdminSites         from "../pages/admin/AdminSites";
 import SiteDetail         from "../pages/admin/SitesDetail";
 import SiteForm           from "../pages/admin/SiteForm";
@@ -22,52 +24,53 @@ import GestionEvents      from "../pages/admin/GestionEvents";
 import FormEvent          from "../pages/admin/EventForm";
 import AjoutAdminPage     from "../pages/admin/AjoutAdminPage";
 
+import { routesAdmin } from './AdminRoutes'; 
+
 const AppRoutes = () => {
+  const renderRoutes = (routes) => {
+    return routes.map((route, index) => (
+      <Route key={index} path={route.path} element={route.element}>
+        {route.children && renderRoutes(route.children)}
+      </Route>
+    ));
+  };
+
   return (
     <Routes>
-      {/* Authentification */}
-      <Route path="/login"             element={<LoginPage />} />
+      {/* ── Accueil & Public ── */}
+      <Route path="/" element={<Navigate to="/events" replace />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register-result" element={<RegisterResultPage />} />
+      <Route path="/ventbillet" element={<VenteBilletPage />} />
+      <Route path="/resultats" element={<GestionResultatPage />} />
+      <Route path="/payment/summary" element={<PaymentSummary />} />
 
-      {/* Billetterie & paiements */}
-      <Route path="/ventbillet"        element={<VenteBilletPage />} />
-      <Route path="/payment/summary"   element={<PaymentSummary />} />
+      {/* SITES SECTION */}
+      <Route path="/sites" element={<Sites />} />
+      <Route path="/sites/:id" element={<DetailSite />} />
+      <Route path="/sites/:id/modifier" element={<SiteForm />} />
+      <Route path="/sites/ajout" element={<SiteForm />} />
 
-      {/* Résultats */}
-      <Route path="/resultats"         element={<GestionResultatPage />} />
-      <Route path="/register-result"   element={<RegisterResultPage />} />
+      {/* EVENEMENTS SECTION */}
+      <Route path="/events" element={<Events />} />
+      <Route path="/evenements" element={<Events />} />
+      <Route path="/events/:id" element={<EventDetail />} />
+      <Route path="/events/create" element={<FormEvent />} />
 
-      {/* Sites publics */}
-      <Route path="/sites"             element={<Sites />} />
-      <Route path="/sites/:id"         element={<DetailSite />} />
+      {/* COMPETITEURS SECTION */}
+      <Route path="/competiteurs" element={<GamesList />} />
+      <Route path="/competiteurs/ajout" element={<CompetiteurForm />} />
 
-      {/* Événements publics */}
-      <Route path="/evenements"        element={<Events />} />
+      {/* ROUTES ADMINISTRATION PROTEGEES */}
+      {renderRoutes(routesAdmin)}
 
       {/* Paramètres & Gestion admin */}
-      <Route path="/parametres"               element={<ParamsPage />} />
+      <Route path="/parametres" element={<ParamsPage />} />
       <Route path="/parametres/ajouter-admin" element={<AjoutAdminPage />} />
-      <Route path="/admin/ajouter-admin"      element={<AjoutAdminPage />} />
+      <Route path="/admin/ajouter-admin" element={<AjoutAdminPage />} />
 
-      {/* ── Admin ── */}
-      <Route path="/dashboard"         element={<Dashboard />} />
-      <Route path="/disciplines"       element={<Disciplines />} />
-
-      {/* Gestion sites admin */}
-      <Route path="/admin/sites"       element={<AdminSites />} />
-      <Route path="/admin/sites/:id"   element={<SiteDetail />} />
-      <Route path="/sites/ajout"       element={<SiteForm />} />
-
-      {/* Gestion événements admin */}
-      <Route path="/events"            element={<GestionEvents />} />
-      <Route path="/events/create"     element={<FormEvent />} />
-      <Route path="/events/:id"        element={<EventDetail />} />
-      <Route path="/events/:id/edit"   element={<FormEvent />} />
-
-      {/* Accueil → redirige vers events */}
-      <Route path="/"                  element={<Navigate to="/events" replace />} />
-
-      {/* Route inconnue */}
-      <Route path="*"                  element={<Navigate to="/resultats" replace />} />
+      {/* Fallback */}
+      <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
     </Routes>
   );
 };

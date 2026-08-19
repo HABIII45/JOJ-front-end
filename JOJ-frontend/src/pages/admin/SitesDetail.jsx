@@ -9,68 +9,39 @@ import {
   Pencil,
   Calendar,
   CheckCircle2,
-  AlertTriangle,
-  Clock,
 } from "lucide-react";
 import AdminLayout from "../../components/layouts/AdminLayout";
-import apiClient, { isBackendConnected } from "../../lib/api";
-
-const DEMO_SITES_DETAILS = {
-  1: {
-    id: 1,
-    nom: "Dakar Arena",
-    ville: "Diamniadio",
-    adresse: "Autoroute à Péage, Sortie 10",
-    capacite: 15000,
-    description: "Complexe sportif multifonctionnel de dernière génération, conçu pour accueillir les compétitions de basketball, handball et sports de combat.",
-    statut: "OPERATIONNEL",
-    responsable: "Amadou Diallo",
-    contact: "+221 33 800 00 00",
-    image: "https://images.unsplash.com/photo-1587280501635-68a0e82cd5ff?w=800&q=80",
-    evenements: [
-      { id: 101, nom: "Tournoi de Basketball 3x3", date: "12 Octobre 2026", participants: 16 },
-      { id: 102, nom: "Championnat de Handball", date: "15 Octobre 2026", participants: 8 },
-    ],
-  },
-  2: {
-    id: 2,
-    nom: "Stade Abdoulaye Wade",
-    ville: "Diamniadio",
-    adresse: "Zone Pôle Urbain Diamniadio",
-    capacite: 50000,
-    description: "Stade olympique moderne principal recevant les grands tournois de football et d'athlétisme.",
-    statut: "OPERATIONNEL",
-    responsable: "Fatou Sow",
-    contact: "+221 33 811 11 11",
-    image: "https://images.unsplash.com/photo-1577223625816-7546f13df25d?w=800&q=80",
-    evenements: [
-      { id: 103, nom: "Finale d'Athlétisme 100m", date: "18 Octobre 2026", participants: 24 },
-    ],
-  },
-};
+import api from "../../api/api";
 
 export default function SiteDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [site, setSite] = useState(null);
+  const [evenementsSite, setEvenementsSite] = useState([]);
   const [chargement, setChargement] = useState(true);
 
   useEffect(() => {
     async function chargerDetails() {
       setChargement(true);
       try {
-        const estConnecte = typeof isBackendConnected === "function" ? isBackendConnected() : false;
+        const [resSite, resEvents] = await Promise.allSettled([
+          api.get(`/api/sites/${id}/`),
+          api.get(`/api/events/?site=${id}`),
+        ]);
 
-        if (!estConnecte) {
-          setSite(DEMO_SITES_DETAILS[id] || DEMO_SITES_DETAILS[1]);
-          return;
+        if (resSite.status === "fulfilled") {
+          setSite(resSite.value.data);
+        } else {
+          setSite(null);
         }
 
-        const res = await apiClient.get(`/api/sites/${id}/`);
-        setSite(res.data);
+        if (resEvents.status === "fulfilled") {
+          const evData = resEvents.value.data;
+          setEvenementsSite(Array.isArray(evData) ? evData : evData.results ?? []);
+        }
       } catch (err) {
-        console.warn("Erreur API, bascule sur la démo", err);
-        setSite(DEMO_SITES_DETAILS[id] || DEMO_SITES_DETAILS[1]);
+        console.error("Erreur lors de la récupération du site:", err);
+        setSite(null);
       } finally {
         setChargement(false);
       }
@@ -81,7 +52,10 @@ export default function SiteDetail() {
   if (chargement) {
     return (
       <AdminLayout>
-        <div className="p-8 text-center text-gray-400">Chargement de la fiche du site...</div>
+        <div className="py-20 text-center text-gray-400">
+          <div className="w-8 h-8 border-3 border-[#C25B1E] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          Chargement de la fiche du site...
+        </div>
       </AdminLayout>
     );
   }
@@ -89,7 +63,15 @@ export default function SiteDetail() {
   if (!site) {
     return (
       <AdminLayout>
-        <div className="p-8 text-center text-gray-500">Site non trouvé.</div>
+        <div className="py-20 text-center text-gray-500">
+          <p className="text-base font-bold text-gray-700">Site olympique introuvable.</p>
+          <button
+            onClick={() => navigate("/admin/sites")}
+            className="mt-4 px-4 py-2 bg-gray-900 text-white rounded-xl text-xs font-bold"
+          >
+            Retour aux sites
+          </button>
+        </div>
       </AdminLayout>
     );
   }
@@ -100,104 +82,118 @@ export default function SiteDetail() {
         {/* Navigation & Actions */}
         <div className="flex items-center justify-between">
           <button
-            onClick={() => navigate("/sites")}
+            onClick={() => navigate("/admin/sites")}
             className="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-gray-900 transition-colors cursor-pointer"
           >
             <ArrowLeft size={16} /> Retour à la liste
           </button>
 
           <button
-            onClick={() => navigate(`/admin/sites/${site.id}/modifier`)}
-            className="inline-flex items-center gap-2 bg-black hover:bg-gray-800 text-white rounded-2xl px-5 py-2.5 text-xs font-bold transition-colors cursor-pointer"
+            onClick={() => navigate(`/sites/${site.id}/modifier`)}
+            className="inline-flex items-center gap-2 bg-[#D96B27] hover:bg-[#c25b1e] text-white rounded-xl px-4 py-2.5 text-xs font-bold transition-colors shadow-sm cursor-pointer"
           >
-            <Pencil size={14} /> Modifier le site
+            <Pencil size={14} /> Modifier ce site
           </button>
         </div>
 
-        {/* En-tête du site avec image de couverture */}
-        <div className="relative rounded-[2.5rem] overflow-hidden bg-gray-900 text-white h-64 md:h-80">
-          <img
-            src={site.image}
-            alt={site.nom}
-            className="w-full h-full object-cover opacity-60"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-8 flex flex-col justify-end">
-            <div className="flex items-center gap-3 mb-2">
-              <span className="bg-[#D96B27] text-white text-[10px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full">
-                {site.ville}
-              </span>
-              <span className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full">
-                <CheckCircle2 size={12} className="text-emerald-400" />
-                {site.statut || "OPÉRATIONNEL"}
-              </span>
+        {/* Bannière Hero du Site */}
+        <div className="relative h-64 md:h-80 rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-sm bg-gray-900">
+          {site.image ? (
+            <img
+              src={site.image}
+              alt={site.nom}
+              className="w-full h-full object-cover opacity-80"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-400">
+              <Building2 size={64} className="text-gray-600" />
             </div>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">{site.nom}</h1>
-            <p className="text-gray-300 text-xs md:text-sm mt-1 max-w-2xl">{site.description}</p>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-8 text-white">
+            <span className="bg-emerald-500/90 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full self-start mb-3">
+              Site Olympique Officiel
+            </span>
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
+              {site.nom}
+            </h1>
+            <p className="text-xs md:text-sm text-gray-200 mt-1 flex items-center gap-2">
+              <MapPin size={14} className="text-[#D96B27]" />
+              {site.ville || site.region || "Sénégal"}
+            </p>
           </div>
         </div>
 
-        {/* Grille d'informations */}
-        <div className="grid gap-6 md:grid-cols-3">
-          {/* Métriques clés */}
-          <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm space-y-4">
-            <h3 className="text-xs font-extrabold text-gray-400 uppercase tracking-wider">Spécifications</h3>
-            
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
-                <Users size={20} />
-              </div>
-              <div>
-                <p className="text-[10px] text-gray-400 font-bold uppercase">Capacité d'accueil</p>
-                <p className="text-lg font-extrabold text-gray-900">{(site.capacite || 0).toLocaleString("fr-FR")} places</p>
-              </div>
+        {/* Grille Informations & Caractéristiques */}
+        <div className="grid md:grid-cols-3 gap-6">
+          {/* Capacité Totale */}
+          <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+              <Users size={22} />
             </div>
-
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-amber-50 text-amber-600 rounded-xl">
-                <MapPin size={20} />
-              </div>
-              <div>
-                <p className="text-[10px] text-gray-400 font-bold uppercase">Adresse exacte</p>
-                <p className="text-xs font-bold text-gray-800">{site.adresse || "Non renseignée"}</p>
-              </div>
+            <div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Capacité</p>
+              <p className="font-display text-xl font-extrabold text-gray-900 mt-0.5">
+                {(Number(site.capacite) || 0).toLocaleString("fr-FR")} places
+              </p>
             </div>
           </div>
 
-          {/* Contact / Gestionnaire */}
-          <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm space-y-4">
-            <h3 className="text-xs font-extrabold text-gray-400 uppercase tracking-wider">Gestion & Contact</h3>
-            <div>
-              <p className="text-[10px] text-gray-400 font-bold uppercase">Responsable du site</p>
-              <p className="text-sm font-extrabold text-gray-900">{site.responsable || "Non assigné"}</p>
+          {/* Ville / Région */}
+          <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+              <MapPin size={22} />
             </div>
             <div>
-              <p className="text-[10px] text-gray-400 font-bold uppercase">Ligne directe / Urgence</p>
-              <p className="text-sm font-bold text-gray-700">{site.contact || "—"}</p>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Localisation</p>
+              <p className="font-display text-xl font-extrabold text-gray-900 mt-0.5">
+                {site.ville || site.region || "Dakar"}
+              </p>
             </div>
           </div>
 
-          {/* Programme d'événements affichés */}
-          <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm space-y-4">
-            <h3 className="text-xs font-extrabold text-gray-400 uppercase tracking-wider">Événements liés</h3>
-            <div className="space-y-3">
-              {(site.evenements || []).length > 0 ? (
-                site.evenements.map((ev) => (
-                  <div key={ev.id} className="p-3 bg-gray-50 rounded-xl flex items-center justify-between">
+          {/* Compétitions programmées */}
+          <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+              <Trophy size={22} />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Compétitions</p>
+              <p className="font-display text-xl font-extrabold text-gray-900 mt-0.5">
+                {evenementsSite.length} épreuve{evenementsSite.length > 1 ? "s" : ""}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Description & Détails */}
+        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100">
+          <h2 className="text-lg font-bold text-gray-900 mb-3">À propos de cette infrastructure</h2>
+          <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+            {site.description || site.service || "Aucune description détaillée n'a été renseignée pour ce site."}
+          </p>
+
+          {/* Événements programmés sur ce site */}
+          <div className="mt-8 pt-6 border-t border-gray-100">
+            <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <Calendar size={16} className="text-[#D96B27]" />
+              Événements programmés sur ce site ({evenementsSite.length})
+            </h3>
+
+            {evenementsSite.length === 0 ? (
+              <p className="text-xs text-gray-400">Aucun événement n'est actuellement programmé sur ce site.</p>
+            ) : (
+              <div className="grid sm:grid-cols-2 gap-3">
+                {evenementsSite.map((ev) => (
+                  <div key={ev.id} className="p-3.5 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between">
                     <div>
-                      <p className="text-xs font-bold text-gray-800">{ev.nom}</p>
-                      <p className="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">
-                        <Calendar size={10} /> {ev.date}
-                      </p>
+                      <p className="font-bold text-xs text-gray-900">{ev.titre}</p>
+                      <p className="text-[10px] text-gray-400 mt-0.5">{ev.date || "Date à venir"}</p>
                     </div>
-                    <span className="text-[10px] font-bold bg-white px-2 py-1 rounded-md border border-gray-100 text-gray-600">
-                      {ev.participants} équipes
-                    </span>
+                    <CheckCircle2 size={16} className="text-emerald-500" />
                   </div>
-                ))
-              ) : (
-                <p className="text-xs text-gray-400">Aucune compétition programmée.</p>
-              )}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
