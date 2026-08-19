@@ -12,7 +12,7 @@ export default function ProtectedRoute({ permissionRequise }) {
   }
 
   // SUPERADMIN A ACCES PARTOUT 
-  const estSuperAdmin = utilisateur.role === "superadmin";
+  const estSuperAdmin = utilisateur.role === "SUPERADMIN";
   const aLaPermission = utilisateur.permissions?.includes(permissionRequise);
 
   if (!estSuperAdmin && permissionRequise && !aLaPermission) {

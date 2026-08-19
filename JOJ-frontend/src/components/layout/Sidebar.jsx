@@ -60,7 +60,7 @@ export function Sidebar() {
       <nav className="navigation">
         {/* Accessible à tous les admins connectés (Dashboard) */}
         {utilisateur && (
-          <NavLink to="/dashboard">
+          <NavLink to="/admin/dashboard">
             <LayoutDashboard size={19} />
             <span>Dashboard</span>
           </NavLink>
@@ -69,7 +69,7 @@ export function Sidebar() {
         {/* ROUTES POUR PERMISSION JEUX */}
         {aAcces("JEUX") && (
           <>
-            <NavLink to="/admin/evenements"> {/* Assurez-vous que les chemins correspondent à vos routes */}
+            <NavLink to="/admin/evenements"> 
               <CalendarDays size={19} />
               <span>Événements</span>
             </NavLink>
