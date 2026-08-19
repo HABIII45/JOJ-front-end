@@ -34,6 +34,7 @@ export function AuthProvider({ children }) {
   const connecter = useCallback(async (username, password) => {
     await connexion(username, password);
     const profil = await fetchProfil();
+    console.log(profil)
     setUtilisateur(profil);
     return profil;
   }, []);

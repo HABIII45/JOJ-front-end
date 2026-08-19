@@ -24,10 +24,8 @@ const routesBillets = ["/ventbillet"];
 
 export function Sidebar() {
   const location = useLocation();
-
   const { utilisateur, seDeconnecter, chargement } = useAuth(); 
 
-  // Gestion du chargement : si on est en train de charger, on affiche rien ou un spinner
   if (chargement) {
     return <div className="sidebar-loading">Chargement...</div>;
   }
@@ -35,14 +33,14 @@ export function Sidebar() {
   // Fonction pour vérifier les permissions
   const aAcces = (permission) => {
     if (!utilisateur) return false;
-    if (utilisateur.role === "superadmin") return true;
+    // Sécurité au cas où le rôle est écrit en MAJUSCULES dans la base de données
+    if (utilisateur.role?.toLowerCase() === "superadmin") return true;
     return utilisateur.permissions?.includes(permission);
   };
 
   const isResultatsActif = routesResultats.some((r) => location.pathname.startsWith(r));
   const isBilletsActif   = routesBillets.some((r) => location.pathname.startsWith(r));
 
-  // Deconnexion
   const handleDeconnexion = async (e) => {
     e.preventDefault(); 
     await seDeconnecter();
@@ -51,14 +49,11 @@ export function Sidebar() {
 
   return (
     <div className="sidebar">
-      {/* Logo */}
       <div className="sidebar-logo">
         <img src={JOJlogo} alt="JOJ Events" />
       </div>
 
-      {/* Navigation */}
       <nav className="navigation">
-        {/* Accessible à tous les admins connectés (Dashboard) */}
         {utilisateur && (
           <NavLink to="/admin/dashboard">
             <LayoutDashboard size={19} />
@@ -83,15 +78,6 @@ export function Sidebar() {
               <MapPin size={19} />
               <span>Sites</span>
             </NavLink>
-                <NavLink to="admin/categories">
-                    <Tags size={19} />
-                    <span>Catégories</span>
-                </NavLink>
-
-                <NavLink to="/admin/actualites">
-                    <Newspaper size={19} />
-                    <span>Actualités</span>
-                </NavLink>
 
             <NavLink to="/admin/categories">
               <Tags size={19} />
@@ -139,7 +125,6 @@ export function Sidebar() {
       <div className="sidebar-bottom">
         <div className="sidebar-separator"></div>
 
-        {/* LIEN COMMUN (Paramètres) */}
         {utilisateur && (
           <NavLink to="/admin/parametres">
             <Settings size={19} />
@@ -147,7 +132,6 @@ export function Sidebar() {
           </NavLink>
         )}
 
-        {/* Deconnexion */}
         {utilisateur && (
           <button onClick={handleDeconnexion} className="sidebar-logout-btn">
             <LogOut size={19} />

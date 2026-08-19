@@ -1,46 +1,50 @@
-import CompetiteurForm from "../pages/admin/CompetiteurForm";
-import GamesList from "../pages/admin/Games";
 import Dashboard from "../pages/admin/Dashboard";
-import FormEvent from "../pages/admin/EventForm";
-import GestionEvents from "../pages/admin/GestionEvents";
+import GamesList from "../pages/admin/Games";
+import CompetiteurForm from "../pages/admin/CompetiteurForm";
 import SiteForm from "../pages/admin/SiteForm";
+import GestionEvents from "../pages/admin/GestionEvents";
+import FormEvent from "../pages/admin/EventForm";
 import ProtectedRoute from "./ProtectedRoutes";
 
 export const routesAdmin = [
   {
-    // ROUTES ACCESSIBLES QUE PAR Admin ou Superadmin
+    // Accessibles à tous les admins connectés
     element: <ProtectedRoute />, 
     children: [
-      // HOME POUR ADMIN/SUPERADMIN
       { path: "/admin/dashboard", element: <Dashboard /> },
+      { path: "/admin/parametres", element: <Dashboard /> }, 
 
-      // ROUTES POUR ADMIN GERANT ACTUALITES ET RESULTATS
+      // ROUTES PERMISSION ACTUALITES
       {
         element: <ProtectedRoute permissionRequise="ACTUALITES" />,
         children: [
+          { path: "/admin/actualites", element: <GamesList /> }, 
           { path: "/admin/resultats", element: <GamesList /> },
           { path: "/admin/resultats/ajout", element: <CompetiteurForm /> }
         ]
       },
 
-      // ROUTES POUR ADMIN GERANT JEUX (SITES, DISCIPLINES, ZONES, CATEGORIES, EVENEMENTS)
+      // ROUTES PERMISSION JEUX
       {
         element: <ProtectedRoute permissionRequise="JEUX" />,
         children: [
+          { path: "/admin/evenements", element: <GestionEvents /> }, 
+          { path: "/admin/evenements/ajout", element: <FormEvent /> },
+          { path: "/admin/disciplines", element: <GamesList /> }, 
           { path: "/admin/sites", element: <GamesList /> },
           { path: "/admin/sites/ajout", element: <SiteForm /> },
+          { path: "/admin/categories", element: <GamesList /> }, 
           { path: "/admin/equipes", element: <GamesList /> },
-          { path: "/admin/equipes/ajout", element: <CompetiteurForm /> },
-          { path: "/admin/evenements", element: <GestionEvents /> }, 
-          { path: "/admin/evenements/ajout", element: <FormEvent /> }
+          { path: "/admin/equipes/ajout", element: <CompetiteurForm /> }
         ]
       },
-        // ROUTES POUR ADMIN GERANT LES UTILISATEURS DONC SUPERADMIN
+
+      // ROUTES PERMISSION UTILISATEURS
       {
         element: <ProtectedRoute permissionRequise="UTILISATEURS" />,
         children: [
-          // { path: "/admin/utilisateurs", element: <UtilisateursList /> },
-          // { path: "/admin/utilisateurs/ajout", element: <UserForm /> }
+          { path: "/admin/ventbillet", element: <GamesList /> }, 
+          { path: "/admin/utilisateurs", element: <GamesList /> } 
         ]
       }
     ]
