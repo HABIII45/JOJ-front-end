@@ -10,6 +10,7 @@ import Sites from '../pages/public/Site';
 import DetailSite from '../pages/public/DetailSite';
 import SiteForm from '../pages/admin/SiteForm';
 import ParamsPage from '../pages/public/ParamsPage';
+import Events from '../pages/public/Events';
 
 const AppRoutes = () => {
   return (
@@ -19,11 +20,12 @@ const AppRoutes = () => {
       <Route path="/ventbillet" element={<VenteBilletPage />} />
       <Route path="/resultats" element={<GestionResultatPage />} />
       <Route path="/payment/summary" element={<PaymentSummary />} />
-      <Route path="*" element={<Navigate to="/resultats" replace />} />
-      <Route path='/sites' element = {<Sites/>}></Route>
-      <Route path='/sites/:id' element = {<DetailSite/>}></Route>
-      <Route path='/sites/ajout' element = {<SiteForm/>}></Route>
+      <Route path="/sites" element={<Sites />} />
+      <Route path="/sites/:id" element={<DetailSite />} />
+      <Route path="/sites/ajout" element={<SiteForm />} />
       <Route path="/parametres" element={<ParamsPage />} />
+      <Route path="/evenements" element={<Events />} />
+      <Route path="*" element={<Navigate to="/resultats" replace />} />
     </Routes>
   );
 };
