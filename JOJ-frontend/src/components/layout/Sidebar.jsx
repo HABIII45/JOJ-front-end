@@ -140,7 +140,7 @@ export function Sidebar() {
         {/* Résultats */}
         {(superAdmin || hasPermission(utilisateur, PERMISSIONS.RESULTATS)) && (
           <NavLink
-            to="/resultats"
+            to="/admin/resultats"
             className={isResultatsActif ? "active" : ""}
           >
             <Medal size={19} />
