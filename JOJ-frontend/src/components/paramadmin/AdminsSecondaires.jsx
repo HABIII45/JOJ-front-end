@@ -1,23 +1,5 @@
-import { useState } from "react";
-
-const adminsInitiaux = [
-  {
-    id: 1,
-    nom:         "Babacar Faye",
-    email:       "babacar.f@joj.sn",
-    avatar:      "https://i.pravatar.cc/50?img=12",
-    droits:      "Éditeur Événements",
-    connexion:   "Il y a 10 min",
-  },
-  {
-    id: 2,
-    nom:         "Fatou Sow",
-    email:       "fatou.s@joj.sn",
-    avatar:      "https://i.pravatar.cc/50?img=47",
-    droits:      "Modérateur News",
-    connexion:   "Hier, 15:45",
-  },
-];
+import { useState, useEffect, useCallback } from "react";
+import { fetchAdminsSecondaires, supprimerAdminSecondaire } from "../../api/auth";
 
 const IconEditer = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -34,12 +16,60 @@ const IconSupprimer = () => (
 );
 
 function AdminsSecondaires() {
-  const [admins,     setAdmins]     = useState(adminsInitiaux);
-  const [aSupprimer, setASupprimer] = useState(null);
+  const [admins,      setAdmins]      = useState([]);
+  const [chargement,  setChargement]  = useState(true);
+  const [erreur,      setErreur]      = useState("");
+  const [aSupprimer,  setASupprimer]  = useState(null);
+  const [suppression, setSuppression] = useState(false);
 
-  const confirmerSuppression = () => {
-    setAdmins((prev) => prev.filter((a) => a.id !== aSupprimer));
-    setASupprimer(null);
+  const chargerAdmins = useCallback(async () => {
+    setChargement(true);
+    setErreur("");
+    try {
+      const data = await fetchAdminsSecondaires();
+      // Le backend peut renvoyer un tableau direct ou { results: [...] }
+      setAdmins(Array.isArray(data) ? data : data.results ?? []);
+    } catch (err) {
+      setErreur(
+        err?.response?.data?.detail ?? "Impossible de charger les administrateurs."
+      );
+    } finally {
+      setChargement(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    chargerAdmins();
+  }, [chargerAdmins]);
+
+  const confirmerSuppression = async () => {
+    setSuppression(true);
+    try {
+      await supprimerAdminSecondaire(aSupprimer);
+      setAdmins((prev) => prev.filter((a) => a.id !== aSupprimer));
+    } catch {
+      setErreur("Échec de la suppression. Veuillez réessayer.");
+    } finally {
+      setSuppression(false);
+      setASupprimer(null);
+    }
+  };
+
+  // Normalise un admin selon ce que le backend renvoie
+  const nomAdmin    = (a) => a.nom_complet ?? a.username ?? (`${a.first_name ?? ""} ${a.last_name ?? ""}`.trim() || "—");
+  const emailAdmin  = (a) => a.email ?? "—";
+  const droitsAdmin = (a) => a.role ?? a.droits ?? a.groupe ?? "—";
+  const connexion   = (a) => {
+    if (!a.last_login) return "Jamais connecté";
+    return new Date(a.last_login).toLocaleString("fr-FR", {
+      day: "2-digit", month: "2-digit", year: "numeric",
+      hour: "2-digit", minute: "2-digit",
+    });
+  };
+  const avatarAdmin = (a) => a.avatar ?? a.photo ?? null;
+  const initialesAdmin = (a) => {
+    const n = nomAdmin(a);
+    return n.split(" ").map((m) => m[0]).slice(0, 2).join("").toUpperCase();
   };
 
   return (
@@ -77,14 +107,26 @@ function AdminsSecondaires() {
           <span>Actions</span>
         </div>
 
-        {/* Lignes */}
-        {admins.length === 0 && (
+        {/* États : chargement / erreur / vide / liste */}
+        {chargement && (
+          <div className="h-[60px] flex items-center justify-center text-sm text-[#9ca3af]">
+            Chargement…
+          </div>
+        )}
+
+        {!chargement && erreur && (
+          <div className="h-[50px] flex items-center justify-center text-sm text-red-500">
+            {erreur}
+          </div>
+        )}
+
+        {!chargement && !erreur && admins.length === 0 && (
           <div className="h-[50px] flex items-center justify-center text-sm text-[#9ca3af]">
             Aucun administrateur secondaire
           </div>
         )}
 
-        {admins.map((admin, idx) => (
+        {!chargement && !erreur && admins.map((admin, idx) => (
           <div
             key={admin.id}
             className={`h-[50px] grid grid-cols-[1.6fr_1fr_1fr_.75fr] items-center px-[20px] ${
@@ -93,20 +135,32 @@ function AdminsSecondaires() {
           >
             {/* Utilisateur */}
             <div className="flex items-center gap-[7px]">
-              <img src={admin.avatar} className="w-[25px] h-[25px] rounded-full object-cover" alt="" />
+              <div className="w-[25px] h-[25px] rounded-full overflow-hidden bg-[#edf4ff] flex items-center justify-center shrink-0">
+                {avatarAdmin(admin) ? (
+                  <img
+                    src={avatarAdmin(admin)}
+                    className="w-full h-full object-cover"
+                    alt={nomAdmin(admin)}
+                  />
+                ) : (
+                  <span className="text-[9px] font-bold text-[#2875db]">
+                    {initialesAdmin(admin)}
+                  </span>
+                )}
+              </div>
               <div>
-                <p className="m-0 text-sm font-semibold">{admin.nom}</p>
-                <p className="m-0 text-xs text-[#7b8490]">{admin.email}</p>
+                <p className="m-0 text-sm font-semibold">{nomAdmin(admin)}</p>
+                <p className="m-0 text-xs text-[#7b8490]">{emailAdmin(admin)}</p>
               </div>
             </div>
 
             {/* Droits */}
             <span className="w-fit px-[7px] h-[22px] flex items-center rounded-[5px] bg-[#f0f2f5] text-xs text-[#4b5563]">
-              {admin.droits}
+              {droitsAdmin(admin)}
             </span>
 
             {/* Connexion */}
-            <span className="text-sm text-[#68717e]">{admin.connexion}</span>
+            <span className="text-sm text-[#68717e]">{connexion(admin)}</span>
 
             {/* Actions */}
             <div className="flex items-center gap-[9px] text-[#9ba3ad]">
@@ -130,7 +184,7 @@ function AdminsSecondaires() {
       {aSupprimer !== null && (
         <div
           className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
-          onClick={() => setASupprimer(null)}
+          onClick={() => !suppression && setASupprimer(null)}
         >
           <div
             className="bg-white rounded-2xl shadow-xl w-full max-w-md"
@@ -152,16 +206,18 @@ function AdminsSecondaires() {
               <button
                 type="button"
                 onClick={() => setASupprimer(null)}
-                className="w-full cursor-pointer py-2.5 rounded-lg border border-gray-300 bg-white text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors"
+                disabled={suppression}
+                className="w-full cursor-pointer py-2.5 rounded-lg border border-gray-300 bg-white text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-60"
               >
                 Annuler
               </button>
               <button
                 type="button"
                 onClick={confirmerSuppression}
-                className="w-full py-2.5 cursor-pointer rounded-lg bg-red-600 text-sm font-semibold text-white hover:bg-red-700 transition-colors"
+                disabled={suppression}
+                className="w-full py-2.5 cursor-pointer rounded-lg bg-red-600 text-sm font-semibold text-white hover:bg-red-700 transition-colors disabled:opacity-60"
               >
-                Supprimer
+                {suppression ? "Suppression…" : "Supprimer"}
               </button>
             </div>
           </div>

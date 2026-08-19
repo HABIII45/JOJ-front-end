@@ -1,12 +1,14 @@
 import { useState } from "react";
+import { changerMotDePasse } from "../../api/auth";
 
 function SecuriteParams() {
   const [form, setForm] = useState({
-    actuel:    "",
-    nouveau:   "",
+    actuel:  "",
+    nouveau: "",
   });
-  const [erreur,  setErreur]  = useState("");
-  const [succes,  setSucces]  = useState(false);
+  const [chargement, setChargement] = useState(false);
+  const [erreur,     setErreur]     = useState("");
+  const [succes,     setSucces]     = useState(false);
 
   const handleChange = (champ) => (e) => {
     setForm((prev) => ({ ...prev, [champ]: e.target.value }));
@@ -14,7 +16,7 @@ function SecuriteParams() {
     setSucces(false);
   };
 
-  const handleSoumettre = (e) => {
+  const handleSoumettre = async (e) => {
     e.preventDefault();
     if (!form.actuel)  { setErreur("Veuillez saisir votre mot de passe actuel."); return; }
     if (!form.nouveau) { setErreur("Veuillez saisir un nouveau mot de passe."); return; }
@@ -22,9 +24,27 @@ function SecuriteParams() {
       setErreur("Le nouveau mot de passe doit contenir au moins 8 caractères.");
       return;
     }
-    console.log("Changement de mot de passe :", form);
-    setSucces(true);
-    setForm({ actuel: "", nouveau: "" });
+
+    setChargement(true);
+    setErreur("");
+    setSucces(false);
+
+    try {
+      await changerMotDePasse(form.actuel, form.nouveau);
+      setSucces(true);
+      setForm({ actuel: "", nouveau: "" });
+    } catch (err) {
+      const data = err?.response?.data;
+      const msg =
+        data?.ancien_mot_de_passe?.[0] ||
+        data?.nouveau_mot_de_passe?.[0] ||
+        data?.detail ||
+        data?.non_field_errors?.[0] ||
+        "Une erreur est survenue. Veuillez réessayer.";
+      setErreur(msg);
+    } finally {
+      setChargement(false);
+    }
   };
 
   return (
@@ -44,7 +64,7 @@ function SecuriteParams() {
 
         <form onSubmit={handleSoumettre}>
 
-          {/* Message erreur */}
+          {/* Messages feedback */}
           {erreur && (
             <p className="mt-[10px] text-xs text-red-500 font-medium">{erreur}</p>
           )}
@@ -84,9 +104,10 @@ function SecuriteParams() {
 
           <button
             type="submit"
-            className="mt-[12px] cursor-pointer w-full h-[38px] rounded-[7px] border border-[#ffb9b9] bg-white text-sm font-semibold text-[#ed3038] hover:bg-red-50 transition-colors"
+            disabled={chargement}
+            className="mt-[12px] cursor-pointer w-full h-[38px] rounded-[7px] border border-[#ffb9b9] bg-white text-sm font-semibold text-[#ed3038] hover:bg-red-50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Changer le mot de passe
+            {chargement ? "Modification…" : "Changer le mot de passe"}
           </button>
 
         </form>
