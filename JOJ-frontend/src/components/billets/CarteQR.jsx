@@ -1,143 +1,114 @@
 // src/components/billets/CarteQR.jsx
-import React, { useState } from 'react';
-import CarouselIndicateur from './CarouselIndicateur';
+// Affiche le QR code réel généré par Django (image PNG depuis /media/qr_codes/).
+// Si le backend n'a pas encore généré le QR, affiche un QR SVG de substitution.
 
-// Billets mockés pour simuler plusieurs billets
-const BILLETS = [
-  { id: 1, label: 'Billet #1 — VIP' },
-  { id: 2, label: 'Billet #2 — VIP' },
-  { id: 3, label: 'Billet #3 — Tribunes' },
+// ── QR SVG de substitution (affiché si qrCodeUrl est null) ──────────────────
+const POSITIONS_BASE = [
+  [70,10],[90,10],[110,10],[130,10],
+  [70,30],[100,30],[120,30],
+  [80,50],[110,50],[130,50],
+  [70,70],[90,70],[110,70],[130,70],
+  [80,80],[100,80],[120,80],
+  [70,90],[100,90],
+  [80,100],[110,100],[130,100],
+  [70,110],[90,110],[120,110],
+  [140,70],[160,70],[180,70],
+  [150,80],[170,80],
+  [140,90],[160,90],[180,90],
+  [150,100],[170,100],
+  [140,110],[160,110],[180,110],
+  [70,130],[90,130],[110,130],[130,130],
+  [80,140],[100,140],[120,140],
+  [70,150],[100,150],[140,150],
+  [80,160],[110,160],[130,160],
+  [70,170],[90,170],[120,170],
+  [140,130],[160,130],[180,130],
+  [150,140],[170,140],
+  [140,150],[160,150],[180,150],
+  [150,160],[170,160],
+  [140,170],[160,170],[180,170],
 ];
 
-const CarteQR = ({ onTelecharger, onAccueil }) => {
-  const [billetActif, setBilletActif] = useState(0);
+function genererModulesSVG(id) {
+  // Seed déterministe basé sur l'id du billet
+  const seed = String(id).split("").map(Number);
+  return POSITIONS_BASE.filter((_, i) => seed[i % seed.length] !== 0);
+}
 
+function QRCodeSVG({ billet }) {
+  const modules = genererModulesSVG(billet.id ?? 1);
+  return (
+    <svg viewBox="0 0 200 200" className="w-48 h-48">
+      <rect x="0" y="0" width="200" height="200" fill="white" />
+      {/* Patterns de détection */}
+      <rect x="10" y="10" width="50" height="50" fill="black"/>
+      <rect x="15" y="15" width="40" height="40" fill="white"/>
+      <rect x="20" y="20" width="30" height="30" fill="black"/>
+      <rect x="140" y="10" width="50" height="50" fill="black"/>
+      <rect x="145" y="15" width="40" height="40" fill="white"/>
+      <rect x="150" y="20" width="30" height="30" fill="black"/>
+      <rect x="10" y="140" width="50" height="50" fill="black"/>
+      <rect x="15" y="145" width="40" height="40" fill="white"/>
+      <rect x="20" y="150" width="30" height="30" fill="black"/>
+      {/* Modules de données */}
+      {modules.map(([x, y], i) => (
+        <rect key={i} x={x} y={y} width="10" height="10" fill="black" />
+      ))}
+    </svg>
+  );
+}
+
+// ── Composant principal ──────────────────────────────────────────────────────
+const CarteQR = ({ billet, onTelecharger, onAccueil }) => {
   return (
     <div className="bg-white rounded-3xl shadow-lg p-8 flex flex-col items-center">
 
-      {/* Carousel indicateur — visible seulement si plusieurs billets */}
-      <CarouselIndicateur
-        total={BILLETS.length}
-        actif={billetActif}
-        onChange={setBilletActif}
-      />
-
-      {/* QR Code SVG */}
+      {/* QR Code : image réelle du backend ou SVG de substitution */}
       <div className="bg-white p-4 mb-6">
-        <svg viewBox="0 0 200 200" className="w-48 h-48">
-          <rect x="0" y="0" width="200" height="200" fill="white"/>
-          {/* Patterns de détection */}
-          <rect x="10" y="10" width="50" height="50" fill="black"/>
-          <rect x="15" y="15" width="40" height="40" fill="white"/>
-          <rect x="20" y="20" width="30" height="30" fill="black"/>
-          <rect x="140" y="10" width="50" height="50" fill="black"/>
-          <rect x="145" y="15" width="40" height="40" fill="white"/>
-          <rect x="150" y="20" width="30" height="30" fill="black"/>
-          <rect x="10" y="140" width="50" height="50" fill="black"/>
-          <rect x="15" y="145" width="40" height="40" fill="white"/>
-          <rect x="20" y="150" width="30" height="30" fill="black"/>
-          {/* Modules de données */}
-          <rect x="70" y="10" width="10" height="10" fill="black"/>
-          <rect x="90" y="10" width="10" height="10" fill="black"/>
-          <rect x="110" y="10" width="10" height="10" fill="black"/>
-          <rect x="70" y="30" width="10" height="10" fill="black"/>
-          <rect x="100" y="30" width="10" height="10" fill="black"/>
-          <rect x="120" y="30" width="10" height="10" fill="black"/>
-          <rect x="80" y="50" width="10" height="10" fill="black"/>
-          <rect x="110" y="50" width="10" height="10" fill="black"/>
-          <rect x="10" y="70" width="10" height="10" fill="black"/>
-          <rect x="30" y="70" width="10" height="10" fill="black"/>
-          <rect x="50" y="70" width="10" height="10" fill="black"/>
-          <rect x="10" y="90" width="10" height="10" fill="black"/>
-          <rect x="40" y="90" width="10" height="10" fill="black"/>
-          <rect x="10" y="110" width="10" height="10" fill="black"/>
-          <rect x="30" y="110" width="10" height="10" fill="black"/>
-          <rect x="50" y="110" width="10" height="10" fill="black"/>
-          <rect x="70" y="70" width="10" height="10" fill="black"/>
-          <rect x="90" y="70" width="10" height="10" fill="black"/>
-          <rect x="110" y="70" width="10" height="10" fill="black"/>
-          <rect x="130" y="70" width="10" height="10" fill="black"/>
-          <rect x="80" y="80" width="10" height="10" fill="black"/>
-          <rect x="100" y="80" width="10" height="10" fill="black"/>
-          <rect x="120" y="80" width="10" height="10" fill="black"/>
-          <rect x="70" y="90" width="10" height="10" fill="black"/>
-          <rect x="100" y="90" width="10" height="10" fill="black"/>
-          <rect x="140" y="90" width="10" height="10" fill="black"/>
-          <rect x="80" y="100" width="10" height="10" fill="black"/>
-          <rect x="110" y="100" width="10" height="10" fill="black"/>
-          <rect x="130" y="100" width="10" height="10" fill="black"/>
-          <rect x="70" y="110" width="10" height="10" fill="black"/>
-          <rect x="90" y="110" width="10" height="10" fill="black"/>
-          <rect x="120" y="110" width="10" height="10" fill="black"/>
-          <rect x="140" y="70" width="10" height="10" fill="black"/>
-          <rect x="160" y="70" width="10" height="10" fill="black"/>
-          <rect x="180" y="70" width="10" height="10" fill="black"/>
-          <rect x="150" y="80" width="10" height="10" fill="black"/>
-          <rect x="170" y="80" width="10" height="10" fill="black"/>
-          <rect x="140" y="90" width="10" height="10" fill="black"/>
-          <rect x="160" y="90" width="10" height="10" fill="black"/>
-          <rect x="180" y="90" width="10" height="10" fill="black"/>
-          <rect x="150" y="100" width="10" height="10" fill="black"/>
-          <rect x="170" y="100" width="10" height="10" fill="black"/>
-          <rect x="140" y="110" width="10" height="10" fill="black"/>
-          <rect x="160" y="110" width="10" height="10" fill="black"/>
-          <rect x="180" y="110" width="10" height="10" fill="black"/>
-          <rect x="70" y="130" width="10" height="10" fill="black"/>
-          <rect x="90" y="130" width="10" height="10" fill="black"/>
-          <rect x="110" y="130" width="10" height="10" fill="black"/>
-          <rect x="130" y="130" width="10" height="10" fill="black"/>
-          <rect x="80" y="140" width="10" height="10" fill="black"/>
-          <rect x="100" y="140" width="10" height="10" fill="black"/>
-          <rect x="120" y="140" width="10" height="10" fill="black"/>
-          <rect x="70" y="150" width="10" height="10" fill="black"/>
-          <rect x="100" y="150" width="10" height="10" fill="black"/>
-          <rect x="140" y="150" width="10" height="10" fill="black"/>
-          <rect x="80" y="160" width="10" height="10" fill="black"/>
-          <rect x="110" y="160" width="10" height="10" fill="black"/>
-          <rect x="130" y="160" width="10" height="10" fill="black"/>
-          <rect x="70" y="170" width="10" height="10" fill="black"/>
-          <rect x="90" y="170" width="10" height="10" fill="black"/>
-          <rect x="120" y="170" width="10" height="10" fill="black"/>
-          <rect x="140" y="130" width="10" height="10" fill="black"/>
-          <rect x="160" y="130" width="10" height="10" fill="black"/>
-          <rect x="180" y="130" width="10" height="10" fill="black"/>
-          <rect x="150" y="140" width="10" height="10" fill="black"/>
-          <rect x="170" y="140" width="10" height="10" fill="black"/>
-          <rect x="140" y="150" width="10" height="10" fill="black"/>
-          <rect x="160" y="150" width="10" height="10" fill="black"/>
-          <rect x="180" y="150" width="10" height="10" fill="black"/>
-          <rect x="150" y="160" width="10" height="10" fill="black"/>
-          <rect x="170" y="160" width="10" height="10" fill="black"/>
-          <rect x="140" y="170" width="10" height="10" fill="black"/>
-          <rect x="160" y="170" width="10" height="10" fill="black"/>
-          <rect x="180" y="170" width="10" height="10" fill="black"/>
-          <rect x="10" y="130" width="10" height="10" fill="black"/>
-          <rect x="30" y="130" width="10" height="10" fill="black"/>
-          <rect x="50" y="130" width="10" height="10" fill="black"/>
-          <rect x="10" y="150" width="10" height="10" fill="black"/>
-          <rect x="40" y="150" width="10" height="10" fill="black"/>
-          <rect x="10" y="170" width="10" height="10" fill="black"/>
-          <rect x="30" y="170" width="10" height="10" fill="black"/>
-          <rect x="50" y="170" width="10" height="10" fill="black"/>
-        </svg>
+        {billet.qrCodeUrl ? (
+          <img
+            src={billet.qrCodeUrl}
+            alt={`QR Code — ${billet.codeUnique}`}
+            className="w-48 h-48 object-contain"
+          />
+        ) : (
+          <QRCodeSVG billet={billet} />
+        )}
       </div>
 
-      {/* Titre QR */}
+      {/* Informations du billet */}
       <h3 className="text-xl font-bold text-gray-900 mb-1">Votre QR Code</h3>
-      <p className="text-[#C45D1E] text-sm font-semibold mb-2">{BILLETS[billetActif].label}</p>
+      <p className="text-[#C45D1E] text-sm font-semibold mb-1">
+        {billet.label} — {billet.categorie}
+      </p>
+      <p className="text-gray-700 text-sm font-medium mb-1">{billet.epreuve}</p>
+      <p className="text-gray-400 text-xs font-mono mb-2 text-center break-all max-w-[220px]">
+        {billet.codeUnique || billet.id}
+      </p>
       <p className="text-gray-400 text-sm text-center mb-6 max-w-xs">
         Présentez ce code à la borne de contrôle dès votre arrivée.
       </p>
 
       {/* Badge statut */}
       <div className="flex items-center gap-2 border border-gray-200 rounded-full px-4 py-2 mb-8">
-        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <rect x="3" y="3" width="18" height="18" rx="2" strokeWidth="2"/>
-        </svg>
-        <span className="text-gray-600 text-sm font-medium">Code prêt • Scan à l'entrée</span>
+        <span className={`w-2 h-2 rounded-full inline-block ${
+          billet.statut === "VALIDE"  ? "bg-green-400"  :
+          billet.statut === "UTILISE" ? "bg-gray-400"   :
+          billet.statut === "EXPIRE"  ? "bg-red-400"    :
+          billet.statut === "ANNULE"  ? "bg-red-600"    :
+                                        "bg-yellow-400"
+        }`} />
+        <span className="text-gray-600 text-sm font-medium">
+          {billet.statut === "VALIDE"    ? "Code prêt • Scan à l'entrée"   :
+           billet.statut === "UTILISE"   ? "Billet déjà utilisé"            :
+           billet.statut === "EN_ATTENTE"? "En attente de paiement"         :
+           billet.statut === "EXPIRE"    ? "Billet expiré"                  :
+           billet.statut === "ANNULE"    ? "Billet annulé"                  :
+                                           billet.statut}
+        </span>
       </div>
 
-      {/* Bouton télécharger */}
+      {/* Bouton télécharger ce billet */}
       <button
         type="button"
         onClick={onTelecharger}
@@ -145,16 +116,17 @@ const CarteQR = ({ onTelecharger, onAccueil }) => {
       >
         <div className="flex items-center gap-2">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
           </svg>
-          Télécharger le billet (PDF)
+          Télécharger ce billet (PDF)
         </div>
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
         </svg>
       </button>
 
-      {/* Bouton accueil */}
+      {/* Bouton retour accueil */}
       <button
         type="button"
         onClick={onAccueil}

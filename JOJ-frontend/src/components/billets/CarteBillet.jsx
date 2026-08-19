@@ -1,24 +1,26 @@
 // src/components/billets/CarteBillet.jsx
-import React from 'react';
+// Affiche l'image du site + les informations du billet venant du backend.
 
-const CarteBillet = ({ onTelechargerTous }) => {
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1518605348400-437a4a7761c4?w=800&q=80";
+
+const CarteBillet = ({ billet, onTelechargerTous }) => {
   return (
     <div className="flex flex-col gap-6">
 
-      {/* Card événement */}
+      {/* Image du site de l'épreuve + informations */}
       <div className="relative rounded-3xl overflow-hidden shadow-lg bg-gray-900 h-80">
 
-        {/* Image de fond */}
         <img
-          src="https://images.unsplash.com/photo-1518605348400-437a4a7761c4?w=800&q=80"
-          alt="Stade"
+          src={billet.imageUrl || FALLBACK_IMAGE}
+          alt={billet.site}
           className="absolute inset-0 w-full h-full object-cover opacity-60"
+          onError={(e) => { e.currentTarget.src = FALLBACK_IMAGE; }}
         />
 
-        {/* Badge VIP */}
+        {/* Badge type de billet */}
         <div className="absolute top-4 right-4">
           <span className="bg-[#C45D1E] text-white text-xs font-bold px-4 py-1.5 rounded-full tracking-wide uppercase">
-            VIP ACCESS
+            {billet.categorie}
           </span>
         </div>
 
@@ -27,27 +29,39 @@ const CarteBillet = ({ onTelechargerTous }) => {
           <div className="flex justify-between items-end">
 
             <div>
-              <h2 className="text-white text-2xl font-bold mb-2">
-                Athlétisme - Finales 100m
-              </h2>
-              <div className="flex items-center gap-2 text-gray-300 text-sm">
-                <svg className="w-4 h-4 text-[#C45D1E]" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
+              <h2 className="text-white text-xl font-bold mb-1">{billet.epreuve}</h2>
+              <div className="flex items-center gap-2 text-gray-300 text-sm mb-1">
+                <svg className="w-4 h-4 text-[#C45D1E] shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd"
                     d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-                    clipRule="evenodd"
-                  />
+                    clipRule="evenodd" />
                 </svg>
-                <span>Stade Iba Mar Diop, Dakar</span>
+                <span>{billet.site}{billet.ville !== "—" ? `, ${billet.ville}` : ""}</span>
               </div>
+              {billet.siege && billet.siege !== "—" && (
+                <p className="text-gray-400 text-xs">{billet.siege}</p>
+              )}
             </div>
 
-            <div className="text-right">
+            <div className="text-right shrink-0 ml-4">
               <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">DATE & HEURE</p>
-              <p className="text-white font-bold text-lg">12 Mai 2026</p>
-              <p className="text-[#C45D1E] font-bold text-lg">18:00</p>
+              <p className="text-white font-bold">{billet.date}</p>
+              <p className="text-[#C45D1E] font-bold">{billet.heure}</p>
             </div>
 
+          </div>
+
+          {/* Titulaire + code unique */}
+          <div className="mt-3 pt-3 border-t border-white/20 flex items-center gap-2">
+            <svg className="w-3.5 h-3.5 text-gray-400 shrink-0" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round"
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <span className="text-gray-300 text-xs">{billet.titulaire}</span>
+            <span className="ml-auto text-gray-400 text-xs font-mono truncate max-w-[120px]">
+              {billet.codeUnique || billet.id}
+            </span>
           </div>
         </div>
       </div>
@@ -59,7 +73,8 @@ const CarteBillet = ({ onTelechargerTous }) => {
         className="w-full bg-[#C45D1E] cursor-pointer hover:bg-[#A84D18] text-white font-semibold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-md"
       >
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
         </svg>
         Télécharger tous les billets (PDF)
       </button>
