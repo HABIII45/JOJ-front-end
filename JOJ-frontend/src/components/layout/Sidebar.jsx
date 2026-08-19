@@ -33,7 +33,7 @@ export function Sidebar() {
                     <span>Dashboard</span>
                 </NavLink>
 
-                <NavLink to="/evenements">
+                <NavLink to="/events">
                     <CalendarDays size={19} />
                     <span>Événements</span>
                 </NavLink>

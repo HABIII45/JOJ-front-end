@@ -14,7 +14,7 @@ export function Header() {
         <div className="nav">
             <nav className="nav">
                 <NavLink to="/">Accueil</NavLink>
-                <NavLink to="/evenements">Événements</NavLink>
+                <NavLink to="/events">Événements</NavLink>
                 <NavLink to="/sites">Sites</NavLink>
                 <NavLink to="/jeux">Jeux</NavLink>
                 <NavLink to="/actualites">Actualités</NavLink>
