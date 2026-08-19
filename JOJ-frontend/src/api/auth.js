@@ -1,17 +1,26 @@
 /**
  * Service authentification
  * Gère la connexion, déconnexion et rafraîchissement de token JWT.
+ *
+ * Méthodes alignées sur le backend Django :
+ *   profil          → GET / PUT  (pas PATCH)
+ *   changer-mot-de-passe → PUT   (pas POST)
+ *   utilisateurs    → GET liste complète (réservé superadmin)
+ *   revoquer-acces  → POST /:id/
+ *   reactiver-acces → POST /:id/
  */
-import api, { ENDPOINTS } from "./api";
+import api from "./api";
 
 // ── Endpoints auth ───────────────────────────────────────────────────────────
 export const AUTH_ENDPOINTS = {
-  connexion:          "/api/utilisateurs/connexion/",
-  deconnexion:        "/api/utilisateurs/deconnexion/",
-  rafraichirToken:    "/api/utilisateurs/rafraichir-token/",
-  profil:             "/api/utilisateurs/profil/",
-  changerMotDePasse:  "/api/utilisateurs/changer-mot-de-passe/",
-  adminsSecondaires:  "/api/utilisateurs/admins-secondaires/",
+  connexion:         "/api/utilisateurs/connexion/",
+  deconnexion:       "/api/utilisateurs/deconnexion/",
+  rafraichirToken:   "/api/utilisateurs/rafraichir-token/",
+  profil:            "/api/utilisateurs/profil/",
+  changerMotDePasse: "/api/utilisateurs/changer-mot-de-passe/",
+  utilisateurs:      "/api/utilisateurs/utilisateurs/",
+  revoquerAcces:     (id) => `/api/utilisateurs/revoquer-acces/${id}/`,
+  reactiverAcces:    (id) => `/api/utilisateurs/reactiver-acces/${id}/`,
 };
 
 // ── Helpers stockage tokens ──────────────────────────────────────────────────
@@ -32,9 +41,6 @@ export const tokenStorage = {
 
 /**
  * Connecte un utilisateur et stocke les tokens JWT.
- * @param {string} username  Identifiant (username Django)
- * @param {string} password
- * @returns {Promise<{ access: string, refresh: string }>}
  */
 export async function connexion(username, password) {
   const { data } = await api.post(AUTH_ENDPOINTS.connexion, { username, password });
@@ -59,7 +65,7 @@ export async function deconnexion() {
 
 /**
  * Récupère le profil de l'utilisateur connecté.
- * @returns {Promise<Object>} Profil Personnel
+ * @returns {Promise<Object>}
  */
 export async function fetchProfil() {
   const { data } = await api.get(AUTH_ENDPOINTS.profil);
@@ -79,61 +85,75 @@ export async function rafraichirToken() {
 }
 
 /**
- * Met à jour le profil de l'utilisateur connecté.
- * @param {Object} donnees  Champs à modifier (nom, email, departement…)
+ * Met à jour le profil texte de l'utilisateur connecté.
+ * Utilise PUT — c'est ce qu'expose le backend (partial=True dans le serializer).
+ * @param {Object} donnees  ex: { username, email }
  * @returns {Promise<Object>} Profil mis à jour
  */
 export async function updateProfil(donnees) {
-  const { data } = await api.patch(AUTH_ENDPOINTS.profil, donnees);
+  const { data } = await api.put(AUTH_ENDPOINTS.profil, donnees);
+  return data;
+}
+
+/**
+ * Upload ou remplace la photo de profil.
+ * Envoie un FormData en PUT (multipart/form-data).
+ * @param {File} fichier
+ * @returns {Promise<Object>} Profil mis à jour
+ */
+export async function uploadAvatar(fichier) {
+  const formData = new FormData();
+  formData.append("avatar", fichier);
+  const { data } = await api.put(AUTH_ENDPOINTS.profil, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
   return data;
 }
 
 /**
  * Change le mot de passe de l'utilisateur connecté.
+ * Utilise PUT — c'est ce qu'expose le backend sur /changer-mot-de-passe/.
+ * Le backend exige les 3 champs : ancien_mot_de_passe, nouveau_mot_de_passe,
+ * confirmation_nouveau_mot_de_passe.
  * @param {string} ancien_mot_de_passe
  * @param {string} nouveau_mot_de_passe
  * @returns {Promise<Object>}
  */
 export async function changerMotDePasse(ancien_mot_de_passe, nouveau_mot_de_passe) {
-  const { data } = await api.post(AUTH_ENDPOINTS.changerMotDePasse, {
+  const { data } = await api.put(AUTH_ENDPOINTS.changerMotDePasse, {
     ancien_mot_de_passe,
     nouveau_mot_de_passe,
+    confirmation_nouveau_mot_de_passe: nouveau_mot_de_passe,
   });
   return data;
 }
 
 /**
- * Récupère la liste des administrateurs secondaires.
+ * Récupère la liste de tous les utilisateurs (réservé superadmins).
+ * L'endpoint /utilisateurs/ renvoie tous les comptes actifs et inactifs.
  * @returns {Promise<Array>}
  */
 export async function fetchAdminsSecondaires() {
-  const { data } = await api.get(AUTH_ENDPOINTS.adminsSecondaires);
+  const { data } = await api.get(AUTH_ENDPOINTS.utilisateurs);
+  return Array.isArray(data) ? data : data.results ?? [];
+}
+
+/**
+ * Révoque l'accès d'un utilisateur (désactive le compte, ne le supprime pas).
+ * @param {number|string} id
+ * @returns {Promise<Object>}
+ */
+export async function revoquerAccesAdmin(id) {
+  const { data } = await api.post(AUTH_ENDPOINTS.revoquerAcces(id));
   return data;
 }
 
 /**
- * Supprime un administrateur secondaire (suppression réelle en base).
- * @param {number|string} id  ID de l'admin à supprimer
- * @returns {Promise<void>}
+ * Réactive l'accès d'un utilisateur désactivé.
+ * @param {number|string} id
+ * @returns {Promise<Object>}
  */
-export async function supprimerAdminSecondaire(id) {
-  // AUTH_ENDPOINTS.adminsSecondaires se termine par "/" → on évite le double slash
-  const base = AUTH_ENDPOINTS.adminsSecondaires.replace(/\/$/, "");
-  await api.delete(`${base}/${id}/`);
-}
-
-/**
- * Upload ou remplace la photo de profil de l'utilisateur connecté.
- * Envoie un FormData (multipart/form-data) pour que Django puisse
- * traiter le fichier image via un ImageField.
- * @param {File} fichier  Fichier image sélectionné par l'utilisateur
- * @returns {Promise<Object>} Profil mis à jour avec la nouvelle URL d'avatar
- */
-export async function uploadAvatar(fichier) {
-  const formData = new FormData();
-  formData.append("avatar", fichier);
-  const { data } = await api.patch(AUTH_ENDPOINTS.profil, formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+export async function reactiverAccesAdmin(id) {
+  const { data } = await api.post(AUTH_ENDPOINTS.reactiverAcces(id));
   return data;
 }

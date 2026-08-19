@@ -3,8 +3,9 @@ import { changerMotDePasse } from "../../api/auth";
 
 function SecuriteParams() {
   const [form, setForm] = useState({
-    actuel:  "",
-    nouveau: "",
+    actuel:       "",
+    nouveau:      "",
+    confirmation: "",
   });
   const [chargement, setChargement] = useState(false);
   const [erreur,     setErreur]     = useState("");
@@ -18,10 +19,14 @@ function SecuriteParams() {
 
   const handleSoumettre = async (e) => {
     e.preventDefault();
-    if (!form.actuel)  { setErreur("Veuillez saisir votre mot de passe actuel."); return; }
-    if (!form.nouveau) { setErreur("Veuillez saisir un nouveau mot de passe."); return; }
+    if (!form.actuel)       { setErreur("Veuillez saisir votre mot de passe actuel."); return; }
+    if (!form.nouveau)      { setErreur("Veuillez saisir un nouveau mot de passe."); return; }
     if (form.nouveau.length < 8) {
       setErreur("Le nouveau mot de passe doit contenir au moins 8 caractères.");
+      return;
+    }
+    if (form.nouveau !== form.confirmation) {
+      setErreur("Les deux nouveaux mots de passe ne correspondent pas.");
       return;
     }
 
@@ -32,16 +37,16 @@ function SecuriteParams() {
     try {
       await changerMotDePasse(form.actuel, form.nouveau);
       setSucces(true);
-      setForm({ actuel: "", nouveau: "" });
+      setForm({ actuel: "", nouveau: "", confirmation: "" });
     } catch (err) {
       const data = err?.response?.data;
       const msg =
-        data?.ancien_mot_de_passe?.[0] ||
-        data?.nouveau_mot_de_passe?.[0] ||
-        data?.detail ||
-        data?.non_field_errors?.[0] ||
+        data?.ancien_mot_de_passe      ||
+        data?.nouveau_mot_de_passe     ||
+        data?.non_field_errors?.[0]    ||
+        data?.detail                   ||
         "Une erreur est survenue. Veuillez réessayer.";
-      setErreur(msg);
+      setErreur(Array.isArray(msg) ? msg[0] : msg);
     } finally {
       setChargement(false);
     }
@@ -98,6 +103,20 @@ function SecuriteParams() {
               placeholder="••••••••"
               value={form.nouveau}
               onChange={handleChange("nouveau")}
+              className="w-full h-[38px] box-border rounded-[8px] border border-[#e0e4e8] bg-[#f8f9fa] px-[10px] text-sm outline-none focus:border-[#d96814] transition-colors"
+            />
+          </div>
+
+          {/* Confirmation */}
+          <div className="mt-[12px]">
+            <label className="block mb-[6px] text-xs tracking-[1.5px] text-[#8e97a3] uppercase">
+              Confirmer le nouveau mot de passe
+            </label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              value={form.confirmation}
+              onChange={handleChange("confirmation")}
               className="w-full h-[38px] box-border rounded-[8px] border border-[#e0e4e8] bg-[#f8f9fa] px-[10px] text-sm outline-none focus:border-[#d96814] transition-colors"
             />
           </div>

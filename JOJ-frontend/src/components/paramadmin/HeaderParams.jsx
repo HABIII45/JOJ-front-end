@@ -3,11 +3,15 @@ import { useAuth } from "../../contexts/AuthContext";
 function HeaderParams() {
   const { utilisateur } = useAuth();
 
-  const nomAffiche = utilisateur?.nom_complet ?? utilisateur?.username ?? "Administrateur";
-  const roleAffiche = utilisateur?.role ?? (utilisateur?.is_staff ? "Administrateur" : "Utilisateur");
-  const avatarUrl = utilisateur?.avatar ?? utilisateur?.photo ?? null;
+  const nomAffiche = utilisateur
+    ? `${utilisateur.first_name ?? ""} ${utilisateur.last_name ?? ""}`.trim() || utilisateur.username || "Administrateur"
+    : "Administrateur";
 
-  // Initiales de repli si pas d'avatar
+  const roleAffiche = utilisateur?.role
+    ?? (utilisateur?.is_superuser ? "Super Administrateur" : utilisateur?.is_staff ? "Administrateur" : "Utilisateur");
+
+  const avatarUrl = utilisateur?.avatar ?? null;
+
   const initiales = nomAffiche
     .split(" ")
     .map((m) => m[0])
@@ -48,7 +52,7 @@ function HeaderParams() {
 
           <div className="h-[30px] w-px bg-[#e6e8eb]" />
 
-          {/* Admin */}
+          {/* Info utilisateur */}
           <div className="ml-[16px] flex items-center">
             <div className="text-right mr-[10px]">
               <p className="m-0 text-sm font-semibold leading-[14px]">{nomAffiche}</p>
@@ -58,11 +62,7 @@ function HeaderParams() {
             {/* Avatar ou initiales */}
             <div className="w-[34px] h-[34px] rounded-full border-[2px] border-[#e56818] overflow-hidden flex items-center justify-center bg-[#fff0e7] shrink-0">
               {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  className="w-full h-full object-cover"
-                  alt={nomAffiche}
-                />
+                <img src={avatarUrl} className="w-full h-full object-cover" alt={nomAffiche} />
               ) : (
                 <span className="text-xs font-bold text-[#d96814]">{initiales}</span>
               )}
