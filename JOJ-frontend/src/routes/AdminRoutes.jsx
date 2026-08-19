@@ -1,10 +1,10 @@
-import ProtectedRoute from "../components/ProtectedRoute";
 import CompetiteurForm from "../pages/admin/CompetiteurForm";
 import GamesList from "../pages/admin/Games";
 import Dashboard from "../pages/admin/Dashboard";
 import FormEvent from "../pages/admin/EventForm";
 import GestionEvents from "../pages/admin/GestionEvents";
 import SiteForm from "../pages/admin/SiteForm";
+import ProtectedRoute from "./ProtectedRoutes";
 
 export const routesAdmin = [
   {

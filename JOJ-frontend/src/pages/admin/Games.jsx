@@ -7,7 +7,7 @@ export default function GamesList() {
   const [gamers, setGamers] = useState([])
   const [loading, setLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
-  const [filterType, setFilterType] = useState('all') // 'all' | 'teams' | 'players'
+  const [filterType, setFilterType] = useState('all') 
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 5
 
