@@ -1,7 +1,6 @@
 import { ListeDiscipline } from "../../services/listeDisciplines";
 import { useState, useEffect } from "react";
-import AdminLayout from "../../components/layouts/AdminLayout";
-
+import { Header } from "../../components/layout/Header";
 import JudoFight from "../../assets/images/JudoFight.png";
 
 import {
@@ -29,6 +28,7 @@ export function DisciplinesGame() {
     // =========================================================
 
     useEffect(() => {
+        
 
         const recupererData = async () => {
 
@@ -119,8 +119,8 @@ export function DisciplinesGame() {
 
     return (
 
-        <AdminLayout>
-
+           < div>
+            <Header/>
             <div className="min-h-screen bg-[#f5f5f5]">
 
 
@@ -457,7 +457,7 @@ export function DisciplinesGame() {
                
 
             </div>
+            </div>
 
-        </AdminLayout>
     );
 }
