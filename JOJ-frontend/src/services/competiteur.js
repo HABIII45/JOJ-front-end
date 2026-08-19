@@ -6,7 +6,7 @@ const GAMER_URL='http://localhost:8000/api/equipes/'
 export const createGamer = async (payload) => { 
     try {
         const response = await axios.post(GAMER_URL, payload);
-        return response.data;
+        return response;
     } catch (error) {
         console.error("Erreur lors de la création d'un compétiteur :", error);
         throw error;
