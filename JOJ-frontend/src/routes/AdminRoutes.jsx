@@ -88,6 +88,7 @@ export const routesAdmin = [
       //     { path: "/admin/disciplines", element: <GamesList /> },
       //   ],
       // },
+  
 
       // ROUTES GESTION DES ÉQUIPES / COMPÉTITEURS
       {
