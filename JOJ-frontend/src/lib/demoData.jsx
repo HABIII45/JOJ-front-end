@@ -253,34 +253,34 @@ export const RESULTATS_DEMO_ENRICHIS = [
     score: "1-0",
     competiteur: { id: 1, nom: "Joueur", prenom: "T. Abe", pays: "JP" },
     adversaire: { nom: "Joueur", prenom: "J. Lima", pays: "BR" },
-    evenement: { id: 1, titre: "Finale - Hommes -66kg", categorie: "Judo" },
+    evenement: { id: 1, titre: "Finale - Hommes -66kg", discipline: "Judo" },
   },
   {
     id: 2,
     score: "85-78",
     competiteur: { id: 2, nom: "Équipe", prenom: "États-Unis", pays: "US" },
     adversaire: { nom: "Équipe", prenom: "France", pays: "FR" },
-    evenement: { id: 2, titre: "Demi-finale - Femmes", categorie: "Basketball" },
+    evenement: { id: 2, titre: "Demi-finale - Femmes", discipline: "Basketball" },
   },
   {
     id: 3,
     score: "10.05",
     competiteur: { id: 3, nom: "Athlète", prenom: "L. Thompson", pays: "JM" },
-    evenement: { id: 3, titre: "100m - Hommes - Finale", categorie: "Athlétisme" },
+    evenement: { id: 3, titre: "100m - Hommes - Finale", discipline: "Athlétisme" },
     position: 1,
   },
   {
     id: 4,
     score: "10.12",
     competiteur: { id: 4, nom: "Athlète", prenom: "M. Davis", pays: "US" },
-    evenement: { id: 3, titre: "100m - Hommes - Finale", categorie: "Athlétisme" },
+    evenement: { id: 3, titre: "100m - Hommes - Finale", discipline: "Athlétisme" },
     position: 2,
   },
   {
     id: 5,
     score: "10.18",
     competiteur: { id: 5, nom: "Athlète", prenom: "A. Smith", pays: "CA" },
-    evenement: { id: 3, titre: "100m - Hommes - Finale", categorie: "Athlétisme" },
+    evenement: { id: 3, titre: "100m - Hommes - Finale", discipline: "Athlétisme" },
     position: 3,
   },
   {
@@ -288,13 +288,13 @@ export const RESULTATS_DEMO_ENRICHIS = [
     score: "2-1",
     competiteur: { id: 6, nom: "Équipe", prenom: "Sénégal", pays: "SN" },
     adversaire: { nom: "Équipe", prenom: "Japon", pays: "JP" },
-    evenement: { id: 6, titre: "Quart de finale - Hommes", categorie: "Football" },
+    evenement: { id: 6, titre: "Quart de finale - Hommes", discipline: "Football" },
   },
   {
     id: 7,
     score: "0.95",
     competiteur: { id: 7, nom: "Athlète", prenom: "A. Ba", pays: "SN" },
-    evenement: { id: 7, titre: "50m Nage libre - Hommes", categorie: "Natation" },
+    evenement: { id: 7, titre: "50m Nage libre - Hommes", discipline: "Natation" },
     position: 1,
   },
   {
@@ -302,10 +302,9 @@ export const RESULTATS_DEMO_ENRICHIS = [
     score: "32-28",
     competiteur: { id: 8, nom: "Équipe", prenom: "Égypte", pays: "EG" },
     adversaire: { nom: "Équipe", prenom: "Corée", pays: "KR" },
-    evenement: { id: 8, titre: "Demi-finale - Femmes", categorie: "Handball" },
+    evenement: { id: 8, titre: "Demi-finale - Femmes", discipline: "Handball" },
   },
 ];
-
  export const DRAPEAUX = {
   JP: "🇯🇵", BR: "🇧🇷", US: "🇺🇸", FR: "🇫🇷", JM: "🇯🇲", CA: "🇨🇦",
   SN: "🇸🇳", EG: "🇪🇬", KR: "🇰🇷",
