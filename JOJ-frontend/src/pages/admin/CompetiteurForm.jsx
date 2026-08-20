@@ -1,25 +1,25 @@
 import { useState, useEffect } from 'react';
-import { createGamer, getCategories } from '../../services/competiteur';
+import { createJoueur, createTeam, getCategories } from '../../services/competiteur';
 import AdminLayout from '../../components/layouts/AdminLayout';
+
 const CompetiteurForm = () => {
   const [teamType, setTeamType] = useState('individuel');
   const [formData, setFormData] = useState({
-    teamName: '',
-    country: '',
-    category: '', 
-    status: true
+    nom: '',
+    prenom: '',
+    pays: '',
+    categorie: '', 
+    statut: true,
+    image: null
   });
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]); 
 
-  // Récupération des catégories au chargement du composant
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const data = await getCategories();
-        setCategories(data);
-        console.log(data.categories)
-
+        setCategories(data.categories || data);
       } catch (error) {
         console.error("Erreur lors de la récupération des catégories", error);
       }
@@ -28,12 +28,13 @@ const CompetiteurForm = () => {
     fetchCategories();
   }, []);
 
-
-// Gestion de l'image uploadee
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFormData(...file);
+    const files = e.target.files;
+    if (files && files[0]) {
+      setFormData(prev => ({
+        ...prev,
+        image: files[0]
+      }));
     }
   };
 
@@ -45,32 +46,47 @@ const CompetiteurForm = () => {
     }));
   };
 
-// Gestion du formulaire
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validation simple
-    if (!formData.category) {
+    if (!formData.categorie) {
       alert("Veuillez sélectionner une catégorie");
       return;
     }
 
     setLoading(true); 
     try {
-      await createGamer(formData);
-      alert('Compétiteur créé avec succès');
+      const dataToSend = new FormData();
+      dataToSend.append('nom', formData.nom);
+      dataToSend.append('pays', formData.pays);
+      dataToSend.append('categorie', formData.categorie);
+      dataToSend.append('statut', formData.statut ? 'true' : 'false');
       
-      // Reset du formulaire
+      if (formData.image) {
+        dataToSend.append('image', formData.image);
+      }
+
+      if (teamType === 'individuel') {
+        dataToSend.append('prenom', formData.prenom);
+        await createJoueur(dataToSend);
+        alert('Joueur créé avec succès');
+      } else {
+        await createTeam(dataToSend);
+        alert('Équipe créée avec succès');
+      }
+      
       setFormData({
-        teamName: '',
-        country: '',
-        category: '',
-        status: true
+        nom: '',
+        prenom: '',
+        pays: '',
+        categorie: '',
+        statut: true,
+        image: null
       });
       
     } catch (error) {
-      console.error("Erreur lors de la création d'un nouveau compétiteur", error);
-      alert("Erreur lors de la création du compétiteur");
+      console.error("Erreur lors de la création", error);
+      alert("Erreur lors de la création d'un compétiteur");
     } finally {
       setLoading(false); 
     }
@@ -137,7 +153,7 @@ const CompetiteurForm = () => {
                         <svg className="w-12 h-12 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        <p className="text-sm text-gray-400 mb-1">Uploadez l'image ici</p>
+                        <p className="text-sm text-gray-400 mb-1">{formData.image ? formData.image.name : "Uploadez l'image ici"}</p>
                         <p className="text-xs text-gray-500">JPG, PNG (max 5MB)</p>
                       </label>
                     </div>

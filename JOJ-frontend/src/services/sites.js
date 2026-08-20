@@ -2,7 +2,7 @@ import api from "../api/api";
 
 const SITE_URL = "/api/sites/";
 
-// Récupération de l'intégralité des sites réels (parcourt toutes les pages DRF)
+// Récupération des sites list
 export const getAllSites = async () => {
   try {
     let allSites = [];

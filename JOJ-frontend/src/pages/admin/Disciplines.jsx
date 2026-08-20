@@ -56,6 +56,7 @@ function CelluleTexte({ valeur }) {
 const PAR_PAGE = 8;
 
 export default function Disciplines() {
+  // const [, setLocation] = useLocation();
   const navigate = useNavigate();
   const [chargement, setChargement] = useState(true);
   const [disciplines, setDisciplines] = useState([]);

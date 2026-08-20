@@ -47,16 +47,7 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* Le bouton n'apparaît que pour le Superadmin et les admins ayant la permission Événements */}
-        {peutCreerEvenement && (
-          <button
-            onClick={() => navigate("/admin/evenements/ajout")}
-            className="inline-flex items-center gap-2 bg-[#C25B1E] hover:bg-[#A04816] text-white rounded-xl px-5 py-2.5 text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            Créer un événement
-          </button>
-        )}
+       
       </div>
 
       {/* Grid des cartes KPI dynamiques */}

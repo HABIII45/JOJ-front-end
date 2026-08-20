@@ -1,7 +1,4 @@
-/**
- * Configuration centrale Axios
- * Toutes les requêtes vers le backend Django passent par cette instance.
- */
+
 import axios from "axios";
 
 export const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
