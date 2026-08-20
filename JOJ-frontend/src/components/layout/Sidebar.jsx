@@ -61,7 +61,7 @@ export function Sidebar() {
   };
 
   return (
-    <div className="sidebar">
+    <div className="sidebar width-64 text-white flex flex-col justify-between">
       {/* Logo */}
       <div className="sidebar-logo">
         <img src={JOJlogo} alt="JOJ Events" />

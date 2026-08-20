@@ -6,6 +6,7 @@ import SitesSection from "../../components/sections/SitesSection";
 import GamesSection from "../../components/sections/GamesSection";
 import NewsSection from "../../components/sections/NewsSection";
 import { useHomeData } from "../../hooks/useHomeData";
+import ChatbotAssistant from "../../components/chat/Chatbot"
 
 const IMAGES_FALLBACK = {
   mascotte: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png",
@@ -70,7 +71,7 @@ export default function Home() {
         <GamesSection disciplines={listDisc} />
         <NewsSection actualites={listNews} />
       </main>
-
+      <ChatbotAssistant/>
       <Footer />
     </div>
   );

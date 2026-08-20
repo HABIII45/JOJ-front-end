@@ -10,7 +10,7 @@ import {
 import { getImageUrl } from "../../api/api";
 import { Header } from "../../components/layout/Header";
 import { Footer } from "../../components/layout/Footer";
-import { ChatbotAssistant } from "../../components/chat/Chatbot";
+import ChatbotAssistant from "../../components/chat/Chatbot";
 import { Trophy, Search, Calendar, MapPin, Swords, Medal } from "lucide-react";
 
 export default function Resultats() {
@@ -96,46 +96,52 @@ export default function Resultats() {
   }, [joueurs]);
 
   // Helper pour obtenir les données complètes d'un compétiteur (Équipe ou Joueur)
-  const getCompetiteurInfo = (r) => {
-    const compId = String(r.competiteur || r.info_competiteur?.id || "");
-    const info = r.info_competiteur || {};
+const getCompetiteurInfo = (r) => {
+  // Récupérer l'ID du compétiteur
+  const compId = String(r.competiteur || r.info_competiteur?.id || "");
+  
+  console.log("CompID trouvé:", compId); // Pour déboguer
+  
+  // Chercher dans les équipes
+  const equipe = equipes.find(e => String(e.id) === compId);
+  if (equipe) {
+    return {
+      type: "equipe",
+      nom: equipe.nom,
+      pays: equipe.pays || "SN",
+      image: equipe.image || null,
+    };
+  }
 
-    const equipe = equipesMap.get(compId);
-    if (equipe) {
-      return {
-        type: "equipe",
-        nom: equipe.nom,
-        pays: equipe.pays || info.pays || "SN",
-        image: equipe.image || null,
-      };
-    }
-
-    const joueur = joueursMap.get(compId);
-    if (joueur) {
-      return {
-        type: "joueur",
-        nom: `${joueur.prenom ?? ""} ${joueur.nom ?? ""}`.trim() || joueur.username || joueur.nom,
-        pays: joueur.pays || info.pays || "SN",
-        image: joueur.image || null,
-      };
-    }
-
-    if (info.type === "equipe" || info.nom_complet) {
-      return {
-        type: info.type || "equipe",
-        nom: info.nom_complet || `Équipe #${compId}`,
-        pays: info.pays || "SN",
-        image: null,
-      };
-    }
-
+  // Chercher dans les joueurs
+  const joueur = joueurs.find(j => String(j.id) === compId);
+  if (joueur) {
     return {
       type: "joueur",
-      nom: r.competiteur_nom || `Athlète #${compId}`,
-      pays: info.pays || "SN",
+      nom: joueur.prenom ? `${joueur.prenom} ${joueur.nom}` : joueur.nom,
+      pays: joueur.pays || "SN",
+      image: joueur.image || null,
+    };
+  }
+
+  // Si on trouve un nom directement dans le résultat
+  if (r.competiteur_nom) {
+    return {
+      type: "joueur",
+      nom: r.competiteur_nom,
+      pays: r.competiteur_pays || "SN",
       image: null,
     };
+  }
+
+  // Fallback
+  return {
+    type: "joueur",
+    nom: `Athlète #${compId || "inconnu"}`,
+    pays: "SN",
+    image: null,
   };
+};
 
   // Liste des pastilles de filtres dynamiques (Disciplines & Catégories réelles)
   const listeFiltres = useMemo(() => {
@@ -233,6 +239,36 @@ export default function Resultats() {
     });
   }, [evenementsAvecResultats, filtreSelectionne, recherche]);
 
+  // Regroupement garanti par Discipline
+  const groupeParDiscipline = useMemo(() => {
+    const groupes = {};
+    evenementsFiltres.forEach((r) => {
+      const discipline =
+        r.evenement?.discipline || r.evenement?.categorie || "Divers";
+      (groupes[discipline] = groupes[discipline] || []).push(r);
+    });
+    return groupes;
+  }, [evenementsFiltres]);
+
+  const disciplinesVisibles = useMemo(() => {
+    const noms = Object.keys(groupeParDiscipline);
+    if (filtreSelectionne === "Tous") return noms;
+    return noms.filter((n) => n === filtreSelectionne);
+  }, [groupeParDiscipline, filtreSelectionne]);
+// Ajoutez après les useState
+useEffect(() => {
+  console.log("=== VÉRIFICATION DES DONNÉES ===");
+  console.log("Résultats:", resultats);
+  console.log("Équipes:", equipes);
+  console.log("Joueurs:", joueurs);
+  
+  // Vérifier le premier résultat
+  if (resultats.length > 0) {
+    console.log("Premier résultat:", resultats[0]);
+    console.log("competiteur ID:", resultats[0].competiteur);
+    console.log("info_competiteur:", resultats[0].info_competiteur);
+  }
+}, [resultats, equipes, joueurs]);
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
       <Header />
