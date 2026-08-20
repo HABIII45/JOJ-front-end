@@ -1,11 +1,11 @@
 import api from "../api/api";
+import axios from "axios";
+const GAMER_URL = "http://localhost:8000/api/equipes/";
 
-const GAMER_URL = "/api/equipes/";
-
-// Création d'un compétiteur / équipe
-export const createGamer = async (payload) => { 
+// Création d'une équipe
+export const createTeam = async (payload) => { 
   try {
-    const response = await api.post(GAMER_URL, payload);
+    const response = await axios.post(GAMER_URL, payload);
     return response.data;
   } catch (error) {
     console.error("Erreur lors de la création d'un compétiteur :", error);
@@ -13,10 +13,29 @@ export const createGamer = async (payload) => {
   }
 };
 
+
+
+
+
+// Création d'un joueur 
+const JOUEUR_URL = "http://localhost:8000/api/joueurs/"
+export const createJoueur = async (payload) => { 
+  try {
+    const response = await axios.post(JOUEUR_URL, payload); 
+    return response.data;
+  } catch (error) {
+    console.error("Erreur lors de la création du joueur :", error);
+    throw error;
+  }
+};
+
+
+
+
 // Récupération de la liste des compétiteurs
 export const getGamers = async () => {
   try {
-    const response = await api.get(GAMER_URL);
+    const response = await axios.get(GAMER_URL);
     return Array.isArray(response.data) ? response.data : response.data.results ?? [];
   } catch (error) {
     console.error("Erreur lors de la récupération des compétiteurs", error);
@@ -27,7 +46,7 @@ export const getGamers = async () => {
 // Mise à jour d'un compétiteur
 export const updateGamer = async (id, payload) => {
   try {
-    const response = await api.patch(`${GAMER_URL}${id}/`, payload);        
+    const response = await axios.patch(`${GAMER_URL}${id}/`, payload);        
     return response.data;
   } catch (error) {
     console.error("Erreur lors de la mise à jour du compétiteur", error);
@@ -38,7 +57,7 @@ export const updateGamer = async (id, payload) => {
 // Suppression d'un compétiteur
 export const deleteGamer = async (id) => {
   try {
-    const response = await api.delete(`${GAMER_URL}${id}/`);
+    const response = await axios.delete(`${GAMER_URL}${id}/`);
     return response.data;
   } catch (error) {
     console.error("Erreur lors de la suppression du compétiteur", error);
@@ -49,7 +68,7 @@ export const deleteGamer = async (id) => {
 // Récupération des catégories / disciplines
 export const getCategories = async () => {
   try {
-    const response = await api.get("/api/disciplines/");
+    const response = await axios.get("http://localhost:8000/api/categories/");
     return Array.isArray(response.data) ? response.data : response.data.results ?? [];
   } catch (error) {
     console.error("Erreur lors de la récupération des catégories:", error);
