@@ -3,6 +3,7 @@ import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useBillets } from "../../hooks/useBillets";
 import { normaliserBillet } from "../../api/billets";
+import { telechargerBilletImage, telechargerTousLesBilletsImages } from "../../utils/ticketImageGenerator";
 import EnteteBillet from "./EnteteBillet";
 import CarteBillet from "./CarteBillet";
 import CarteQR from "./CarteQR";
@@ -12,6 +13,7 @@ const Billets = ({ billetsDirects = null }) => {
   const navigate = useNavigate();
   const { billets: billetsApi, chargement, erreur, recharger } = useBillets();
   const [billetActif, setBilletActif] = useState(0);
+  const [telechargementEnCours, setTelechargementEnCours] = useState(false);
 
   // Récupérer depuis les props, ou le sessionStorage, ou l'API
   const billets = useMemo(() => {
@@ -55,6 +57,35 @@ const Billets = ({ billetsDirects = null }) => {
 
   const allerAuPrecedent = () => setBilletActif((i) => Math.max(i - 1, 0));
   const allerAuSuivant   = () => setBilletActif((i) => Math.min(i + 1, (billets?.length || 1) - 1));
+
+  // Télécharger le billet actuellement affiché sous forme d'image PNG
+  const handleTelechargerBilletActuel = async () => {
+    const billetCourant = billets[billetActif] || billets[0];
+    if (!billetCourant) return;
+
+    try {
+      setTelechargementEnCours(true);
+      await telechargerBilletImage(billetCourant);
+    } catch (err) {
+      console.error("Erreur téléchargement image billet :", err);
+    } finally {
+      setTelechargementEnCours(false);
+    }
+  };
+
+  // Télécharger tous les billets de façon séquentielle sous forme d'image PNG
+  const handleTelechargerTous = async () => {
+    if (!billets || billets.length === 0) return;
+
+    try {
+      setTelechargementEnCours(true);
+      await telechargerTousLesBilletsImages(billets);
+    } catch (err) {
+      console.error("Erreur téléchargement séquentiel billets :", err);
+    } finally {
+      setTelechargementEnCours(false);
+    }
+  };
 
   // ── États de chargement ──────────────────────────────────────────────────
   if (isLoading) {
@@ -122,16 +153,19 @@ const Billets = ({ billetsDirects = null }) => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-          {/* Colonne gauche — image du site + infos du billet */}
+          {/* Colonne gauche — image du site + infos du billet + téléchargement de tous les billets */}
           <CarteBillet
             billet={billet}
-            onTelechargerTous={() => window.print()}
+            totalBillets={billets.length}
+            telechargementEnCours={telechargementEnCours}
+            onTelechargerTous={handleTelechargerTous}
           />
 
-          {/* Colonne droite — QR réel + boutons */}
+          {/* Colonne droite — QR réel + téléchargement du billet actuel */}
           <CarteQR
             billet={billet}
-            onTelecharger={() => window.print()}
+            telechargementEnCours={telechargementEnCours}
+            onTelecharger={handleTelechargerBilletActuel}
             onAccueil={() => navigate("/")}
           />
 

@@ -24,6 +24,37 @@ const ETAPES = {
   BILLET: 'billet',
 };
 
+// Enregistrer une vente réussie pour le tableau de bord et la gestion des ventes
+function enregistrerVente(billets, total, mode, spectateur, event) {
+  try {
+    const raw = localStorage.getItem("joj_ventes_billets_db");
+    const listeActuelle = raw ? JSON.parse(raw) : [];
+
+    const nouvelleVente = {
+      id: `TXN-${Date.now().toString().slice(-8)}`,
+      date_commande: new Date().toISOString(),
+      montant_total: total,
+      mode_paiement: mode,
+      spectateur: spectateur,
+      event_titre: event?.titre || "Compétition Olympique",
+      billets: billets,
+    };
+
+    listeActuelle.unshift(nouvelleVente);
+    localStorage.setItem("joj_ventes_billets_db", JSON.stringify(listeActuelle));
+
+    // Mettre à jour la liste plate de tous les billets vendus
+    const rawBillets = localStorage.getItem("joj_tous_les_billets");
+    const tousLesBillets = rawBillets ? JSON.parse(rawBillets) : [];
+    billets.forEach((b) => {
+      tousLesBillets.unshift(b);
+    });
+    localStorage.setItem("joj_tous_les_billets", JSON.stringify(tousLesBillets));
+  } catch (err) {
+    console.error("Erreur enregistrement vente locale:", err);
+  }
+}
+
 const PaymentSummary = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -79,8 +110,12 @@ const PaymentSummary = () => {
         // Préparer les billets normalisés avec statut VALIDÉ
         const billetsNormalises = listeBillets.map((b) => {
           const norm = normaliserBillet(b);
+          const codeUnique = norm.codeUnique || b.code_unique || `JOJ-${b.id}`;
           return {
             ...norm,
+            id: b.id,
+            codeUnique: codeUnique,
+            qrCodeUrl: b.qr_code_url ? b.qr_code_url : `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(codeUnique)}`,
             statut: 'VALIDE',
             epreuve: nomEvenement,
             site: nomSite,
@@ -93,11 +128,13 @@ const PaymentSummary = () => {
 
         setBilletsApresPaiement(billetsNormalises);
         sessionStorage.setItem("derniers_billets", JSON.stringify(billetsNormalises));
+        enregistrerVente(billetsNormalises, totalAPayer, mode, spectateur, event);
       } else {
         // Fallback avec données de la commande
+        const codeUnique = `JOJ-${Date.now().toString().slice(-8)}`;
         const billetLocal = {
           id: Date.now(),
-          codeUnique: `JOJ-${Date.now().toString().slice(-8)}`,
+          codeUnique: codeUnique,
           label: "Billet Officiel",
           categorie: tickets?.vip > 0 ? "VIP" : "STANDARD",
           epreuve: nomEvenement,
@@ -108,6 +145,7 @@ const PaymentSummary = () => {
           titulaire: spectateur ? `${spectateur.prenom || ''} ${spectateur.nom || ''}`.trim() : 'Spectateur',
           statut: "VALIDE",
           prix: totalAPayer,
+          qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(codeUnique)}`,
         };
         setReponsePaiement([
           {
@@ -118,12 +156,14 @@ const PaymentSummary = () => {
         ]);
         setBilletsApresPaiement([billetLocal]);
         sessionStorage.setItem("derniers_billets", JSON.stringify([billetLocal]));
+        enregistrerVente([billetLocal], totalAPayer, mode, spectateur, event);
       }
     } catch (err) {
       console.warn("Paiement exécuté avec confirmation :", err);
+      const codeUnique = `JOJ-${Date.now().toString().slice(-8)}`;
       const billetSecours = {
         id: Date.now(),
-        codeUnique: `JOJ-${Date.now().toString().slice(-8)}`,
+        codeUnique: codeUnique,
         label: "Billet Officiel",
         categorie: tickets?.vip > 0 ? "VIP" : "STANDARD",
         epreuve: nomEvenement,
@@ -134,6 +174,7 @@ const PaymentSummary = () => {
         titulaire: spectateur ? `${spectateur.prenom || ''} ${spectateur.nom || ''}`.trim() : 'Spectateur',
         statut: "VALIDE",
         prix: totalAPayer,
+        qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(codeUnique)}`,
       };
       setReponsePaiement([
         {
@@ -144,6 +185,7 @@ const PaymentSummary = () => {
       ]);
       setBilletsApresPaiement([billetSecours]);
       sessionStorage.setItem("derniers_billets", JSON.stringify([billetSecours]));
+      enregistrerVente([billetSecours], totalAPayer, mode, spectateur, event);
     }
   };
 

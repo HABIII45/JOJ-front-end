@@ -10,49 +10,55 @@ export const ROLES = {
 
 export const PERMISSIONS = {
   TOUT: "TOUT",
-  EVENEMENTS: "EVENEMENTS",
-  ZONES: "ZONES",
-  RESULTATS: "RESULTATS",
-  BILLETS: "BILLETS",
-  PAIEMENTS: "PAIEMENTS",
+  JEUX: "JEUX",
   ACTUALITES: "ACTUALITES",
-  SITES: "SITES",
-  NOTIFICATIONS: "NOTIFICATIONS",
   UTILISATEURS: "UTILISATEURS",
-  DISCIPLINES: "DISCIPLINES",
-  CATEGORIES: "CATEGORIES",
-  COMPETITEURS: "COMPETITEURS",
+
+  // Alias rétrocompatibles pointant vers JEUX
+  EVENEMENTS: "JEUX",
+  SITES: "JEUX",
+  DISCIPLINES: "JEUX",
+  CATEGORIES: "JEUX",
+  COMPETITEURS: "JEUX",
+  RESULTATS: "JEUX",
+  BILLETS: "JEUX",
+  PAIEMENTS: "JEUX",
+  NOTIFICATIONS: "JEUX",
+  ZONES: "JEUX",
 };
 
 export const PERMISSION_LABELS = {
   [PERMISSIONS.TOUT]: "Toutes les permissions",
-  [PERMISSIONS.EVENEMENTS]: "Gestion des Événements",
-  [PERMISSIONS.UTILISATEURS]: "Gestion des Utilisateurs",
-  [PERMISSIONS.RESULTATS]: "Gestion des Résultats",
-  [PERMISSIONS.BILLETS]: "Gestion des Billets",
-  [PERMISSIONS.SITES]: "Gestion des Sites",
-  [PERMISSIONS.DISCIPLINES]: "Gestion des Disciplines",
+  [PERMISSIONS.JEUX]: "Gestion des Jeux & Compétitions",
   [PERMISSIONS.ACTUALITES]: "Gestion des Actualités",
-  [PERMISSIONS.CATEGORIES]: "Gestion des Catégories",
-  [PERMISSIONS.COMPETITEURS]: "Gestion des Compétiteurs & Équipes",
-  [PERMISSIONS.PAIEMENTS]: "Gestion des Paiements",
-  [PERMISSIONS.NOTIFICATIONS]: "Gestion des Notifications",
-  [PERMISSIONS.ZONES]: "Gestion des Zones",
+  [PERMISSIONS.UTILISATEURS]: "Gestion des Utilisateurs",
 };
 
 export const PERMISSION_OPTIONS = [
-  { value: PERMISSIONS.RESULTATS, label: "Gestion des Résultats", desc: "Saisie et consultation des scores et classements", icon: "Medal" },
-  { value: PERMISSIONS.EVENEMENTS, label: "Gestion des Événements", desc: "Création, modification et gestion des événements sportifs", icon: "CalendarDays" },
-  { value: PERMISSIONS.BILLETS, label: "Gestion des Billets", desc: "Gestion des ventes et validation des tickets", icon: "Ticket" },
-  { value: PERMISSIONS.SITES, label: "Gestion des Sites", desc: "Administration des sites et infrastructures", icon: "MapPin" },
-  { value: PERMISSIONS.DISCIPLINES, label: "Gestion des Disciplines", desc: "Gestion des disciplines et épreuves sportives", icon: "Trophy" },
-  { value: PERMISSIONS.ACTUALITES, label: "Gestion des Actualités", desc: "Publication et gestion des actualités", icon: "Newspaper" },
-  { value: PERMISSIONS.CATEGORIES, label: "Gestion des Catégories", desc: "Gestion des catégories d'épreuves", icon: "Tags" },
-  { value: PERMISSIONS.COMPETITEURS, label: "Gestion des Compétiteurs & Équipes", desc: "Gestion des athlètes et équipes", icon: "UserRound" },
-  { value: PERMISSIONS.UTILISATEURS, label: "Gestion des Utilisateurs", desc: "Gestion des administrateurs et des utilisateurs", icon: "Users" },
-  { value: PERMISSIONS.PAIEMENTS, label: "Gestion des Paiements", desc: "Suivi des transactions et paiements", icon: "CreditCard" },
-  { value: PERMISSIONS.NOTIFICATIONS, label: "Gestion des Notifications", desc: "Envoi et gestion des notifications", icon: "Bell" },
-  { value: PERMISSIONS.ZONES, label: "Gestion des Zones", desc: "Configuration des zones de compétition", icon: "Grid" },
+  {
+    value: "JEUX",
+    label: "Gestion des Jeux & Compétitions",
+    desc: "Gestion des Événements, Sites, Disciplines, Catégories, Compétiteurs, Billets et Résultats",
+    icon: "Trophy",
+  },
+  {
+    value: "ACTUALITES",
+    label: "Gestion des Actualités",
+    desc: "Création, modification et publication des actualités et communiqués officiels",
+    icon: "Newspaper",
+  },
+  {
+    value: "UTILISATEURS",
+    label: "Gestion des Utilisateurs",
+    desc: "Administration des comptes, création d'administrateurs et gestion des accès",
+    icon: "Users",
+  },
+  {
+    value: "TOUT",
+    label: "Toutes les permissions (Superadmin)",
+    desc: "Accès intégral et sans restriction à tous les modules de la plateforme",
+    icon: "ShieldCheck",
+  },
 ];
 
 const PERMISSIONS_STORAGE_KEY = "joj_admin_permissions_registry";
@@ -97,22 +103,21 @@ export function isSuperAdmin(user) {
   if (!user) return false;
   if (user.is_superuser === true) return true;
 
-  const roleStr = String(user.role || "").toLowerCase().trim();
+  const roleStr = String(user.role || "").toUpperCase().trim();
   if (
-    roleStr === "superadmin" ||
-    roleStr === "super_admin" ||
-    roleStr === "super-administrateur" ||
-    roleStr === "super administrateur" ||
-    roleStr === "super admin"
+    roleStr === "SUPERADMIN" ||
+    roleStr === "SUPER_ADMIN" ||
+    roleStr === "SUPER-ADMINISTRATEUR" ||
+    roleStr === "SUPER ADMINISTRATEUR"
   ) {
     return true;
   }
 
   // Vérifie si TOUT est présent dans les permissions
-  if (Array.isArray(user.permissions_app) && user.permissions_app.includes(PERMISSIONS.TOUT)) {
+  if (Array.isArray(user.permissions_app) && user.permissions_app.includes("TOUT")) {
     return true;
   }
-  if (Array.isArray(user.permissions) && user.permissions.includes(PERMISSIONS.TOUT)) {
+  if (Array.isArray(user.permissions) && user.permissions.includes("TOUT")) {
     return true;
   }
 
@@ -127,36 +132,44 @@ export function isSuperAdmin(user) {
 export function getPermissionsList(user) {
   if (!user) return [];
   if (isSuperAdmin(user)) {
-    return [PERMISSIONS.TOUT];
+    return [PERMISSIONS.TOUT, PERMISSIONS.JEUX, PERMISSIONS.ACTUALITES, PERMISSIONS.UTILISATEURS];
   }
 
   const perms = new Set();
 
-  // 1. Directement depuis user.permissions_app
   if (Array.isArray(user.permissions_app)) {
     user.permissions_app.forEach((p) => perms.add(String(p).toUpperCase()));
   }
 
-  // 2. Directement depuis user.permissions
   if (Array.isArray(user.permissions)) {
     user.permissions.forEach((p) => perms.add(String(p).toUpperCase()));
   }
 
-  // 3. Registre persistant local via username, email ou id
   const fromUsername = user.username ? getUserPermissions(user.username) : [];
   fromUsername.forEach((p) => perms.add(String(p).toUpperCase()));
 
   const fromEmail = user.email ? getUserPermissions(user.email) : [];
   fromEmail.forEach((p) => perms.add(String(p).toUpperCase()));
 
-  const fromId = user.id ? getUserPermissions(user.id) : [];
-  fromId.forEach((p) => perms.add(String(p).toUpperCase()));
+  // Si l'utilisateur a JEUX, lui accorder les sous-modules correspondants
+  if (perms.has("JEUX") || perms.has("TOUT")) {
+    perms.add("EVENEMENTS");
+    perms.add("SITES");
+    perms.add("DISCIPLINES");
+    perms.add("CATEGORIES");
+    perms.add("COMPETITEURS");
+    perms.add("RESULTATS");
+    perms.add("BILLETS");
+    perms.add("PAIEMENTS");
+    perms.add("NOTIFICATIONS");
+    perms.add("ZONES");
+  }
 
   return Array.from(perms);
 }
 
 /**
- * Vérifie si un utilisateur a une permission donnée (stricte et sans confusion entre modules)
+ * Vérifie si un utilisateur a une permission donnée
  * @param {Object|null} user 
  * @param {string|string[]} permission - Une permission ou un tableau de permissions
  * @returns {boolean}
@@ -166,11 +179,15 @@ export function hasPermission(user, permission) {
   if (isSuperAdmin(user)) return true;
 
   const userPerms = getPermissionsList(user);
-  if (userPerms.includes(PERMISSIONS.TOUT)) return true;
+  if (userPerms.includes("TOUT")) return true;
 
   const verifierUnePermission = (pReq) => {
     const pNorm = String(pReq).toUpperCase().trim();
-    return userPerms.includes(pNorm);
+    if (userPerms.includes(pNorm)) return true;
+    if (pNorm === "EVENEMENTS" || pNorm === "SITES" || pNorm === "DISCIPLINES" || pNorm === "CATEGORIES" || pNorm === "COMPETITEURS" || pNorm === "RESULTATS" || pNorm === "BILLETS") {
+      return userPerms.includes("JEUX");
+    }
+    return false;
   };
 
   if (Array.isArray(permission)) {

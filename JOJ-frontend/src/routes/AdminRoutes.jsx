@@ -65,6 +65,7 @@ export const routesAdmin = [
           { path: "/admin/sites/ajout", element: <SiteForm /> },
           { path: "/admin/sites/nouveau", element: <SiteForm /> },
           { path: "/admin/sites/:id/modifier", element: <SiteForm /> },
+          { path: "/admin/sites/modifier/:id", element: <SiteForm /> },
         ],
       },
 

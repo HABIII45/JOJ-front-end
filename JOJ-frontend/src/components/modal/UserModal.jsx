@@ -1,35 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { X } from "lucide-react";
-import apiClient, { isBackendConnected } from "../../lib/api";
-
-// Fallback sécurisé au cas où react-hot-toast ne soit pas installé
-let toast = {
-  success: (m) => console.log("SUCCÈS :", m),
-  error: (m) => console.error("ERREUR :", m),
-};
-
-try {
-  const hotToast = require("react-hot-toast");
-  toast = hotToast.toast || hotToast.default || toast;
-} catch (e) {
-  // react-hot-toast non présent, utilisation du fallback console
-}
-
-const DROITS = [
-  { valeur: "EVENEMENTS", libelle: "Gestion des Evenement" },
-  { valeur: "SITES", libelle: "Gestion des Sites" },
-  { valeur: "ACTUALITES", libelle: "Gestion des Actualités" },
-  { valeur: "BILLETS", libelle: "Gestion des Billets" },
-  { valeur: "PAIEMENTS", libelle: "Gestion des Paiements" },
-  { valeur: "RESULTATS", libelle: "Gestion des Résultats" },
-  { valeur: "NOTIFICATIONS", libelle: "Gestion des Notifications" },
-  { valeur: "DISCIPLINES", libelle: "Gestion des Disciplines" },
-  { valeur: "UTILISATEURS", libelle: "Gestion des Utilisateurs" },
-  { valeur: "TOUT", libelle: "Toutes les permissions" },
-];
+import { X, Lock, ShieldCheck, Mail, User, Phone, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { creerAdmin } from "../../api/auth";
+import { PERMISSION_OPTIONS } from "../../utils/permissions";
 
 const STYLE_CHAMP =
-  "w-full rounded-2xl bg-[#F8FAFC] py-3 px-4 text-xs font-medium text-gray-700 outline-none placeholder:text-gray-400 border border-transparent focus:border-gray-200 transition-all";
+  "w-full rounded-2xl bg-[#F8FAFC] py-3 px-4 text-xs font-medium text-gray-700 outline-none placeholder:text-gray-400 border border-gray-200 focus:border-[#C25B1E] transition-all";
 
 function emailValide(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -39,10 +14,14 @@ export default function UserModal({ ouvert, fermer, onCree }) {
   const [nom, setNom] = useState("");
   const [email, setEmail] = useState("");
   const [telephone, setTelephone] = useState("");
+  const [password, setPassword] = useState("");
+  const [password2, setPassword2] = useState("");
   const [compteActif, setCompteActif] = useState(true);
-  const [droit, setDroit] = useState(DROITS[0].valeur);
+  const [droit, setDroit] = useState(PERMISSION_OPTIONS[0].value);
   const [envoi, setEnvoi] = useState(false);
   const [erreurs, setErreurs] = useState({});
+  const [messageErreur, setMessageErreur] = useState("");
+  const [messageSucces, setMessageSucces] = useState("");
   const premierChamp = useRef(null);
 
   useEffect(() => {
@@ -58,75 +37,83 @@ export default function UserModal({ ouvert, fermer, onCree }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [ouvert, fermer]);
 
-  useEffect(() => {
-    if (!ouvert) return;
-    const avant = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = avant;
-    };
-  }, [ouvert]);
-
   function reinitialiser() {
     setNom("");
     setEmail("");
     setTelephone("");
+    setPassword("");
+    setPassword2("");
     setCompteActif(true);
-    setDroit(DROITS[0].valeur);
+    setDroit(PERMISSION_OPTIONS[0].value);
     setErreurs({});
+    setMessageErreur("");
+    setMessageSucces("");
   }
 
-  async function creer() {
+  async function creer(e) {
+    if (e) e.preventDefault();
     const nouvellesErreurs = {};
+    setMessageErreur("");
+    setMessageSucces("");
+
     if (!nom.trim()) nouvellesErreurs.nom = "Le nom complet est requis.";
     if (!email.trim() || !emailValide(email))
-      nouvellesErreurs.email = "Adresse email invalide.";
-    if (!telephone.trim()) nouvellesErreurs.telephone = "Le téléphone est requis.";
+      nouvellesErreurs.email = "Adresse email valide requise.";
+    if (!password) nouvellesErreurs.password = "Le mot de passe est requis.";
+    if (password !== password2)
+      nouvellesErreurs.password2 = "Les mots de passe ne correspondent pas.";
+
     setErreurs(nouvellesErreurs);
     if (Object.keys(nouvellesErreurs).length > 0) return;
 
     setEnvoi(true);
     try {
-      if (isBackendConnected()) {
-        await apiClient.post("/api/utilisateurs/creer-admin/", {
-          username: email,
-          email,
-          nom_complet: nom.trim(),
-          tel: telephone.trim(),
-          est_actif: compteActif,
-          permissions: [droit],
-        });
-        toast.success(`${nom.trim()} a été créé comme administrateur.`);
-      } else {
-        toast.success("Administrateur créé (mode démo).");
-      }
+      const partiesNom = nom.trim().split(" ");
+      const first_name = partiesNom.slice(0, -1).join(" ") || partiesNom[0] || "";
+      const last_name = partiesNom.length > 1 ? partiesNom[partiesNom.length - 1] : "";
+      const username = email.split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "") || `admin_${Date.now()}`;
+
+      const payload = {
+        username,
+        email: email.trim(),
+        first_name,
+        last_name,
+        tel: telephone.trim() || "770000000",
+        password,
+        password2,
+        permissions_app: [droit],
+      };
+
+      const res = await creerAdmin(payload);
+      setMessageSucces(`${nom.trim()} a été créé avec succès.`);
 
       if (typeof onCree === "function") {
         onCree({
-          id: Math.floor(Math.random() * 10000),
-          username: email,
-          email,
+          id: res?.id || Date.now(),
+          username,
+          email: email.trim(),
+          first_name,
+          last_name,
           nom_complet: nom.trim(),
           tel: telephone.trim(),
-          is_active: compteActif,
           role: "ADMIN",
           permissions_app: [droit],
+          is_active: compteActif,
         });
       }
-      reinitialiser();
-      fermer();
-    } catch (erreur) {
-      const code = erreur?.response?.status;
-      const donnees = erreur?.response?.data;
-      if (code === 400 && donnees) {
-        const messages = Object.values(donnees)
-          .flat()
-          .filter((m) => typeof m === "string");
-        toast.error(messages[0] || "Vérifiez les informations saisies.");
-      } else if (code === 401 || code === 403) {
-        toast.error("Seul un Super Administrateur peut créer un compte.");
+
+      setTimeout(() => {
+        reinitialiser();
+        fermer();
+      }, 1000);
+    } catch (err) {
+      console.error("Erreur création utilisateur:", err);
+      const data = err?.response?.data;
+      if (data) {
+        const errorMsg = Object.values(data).flat().join(" ");
+        setMessageErreur(errorMsg || "Impossible de créer l'administrateur.");
       } else {
-        toast.error("Impossible de créer l'administrateur.");
+        setMessageErreur("Erreur réseau lors de la création.");
       }
     } finally {
       setEnvoi(false);
@@ -136,159 +123,170 @@ export default function UserModal({ ouvert, fermer, onCree }) {
   if (!ouvert) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Fond sombre */}
-      <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
-        onClick={fermer}
-        aria-hidden="true"
-      />
-
-      {/* Conteneur de la modale */}
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="titre-popup-admin"
-        className="relative w-full max-w-2xl bg-white rounded-[2.5rem] p-6 sm:p-8 shadow-2xl border border-gray-100/50 z-10"
-      >
-        <div className="flex items-center justify-between pb-4 mb-6 border-b border-gray-100">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+      <div className="relative w-full max-w-lg rounded-3xl bg-white p-6 sm:p-8 shadow-2xl border border-gray-100 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between pb-4 border-b border-gray-100">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
-              ADMINISTRATION
-            </p>
-            <h2
-              id="titre-popup-admin"
-              className="text-xl font-extrabold text-gray-900 tracking-tight mt-0.5"
-            >
-              Nouvel Administrateur
+            <h2 className="text-lg font-extrabold text-gray-900 tracking-tight">
+              Créer un Administrateur
             </h2>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Renseignez les accès et la permission applicative.
+            </p>
           </div>
           <button
-            onClick={fermer}
-            className="p-2 text-gray-400 hover:text-gray-700 transition-colors cursor-pointer rounded-full hover:bg-gray-100"
-            aria-label="Fermer le popup"
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        <div className="space-y-5">
-          {/* Nom complet */}
-          <div>
-            <label className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-gray-400">
-              NOM COMPLET *
-            </label>
-            <input
-              ref={premierChamp}
-              type="text"
-              value={nom}
-              onChange={(e) => setNom(e.target.value)}
-              placeholder="Prénom et Nom"
-              className={STYLE_CHAMP}
-            />
-            {erreurs.nom && (
-              <p className="mt-1 text-[11px] text-red-500 font-medium">{erreurs.nom}</p>
-            )}
-          </div>
-
-          {/* Email & Téléphone */}
-          <div className="grid gap-5 sm:grid-cols-2">
-            <div>
-              <label className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                ADRESSE EMAIL *
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@dakar2026.sn"
-                className={STYLE_CHAMP}
-              />
-              {erreurs.email && (
-                <p className="mt-1 text-[11px] text-red-500 font-medium">{erreurs.email}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                NUMÉRO DE TÉLÉPHONE *
-              </label>
-              <input
-                type="tel"
-                value={telephone}
-                onChange={(e) => setTelephone(e.target.value)}
-                placeholder="+221 7X XXX XX XX"
-                className={STYLE_CHAMP}
-              />
-              {erreurs.telephone && (
-                <p className="mt-1 text-[11px] text-red-500 font-medium">
-                  {erreurs.telephone}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Permissions & Statut */}
-          <div className="grid gap-5 sm:grid-cols-2 items-end pt-1">
-            <div>
-              <label className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                PERMISSIONS / DROIT
-              </label>
-              <select
-                value={droit}
-                onChange={(e) => setDroit(e.target.value)}
-                className="w-full rounded-2xl bg-[#F8FAFC] py-3 px-4 text-xs font-medium text-gray-700 outline-none border border-transparent focus:border-gray-200 cursor-pointer"
-              >
-                {DROITS.map((d) => (
-                  <option key={d.valeur} value={d.valeur}>
-                    {d.libelle}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex items-center gap-3 py-3 px-4 bg-[#F8FAFC] rounded-2xl">
-              <button
-                type="button"
-                onClick={() => setCompteActif(!compteActif)}
-                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors cursor-pointer ${
-                  compteActif ? "bg-[#D96B27]" : "bg-gray-300"
-                }`}
-              >
-                <span
-                  className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-                    compteActif ? "translate-x-4.5" : "translate-x-1"
-                  }`}
-                />
-              </button>
-              <span className="text-xs font-bold text-gray-700 select-none">
-                {compteActif ? "Compte Actif" : "Compte Inactif"}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Pied / Actions */}
-        <div className="mt-8 pt-5 border-t border-gray-100 flex flex-col-reverse sm:flex-row items-center justify-end gap-3">
-          <button
-            type="button"
             onClick={() => {
               reinitialiser();
               fermer();
             }}
-            className="w-full sm:w-auto rounded-2xl border border-gray-200 px-6 py-3 text-xs font-bold text-gray-600 transition hover:bg-gray-50 cursor-pointer"
+            className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 flex items-center justify-center cursor-pointer transition-colors"
           >
-            Annuler
-          </button>
-          <button
-            type="button"
-            onClick={creer}
-            disabled={envoi}
-            className="w-full sm:w-auto rounded-2xl bg-black hover:bg-gray-800 px-6 py-3 text-xs font-bold text-white shadow-sm transition disabled:opacity-50 cursor-pointer"
-          >
-            {envoi ? "Création..." : "Créer l'Administrateur"}
+            <X size={16} />
           </button>
         </div>
+
+        {messageSucces && (
+          <div className="mt-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold rounded-xl flex items-center gap-2">
+            <CheckCircle2 size={16} />
+            {messageSucces}
+          </div>
+        )}
+
+        {messageErreur && (
+          <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-800 text-xs font-bold rounded-xl flex items-center gap-2">
+            <AlertCircle size={16} />
+            {messageErreur}
+          </div>
+        )}
+
+        <form onSubmit={creer} className="space-y-4 mt-5">
+          {/* Nom complet */}
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1.5">
+              Nom complet *
+            </label>
+            <input
+              ref={premierChamp}
+              type="text"
+              required
+              placeholder="Ex: Fatou Ndiaye"
+              value={nom}
+              onChange={(e) => setNom(e.target.value)}
+              className={STYLE_CHAMP}
+            />
+            {erreurs.nom && <p className="text-xs text-red-500 mt-1">{erreurs.nom}</p>}
+          </div>
+
+          {/* Email & Téléphone */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                Adresse Email *
+              </label>
+              <input
+                type="email"
+                required
+                placeholder="f.ndiaye@joj2026.sn"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={STYLE_CHAMP}
+              />
+              {erreurs.email && <p className="text-xs text-red-500 mt-1">{erreurs.email}</p>}
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                Téléphone
+              </label>
+              <input
+                type="tel"
+                placeholder="+221 77 000 00 00"
+                value={telephone}
+                onChange={(e) => setTelephone(e.target.value)}
+                className={STYLE_CHAMP}
+              />
+            </div>
+          </div>
+
+          {/* Mots de passe */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                Mot de passe *
+              </label>
+              <input
+                type="password"
+                required
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={STYLE_CHAMP}
+              />
+              {erreurs.password && <p className="text-xs text-red-500 mt-1">{erreurs.password}</p>}
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                Confirmer mot de passe *
+              </label>
+              <input
+                type="password"
+                required
+                placeholder="••••••••"
+                value={password2}
+                onChange={(e) => setPassword2(e.target.value)}
+                className={STYLE_CHAMP}
+              />
+              {erreurs.password2 && <p className="text-xs text-red-500 mt-1">{erreurs.password2}</p>}
+            </div>
+          </div>
+
+          {/* Permission applicative alignée sur le modèle Django */}
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1.5">
+              Permission attribuée *
+            </label>
+            <select
+              value={droit}
+              onChange={(e) => setDroit(e.target.value)}
+              className="w-full rounded-2xl bg-[#F8FAFC] py-3 px-4 text-xs font-semibold text-gray-800 outline-none border border-gray-200 focus:border-[#C25B1E] cursor-pointer"
+            >
+              {PERMISSION_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label} ({opt.value})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Boutons d'action */}
+          <div className="pt-4 border-t border-gray-100 flex items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                reinitialiser();
+                fermer();
+              }}
+              className="px-5 py-2.5 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              disabled={envoi}
+              className="px-6 py-2.5 rounded-xl bg-[#C25B1E] hover:bg-[#A04816] disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-2"
+            >
+              {envoi ? (
+                <>
+                  <Loader2 size={14} className="animate-spin" />
+                  Création...
+                </>
+              ) : (
+                "Créer l'administrateur"
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

@@ -1,8 +1,15 @@
-import { useState } from "react";
-import { createSite } from "../../services/sites";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { createSite, getSpecificSite, updateSite } from "../../services/sites";
+import { getImageUrl } from "../../api/api";
 import AdminLayout from "../../components/layouts/AdminLayout";
+import { Building2, ArrowLeft, Upload, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 
 const SiteForm = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const estModification = Boolean(id);
+
   const [nom, setNom] = useState('');
   const [capacite, setCapacite] = useState('');
   const [description, setDescription] = useState('');
@@ -15,212 +22,366 @@ const SiteForm = () => {
   const [capaciteVip, setCapaciteVip] = useState('');
   const [capacitePmr, setCapacitePmr] = useState('');
   const [coverImage, setCoverImage] = useState(null);
-  const [loading, setLoading] = useState(false); 
+  const [imagePreview, setImagePreview] = useState(null);
+  
+  const [chargementInitial, setChargementInitial] = useState(estModification);
+  const [loading, setLoading] = useState(false);
+  const [messageSucces, setMessageSucces] = useState("");
+  const [messageErreur, setMessageErreur] = useState("");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true); 
-    try {
-      const siteData = {
-        nom,
-        capacite: parseInt(capacite) || 0, 
-        capaciteStandard: parseInt(capaciteStandard) || 0,
-        capaciteVip: parseInt(capaciteVip) || 0,
-        capacitePmr: parseInt(capacitePmr) || 0,
-        description,
-        ville,
-        region,
-        latitude: parseFloat(latitude) || 0, 
-        longitude: parseFloat(longitude) || 0,
-        service
-      };
-      
-      await createSite(siteData);
-      alert('Site créé avec succès');
-      
-      setNom(''); setCapacite(''); setDescription(''); setService('');
-      setLatitude(''); setLongitude(''); setVille(''); setRegion('');
-      setCapaciteStandard(''); setCapaciteVip(''); setCapacitePmr('');
-      
-    } catch (error) {
-      console.error("Erreur lors de la création d'un nouveau site", error);
-      alert("Erreur lors de la création du site");
-    } finally {
-      setLoading(false); 
+  // Pré-remplissage en mode modification
+  useEffect(() => {
+    if (!estModification) return;
+
+    let actif = true;
+    async function chargerDonneesSite() {
+      try {
+        setChargementInitial(true);
+        const data = await getSpecificSite(id);
+        if (!actif) return;
+
+        setNom(data.nom || '');
+        setCapacite(data.capacite ? String(data.capacite) : '');
+        setVille(data.ville || '');
+        setRegion(data.region || '');
+        setDescription(data.description || '');
+        setService(data.service || '');
+        setLatitude(data.latitude ? String(data.latitude) : '');
+        setLongitude(data.longitude ? String(data.longitude) : '');
+        setCapaciteStandard(data.capacite_standard || data.capaciteStandard ? String(data.capacite_standard || data.capaciteStandard) : '');
+        setCapaciteVip(data.capacite_vip || data.capaciteVip ? String(data.capacite_vip || data.capaciteVip) : '');
+        setCapacitePmr(data.capacite_pmr || data.capacitePmr ? String(data.capacite_pmr || data.capacitePmr) : '');
+
+        if (data.image) {
+          setImagePreview(getImageUrl(data.image));
+        }
+      } catch (err) {
+        console.error("Erreur chargement site à modifier:", err);
+        setMessageErreur("Impossible de charger les données du site.");
+      } finally {
+        if (actif) setChargementInitial(false);
+      }
     }
-  };
+
+    chargerDonneesSite();
+    return () => { actif = false; };
+  }, [id, estModification]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setCoverImage(file);
+      setImagePreview(URL.createObjectURL(file));
     }
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessageErreur("");
+    setMessageSucces("");
+
+    try {
+      const formData = new FormData();
+      formData.append("nom", nom.trim());
+      formData.append("capacite", parseInt(capacite) || 0);
+      if (ville.trim()) formData.append("ville", ville.trim());
+      if (region.trim()) formData.append("region", region.trim());
+      if (description.trim()) formData.append("description", description.trim());
+      if (service.trim()) formData.append("service", service.trim());
+      if (latitude) formData.append("latitude", parseFloat(latitude) || 0);
+      if (longitude) formData.append("longitude", parseFloat(longitude) || 0);
+      if (capaciteStandard) formData.append("capacite_standard", parseInt(capaciteStandard) || 0);
+      if (capaciteVip) formData.append("capacite_vip", parseInt(capaciteVip) || 0);
+      if (capacitePmr) formData.append("capacite_pmr", parseInt(capacitePmr) || 0);
+
+      if (coverImage) {
+        formData.append("image", coverImage);
+      }
+
+      if (estModification) {
+        await updateSite(id, formData);
+        setMessageSucces("Le site a été modifié avec succès !");
+      } else {
+        await createSite(formData);
+        setMessageSucces("Nouveau site créé avec succès !");
+      }
+
+      setTimeout(() => {
+        navigate("/admin/sites");
+      }, 1000);
+    } catch (error) {
+      console.error("Erreur enregistrement site:", error);
+      const data = error?.response?.data;
+      if (data) {
+        const errorMsg = Object.values(data).flat().join(" ");
+        setMessageErreur(errorMsg || "Une erreur est survenue lors de l'enregistrement.");
+      } else {
+        setMessageErreur("Erreur de communication avec le serveur.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (chargementInitial) {
+    return (
+      <AdminLayout>
+        <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3 text-gray-400">
+          <Loader2 className="w-8 h-8 text-[#C25B1E] animate-spin" />
+          <span className="text-sm font-medium">Chargement des données du site...</span>
+        </div>
+      </AdminLayout>
+    );
+  }
+
   return (
     <AdminLayout>
-      <div className="max-w-6xl mx-auto space-y-6">
-        <div className="bg-white rounded-3xl shadow-sm p-6 border border-gray-100">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">
-            Ajouter un nouveau site
-          </h1>
-          <p className="text-xs text-gray-400">
-            Configurez un nouveau lieu officiel pour les compétitions.
-          </p>
+      <div className="max-w-5xl mx-auto space-y-6">
+        {/* En-tête */}
+        <div className="bg-white rounded-3xl shadow-sm p-6 border border-gray-100 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
+              <Building2 size={15} className="text-[#C25B1E]" />
+              <span>{estModification ? "Modification de site" : "Nouveau site olympique"}</span>
+            </div>
+            <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">
+              {estModification ? `Modifier le site : ${nom || "Site"}` : "Créer un nouveau site"}
+            </h1>
+            <p className="text-xs text-gray-500 mt-1">
+              {estModification
+                ? "Modifiez les informations techniques, la capacité d'accueil et l'image du site."
+                : "Configurez un nouveau lieu officiel pour accueillir les compétitions JOJ 2026."}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => navigate("/admin/sites")}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+          >
+            <ArrowLeft size={14} />
+            Retour aux sites
+          </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-6">
-              
-              {/* Informations du Site */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-lg font-medium text-gray-800 mb-4 flex items-center">
-                  <svg className="w-5 h-5 mr-2 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Informations du Site
-                </h2>
-                
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">NOM DU SITE</label>
-                    <input type="text" value={nom} onChange={(e) => setNom(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="ex: Arena Dakar" required/>
-                  </div>
-                  
+        {messageSucces && (
+          <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold rounded-2xl flex items-center gap-2">
+            <CheckCircle2 size={16} />
+            {messageSucces}
+          </div>
+        )}
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-400 mb-1">REGION</label>
-                      <input type="text" value={region} onChange={(e) => setRegion(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Dakar"/>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-400 mb-1">VILLE</label>
-                      <input type="text" value={ville} onChange={(e) => setVille(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Diamniadio"/>
-                    </div>
-                  </div>
+        {messageErreur && (
+          <div className="p-4 bg-red-50 border border-red-200 text-red-800 text-xs font-bold rounded-2xl flex items-center gap-2">
+            <AlertCircle size={16} />
+            {messageErreur}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Colonne Principale */}
+          <div className="lg:col-span-2 space-y-6">
+            
+            {/* Informations Générales */}
+            <div className="bg-white rounded-3xl shadow-sm p-6 border border-gray-100 space-y-4">
+              <h2 className="text-base font-bold text-gray-900">
+                Informations Principales
+              </h2>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                  Nom officiel du site *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={nom}
+                  onChange={(e) => setNom(e.target.value)}
+                  className="w-full px-4 py-3 bg-[#F8FAFC] border border-gray-200 rounded-2xl text-xs text-gray-800 outline-none focus:border-[#C25B1E] transition-all"
+                  placeholder="Ex: Arena Dakar"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                    Région
+                  </label>
+                  <input
+                    type="text"
+                    value={region}
+                    onChange={(e) => setRegion(e.target.value)}
+                    className="w-full px-4 py-3 bg-[#F8FAFC] border border-gray-200 rounded-2xl text-xs text-gray-800 outline-none focus:border-[#C25B1E] transition-all"
+                    placeholder="Ex: Dakar"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                    Ville / Commune
+                  </label>
+                  <input
+                    type="text"
+                    value={ville}
+                    onChange={(e) => setVille(e.target.value)}
+                    className="w-full px-4 py-3 bg-[#F8FAFC] border border-gray-200 rounded-2xl text-xs text-gray-800 outline-none focus:border-[#C25B1E] transition-all"
+                    placeholder="Ex: Diamniadio"
+                  />
                 </div>
               </div>
 
-              {/* Zones et Capacités */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-lg font-medium text-gray-800 mb-4 flex items-center">
-                  <svg className="w-5 h-5 mr-2 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                  </svg>
-                  Zones et Capacités
-                </h2>
-
-                <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-400 mb-1">CAPACITÉ TOTALE</label>
-                    <input type="number" value={capacite} onChange={(e) => setCapacite(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="ex: 15000" required/>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">STANDARD</label>
-                    <input type="number" value={capaciteStandard} onChange={(e) => setCapaciteStandard(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="ex: 10000"/>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">VIP</label>
-                    <input type="number" value={capaciteVip} onChange={(e) => setCapaciteVip(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="ex: 500"/>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">PMR</label>
-                    <input type="number" value={capacitePmr} onChange={(e) => setCapacitePmr(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="ex: 50"/>
-                  </div>
-                </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                  Capacité totale (Spectateurs) *
+                </label>
+                <input
+                  type="number"
+                  required
+                  min="0"
+                  value={capacite}
+                  onChange={(e) => setCapacite(e.target.value)}
+                  className="w-full px-4 py-3 bg-[#F8FAFC] border border-gray-200 rounded-2xl text-xs text-gray-800 outline-none focus:border-[#C25B1E] transition-all"
+                  placeholder="Ex: 15000"
+                />
               </div>
 
-              {/* Description & Services */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-lg font-medium text-gray-800 mb-4 flex items-center">
-                  <svg className="w-5 h-5 mr-2 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
-                  </svg>
-                  Description & Services
-                </h2>
-                
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">PRÉSENTATION DÉTAILLÉE</label>
-                    <textarea rows={4} value={description} onChange={(e) => setDescription(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none" placeholder="Décrivez les infrastructures..."/>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">SERVICES DISPONIBLES</label>
-                    <textarea rows={2} value={service} onChange={(e) => setService(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none" placeholder="ex: Restauration, Parking, Wifi..."/>
-                  </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                  Description & Spécificités du site
+                </label>
+                <textarea
+                  rows="4"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full px-4 py-3 bg-[#F8FAFC] border border-gray-200 rounded-2xl text-xs text-gray-800 outline-none focus:border-[#C25B1E] transition-all"
+                  placeholder="Détails sur l'infrastructure, accès et commodités..."
+                />
+              </div>
+            </div>
+
+            {/* Répartition des Capacités */}
+            <div className="bg-white rounded-3xl shadow-sm p-6 border border-gray-100 space-y-4">
+              <h2 className="text-base font-bold text-gray-900">
+                Répartition des Zones & Places
+              </h2>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-600 mb-1.5">
+                    Tribune Standard
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={capaciteStandard}
+                    onChange={(e) => setCapaciteStandard(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-[#F8FAFC] border border-gray-200 rounded-xl text-xs text-gray-800 outline-none focus:border-[#C25B1E]"
+                    placeholder="12000"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-600 mb-1.5">
+                    Tribune VIP
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={capaciteVip}
+                    onChange={(e) => setCapaciteVip(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-[#F8FAFC] border border-gray-200 rounded-xl text-xs text-gray-800 outline-none focus:border-[#C25B1E]"
+                    placeholder="2500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-600 mb-1.5">
+                    Accès PMR
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={capacitePmr}
+                    onChange={(e) => setCapacitePmr(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-[#F8FAFC] border border-gray-200 rounded-xl text-xs text-gray-800 outline-none focus:border-[#C25B1E]"
+                    placeholder="500"
+                  />
                 </div>
               </div>
             </div>
 
-            {/* Colonne Latérale */}
-            <div className="space-y-6">
-              
-              {/* Localisation GPS */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-lg font-medium text-gray-800 mb-4 flex items-center">
-                  <svg className="w-5 h-5 mr-2 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  Coordonnées GPS
-                </h2>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">LATITUDE</label>
-                    <input type="number" step="any" value={latitude} onChange={(e) => setLatitude(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="ex: 14.716677"/>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">LONGITUDE</label>
-                    <input type="number" step="any" value={longitude} onChange={(e) => setLongitude(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="ex: -17.467686"/>
-                  </div>
-                </div>
-              </div>
+          </div>
 
-              {/* Médias */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-lg font-medium text-gray-800 mb-4 flex items-center">
-                  <svg className="w-5 h-5 mr-2 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  Médias
-                </h2>
+          {/* Colonne Latérale : Image & Actions */}
+          <div className="space-y-6">
 
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">IMAGE DE COUVERTURE</label>
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors cursor-pointer">
-                      <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" id="cover-image"/>
-                      <label htmlFor="cover-image" className="cursor-pointer block">
-                        <svg className="w-12 h-12 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <p className="text-sm text-gray-400 mb-1">Uploadez l'image ici</p>
-                        <p className="text-xs text-gray-500">JPG, PNG (max 5MB)</p>
-                      </label>
-                    </div>
+            {/* Photo du Site */}
+            <div className="bg-white rounded-3xl shadow-sm p-6 border border-gray-100">
+              <h2 className="text-base font-bold text-gray-900 mb-3">
+                Photo du Site
+              </h2>
+
+              <div className="border-2 border-dashed border-gray-200 rounded-2xl p-4 text-center hover:border-gray-300 transition-colors">
+                {imagePreview ? (
+                  <div className="space-y-3">
+                    <img
+                      src={imagePreview}
+                      alt="Aperçu du site"
+                      className="w-full h-40 object-cover rounded-xl border border-gray-200"
+                    />
+                    <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-xs font-bold text-gray-700 cursor-pointer transition-colors">
+                      <Upload size={13} />
+                      Changer la photo
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="hidden"
+                      />
+                    </label>
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">APERÇU DU SITE</label>
-                    <div className="rounded-lg overflow-hidden border border-gray-200">
-                      {coverImage ? (<img src={URL.createObjectURL(coverImage)} alt="Aperçu du site" className="w-full h-48 object-cover" />) : (<div className="w-full h-48 bg-gray-100 flex items-center justify-center text-gray-400">Aucune image</div>)}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Boutons */}
-              <div className="flex space-x-3 pt-4">
-                <button type="button" onClick={() => window.history.back()} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-                  Annuler
-                </button>
-                <button type="submit" disabled={loading} className={`flex-1 px-4 py-2 text-white rounded-lg text-sm font-medium transition-colors ${loading ? 'bg-orange-400 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700'}`}>
-                  {loading ? 'Enregistrement...' : 'Enregistrer le site'}
-                </button>
+                ) : (
+                  <label className="flex flex-col items-center justify-center h-36 cursor-pointer">
+                    <Upload size={28} className="text-gray-400 mb-2" />
+                    <span className="text-xs font-bold text-gray-700">Importer une image</span>
+                    <span className="text-[10px] text-gray-400 mt-0.5">PNG, JPG jusqu'à 5MB</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+                  </label>
+                )}
               </div>
             </div>
+
+            {/* Boutons d'Action */}
+            <div className="bg-white rounded-3xl shadow-sm p-6 border border-gray-100 space-y-3">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3.5 px-4 bg-[#C25B1E] hover:bg-[#A04816] disabled:opacity-50 text-white text-xs font-bold rounded-2xl shadow-md transition-all active:scale-98 cursor-pointer flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    Enregistrement...
+                  </>
+                ) : (
+                  estModification ? "Modifier le site" : "Enregistrer le site"
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => navigate("/admin/sites")}
+                className="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-2xl transition-colors cursor-pointer"
+              >
+                Annuler
+              </button>
+            </div>
+
           </div>
         </form>
       </div>

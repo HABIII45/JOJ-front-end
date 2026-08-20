@@ -16,8 +16,8 @@ export function FormAjoutAdmin() {
     compteActif: true,
   });
 
-  // Gestion des permissions multiples (par défaut : RESULTATS ou sélection libre)
-  const [droitsSelectionnes, setDroitsSelectionnes] = useState([PERMISSIONS.RESULTATS]);
+  // Gestion des permissions multiples (par défaut : JEUX ou sélection libre)
+  const [droitsSelectionnes, setDroitsSelectionnes] = useState([PERMISSIONS.JEUX]);
   const [toutSelectionne, setToutSelectionne] = useState(false);
 
   const [afficherMdp, setAfficherMdp] = useState(false);
@@ -65,7 +65,7 @@ export function FormAjoutAdmin() {
   const handleSelectAllPermissions = () => {
     if (toutSelectionne) {
       setToutSelectionne(false);
-      setDroitsSelectionnes([PERMISSIONS.RESULTATS]);
+      setDroitsSelectionnes([PERMISSIONS.JEUX]);
     } else {
       setToutSelectionne(true);
       setDroitsSelectionnes(PERMISSION_OPTIONS.map((p) => p.value));
@@ -99,7 +99,7 @@ export function FormAjoutAdmin() {
       ? [PERMISSIONS.TOUT]
       : droitsSelectionnes.length > 0
       ? droitsSelectionnes
-      : [PERMISSIONS.RESULTATS];
+      : [PERMISSIONS.JEUX];
 
     // Découpage prénom / nom
     const partiesNom = form.nomComplet.trim().split(" ");

@@ -52,14 +52,36 @@ export const getSpecificSite = async (id) => {
 // Création d'un site
 export const createSite = async (payload) => {
   try {
-    const response = await api.post(SITE_URL, payload, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    const isFormData = payload instanceof FormData;
+    const headers = isFormData ? { "Content-Type": "multipart/form-data" } : {};
+    const response = await api.post(SITE_URL, payload, { headers });
     return response.data;
   } catch (error) {
     console.error("Erreur lors de la création du site:", error);
+    throw error;
+  }
+};
+
+// Modification d'un site (PATCH)
+export const updateSite = async (id, payload) => {
+  try {
+    const isFormData = payload instanceof FormData;
+    const headers = isFormData ? { "Content-Type": "multipart/form-data" } : {};
+    const response = await api.patch(`${SITE_URL}${id}/`, payload, { headers });
+    return response.data;
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour du site n°" + id, error);
+    throw error;
+  }
+};
+
+// Suppression d'un site (DELETE)
+export const deleteSite = async (id) => {
+  try {
+    const response = await api.delete(`${SITE_URL}${id}/`);
+    return response.data;
+  } catch (error) {
+    console.error("Erreur lors de la suppression du site n°" + id, error);
     throw error;
   }
 };
