@@ -78,7 +78,7 @@ export function Sidebar() {
         )}
 
         {/* Événements */}
-        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.EVENEMENTS)) && (
+        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.JEUX)) && (
           <NavLink
             to="/admin/evenements"
             className={isEvenementsActif ? "active" : ""}
@@ -89,7 +89,7 @@ export function Sidebar() {
         )}
 
         {/* Disciplines */}
-        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.DISCIPLINES)) && (
+        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.JEUX)) && (
           <NavLink to="/admin/disciplines">
             <Trophy size={19} />
             <span>Disciplines</span>
@@ -97,7 +97,7 @@ export function Sidebar() {
         )}
 
         {/* Sites */}
-        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.SITES)) && (
+        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.JEUX)) && (
           <NavLink
             to="/admin/sites"
             className={isSitesActif ? "active" : ""}
@@ -108,7 +108,7 @@ export function Sidebar() {
         )}
 
         {/* Catégories */}
-        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.CATEGORIES)) && (
+        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.JEUX)) && (
           <NavLink to="/admin/categories">
             <Tags size={19} />
             <span>Catégories</span>
@@ -116,7 +116,7 @@ export function Sidebar() {
         )}
 
         {/* Compétiteurs / Équipes */}
-        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.COMPETITEURS)) && (
+        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.JEUX)) && (
           <NavLink
             to="/admin/equipes"
             className={isEquipesActif ? "active" : ""}
@@ -138,7 +138,7 @@ export function Sidebar() {
         )}
 
         {/* Résultats */}
-        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.RESULTATS)) && (
+        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.ACTUALITES)) && (
           <NavLink
             to="/admin/resultats"
             className={isResultatsActif ? "active" : ""}
@@ -149,7 +149,7 @@ export function Sidebar() {
         )}
 
         {/* Billets */}
-        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.BILLETS)) && (
+        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.TOUT)) && (
           <NavLink
             to="/ventbillet"
             className={isBilletsActif ? "active" : ""}
