@@ -283,104 +283,89 @@ export function DisciplinesGame() {
 
                     )}
 
+{/* =================================================
+    CARTES DES DISCIPLINES
+================================================== */}
 
-                    {/* =================================================
-                        CARTES DES DISCIPLINES
-                    ================================================== */}
+<div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 
-                    <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    {jeuxActuels.map((jeu) => (
 
+        <div
+            key={jeu.id}
+            className="group mx-auto w-full max-w-[280px] rounded-[28px] border border-gray-100 bg-white px-5 py-6 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#ed6b0c] hover:shadow-lg"
+        >
 
-                        {jeuxActuels.map((jeu) => (
+            {/* IMAGE */}
 
-                            <div
-                                key={jeu.id}
-                                className="group rounded-2xl border border-transparent bg-white p-6 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#ed6b0c] hover:shadow-lg"
-                            >
+            <div className="mx-auto flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border-[6px] border-[#ed6b0c] bg-[#fff7f0] p-1 shadow-sm">
 
-                                {/* IMAGE */}
+                <img
+                    src={getImage(jeu)}
+                    alt={jeu.nom || "Discipline sportive"}
+                    className="h-full w-full rounded-full object-cover"
+                    onError={(e) => {
+                        e.currentTarget.src = JudoFight;
+                    }}
+                />
 
-                                <div className="mx-auto flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-4 border-[#ed6b0c] bg-[#fff7f0] p-1 shadow-sm">
-
-                                    <img
-                                        src={getImage(jeu)}
-                                        alt={jeu.nom || "Discipline sportive"}
-                                        className="h-full w-full rounded-full object-cover"
-                                        onError={(e) => {
-                                            e.currentTarget.src = JudoFight;
-                                        }}
-                                    />
-
-                                </div>
+            </div>
 
 
-                                {/* NOM */}
+            {/* NOM */}
 
-                                <h3 className="mt-5 text-xl font-extrabold text-black">
-                                    {jeu.nom}
-                                </h3>
-
-
-                                {/* REGLE */}
-
-                                <p className="mt-2 line-clamp-2 min-h-[40px] text-sm text-gray-400">
-                                    {jeu.regle || "Discipline sportive des JOJ"}
-                                </p>
+            <h3 className="mt-5 text-2xl font-extrabold leading-tight text-black">
+                {jeu.nom}
+            </h3>
 
 
-                                {/* ACCESSIBILITE */}
+            {/* NOMBRE D'ÉPREUVES */}
 
-                                <div className="mt-2 flex items-center justify-center gap-1 text-xs text-gray-400">
-
-                                    <FiMapPin size={20} />
-
-                                    <span>
-                                        {jeu.accessibilite || "Arena Dakar"}
-                                    </span>
-
-                                </div>
+            <p className="mt-2 text-base font-medium text-gray-500">
+                {jeu.nombre_epreuves ?? "0" } épreuves
+            </p>
 
 
-                                {/* DATE */}
+            {/* ACCESSIBILITE / SITE */}
 
-                                <div className="mt-2 flex items-center justify-center gap-1 text-sm font-medium text-[#ed6b0c]">
+            <div className="mt-1 flex items-center justify-center gap-1 text-base text-[#d85f0b]">
 
-                                    <FiCalendar size={14} />
+                <FiMapPin size={16} />
 
-                                    <span>
-                                        15 - 18 Mai 2026
-                                    </span>
+                <span>
+                    {jeu.site || "Arena Dakar"}
+                </span>
 
-                                </div>
+            </div>
 
-                            </div>
+        </div>
 
-                        ))}
+    ))}
 
 
-                        {/* AUCUNE DISCIPLINE */}
+    {/* AUCUNE DISCIPLINE */}
 
-                        {jeuxActuels.length === 0 && !message && (
+    {jeuxActuels.length === 0 && !message && (
 
-                            <div className="col-span-full py-16 text-center">
+        <div className="col-span-full py-16 text-center">
 
-                                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gray-100 text-3xl">
-                                    ⚽
-                                </div>
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gray-100 text-3xl">
+                ⚽
+            </div>
 
-                                <h3 className="mt-5 text-xl font-bold text-gray-800">
-                                    Aucune discipline trouvée
-                                </h3>
+            <h3 className="mt-5 text-xl font-bold text-gray-800">
+                Aucune discipline trouvée
+            </h3>
 
-                                <p className="mt-2 text-sm text-gray-500">
-                                    Essayez une autre recherche.
-                                </p>
+            <p className="mt-2 text-sm text-gray-500">
+                Essayez une autre recherche.
+            </p>
 
-                            </div>
+        </div>
 
-                        )}
+    )}
 
-                    </div>
+</div>
 
 
                     {/* =================================================
