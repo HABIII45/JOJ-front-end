@@ -1,4 +1,3 @@
-// src/routes/AppRoutes.jsx
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import  ChatbotAssistant  from "../components/chat/Chatbot";
 
@@ -31,6 +30,7 @@ import FormEvent          from "../pages/admin/EventForm";
 import AjoutAdminPage     from "../pages/admin/AjoutAdminPage";
 
 import { routesAdmin } from './AdminRoutes'; 
+
 
 
 const AppRoutes = () => {
