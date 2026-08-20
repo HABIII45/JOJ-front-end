@@ -46,9 +46,11 @@ const CarteRecap = ({
             <span className="text-[21px] font-[800] leading-[25px] text-[#050505] max-sm:text-[19px]">
               {montantTotal}
             </span>
-            <span className="ml-[3px] text-[11px] font-[400] text-[#777777]">
-              {taxes}
-            </span>
+            {taxes && (
+              <span className="ml-[3px] text-[11px] font-[400] text-[#777777]">
+                {taxes}
+              </span>
+            )}
           </div>
         ) : (
           <p className="mt-[5px] mb-0 text-[13px] font-[400] leading-[17px] text-[#222222] max-md:whitespace-normal">

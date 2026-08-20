@@ -4,7 +4,7 @@
  */
 import axios from "axios";
 
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+export const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -32,43 +32,47 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expiré — on pourrait déclencher un refresh ici
       localStorage.removeItem("access_token");
     }
     return Promise.reject(error);
   }
 );
 
+// ── Helper pour formater les URLs d'images retournées par le backend ───────
+export function getImageUrl(imagePath) {
+  if (!imagePath) return null;
+  if (typeof imagePath !== "string") return null;
+  if (
+    imagePath.startsWith("http://") ||
+    imagePath.startsWith("https://") ||
+    imagePath.startsWith("data:") ||
+    imagePath.startsWith("blob:")
+  ) {
+    return imagePath;
+  }
+  const cleanPath = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
+  return `${BASE_URL}${cleanPath}`;
+}
+
 // ── Endpoints organisés par domaine ─────────────────────────────────────────
 export const ENDPOINTS = {
   billets: {
-    /** GET  /api/tickets/         — liste des billets (admin) */
     liste:    "/api/tickets/",
-    /** POST /api/tickets/         — réserver des billets */
     reserver: "/api/tickets/",
-    /** GET  /api/tickets/:id/     — détail d'un billet */
     detail:   (id) => `/api/tickets/${id}/`,
-    /** GET  /api/scanner/:uuid/   — scanner un billet par QR */
     scanner:  (uuid) => `/api/scanner/${uuid}/`,
   },
   paiements: {
-    /** POST /api/payments/        — initier un paiement */
     initier: "/api/payments/",
-    /** GET  /api/payments/:id/    — résumé d'un paiement */
     detail:  (id) => `/api/payments/${id}/`,
   },
   evenements: {
-    /** GET  /api/events/          — liste des événements */
     liste:   "/api/events/",
-    /** GET  /api/events/:id/      — détail */
     detail:  (id) => `/api/events/${id}/`,
   },
   resultats: {
-    /** GET/POST /api/resultats/   — liste et création */
     liste:        "/api/resultats/",
-    /** GET/PUT/DELETE /api/resultats/:id/ */
     detail:        (id) => `/api/resultats/${id}/`,
-    /** GET /api/resultats/?evenement=:id */
     parEvenement:  (id) => `/api/resultats/?evenement=${id}`,
   },
   joueurs: {

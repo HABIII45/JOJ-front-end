@@ -14,7 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import api from "../../api/api";
+import api, { getImageUrl } from "../../api/api";
 import AdminLayout from "../../components/layouts/AdminLayout";
 
 const LIMITE_PAR_PAGE = 6;
@@ -348,13 +348,15 @@ export default function SitesGestion() {
                       site._statut || statutSite(site, site._nbCompetitions || 0);
                     const nbComp = site._nbCompetitions || 0;
 
+                    const urlImage = getImageUrl(site.image);
+
                     return (
                       <tr key={site.id} className="hover:bg-gray-50/50 transition-colors">
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-3">
-                            {site.image ? (
+                            {urlImage ? (
                               <img
-                                src={site.image}
+                                src={urlImage}
                                 alt={site.nom}
                                 className="h-10 w-14 rounded-lg object-cover shrink-0 border border-gray-200"
                               />

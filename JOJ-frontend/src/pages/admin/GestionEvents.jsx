@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
 import { Search, Filter, Plus, Calendar, MapPin, Eye, Pencil, Trash2, ChevronLeft, ChevronRight, Trophy } from "lucide-react";
 import AdminLayout from "../../components/layouts/AdminLayout";
-import api from "../../api/api";
+import api, { getImageUrl } from "../../api/api";
 
 export function GestionEvents() {
   const navigate = useNavigate();
@@ -203,13 +203,15 @@ export function GestionEvents() {
 
                 {!loading &&
                   !error &&
-                  events.map((event) => (
+                  events.map((event) => {
+                    const urlImage = getImageUrl(event.image);
+                    return (
                     <tr key={event.id} className="hover:bg-gray-50/50 transition-colors">
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-3">
-                          {event.image ? (
+                          {urlImage ? (
                             <img
-                              src={event.image}
+                              src={urlImage}
                               alt={event.titre}
                               className="h-10 w-14 rounded-lg object-cover shrink-0 border border-gray-200"
                             />
@@ -277,7 +279,8 @@ export function GestionEvents() {
                         </div>
                       </td>
                     </tr>
-                  ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

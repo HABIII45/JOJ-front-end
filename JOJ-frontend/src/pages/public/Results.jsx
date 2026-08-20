@@ -210,8 +210,6 @@ export default function Resultats() {
           )}
         </div>
       </section>
-      {/* Bouton Chatbot Assistant virtuel (issu de HeroSection) */}
-      <ChatbotAssistant />
       <Footer />
     </div>
   );

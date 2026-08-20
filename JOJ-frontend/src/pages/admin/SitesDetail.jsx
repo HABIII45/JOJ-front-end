@@ -11,7 +11,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import AdminLayout from "../../components/layouts/AdminLayout";
-import api from "../../api/api";
+import api, { getImageUrl } from "../../api/api";
 
 export default function SiteDetail() {
   const { id } = useParams();
@@ -98,9 +98,9 @@ export default function SiteDetail() {
 
         {/* Bannière Hero du Site */}
         <div className="relative h-64 md:h-80 rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-sm bg-gray-900">
-          {site.image ? (
+          {getImageUrl(site.image) ? (
             <img
-              src={site.image}
+              src={getImageUrl(site.image)}
               alt={site.nom}
               className="w-full h-full object-cover opacity-80"
             />

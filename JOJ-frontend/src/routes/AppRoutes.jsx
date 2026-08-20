@@ -1,5 +1,6 @@
 // src/routes/AppRoutes.jsx
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { ChatbotAssistant } from "../components/chat/Chatbot";
 
 // ── Pages publiques ──────────────────────────────────────────────────────────
 import Home               from "../pages/public/Home";
@@ -31,6 +32,13 @@ import AjoutAdminPage     from "../pages/admin/AjoutAdminPage";
 import { routesAdmin } from './AdminRoutes'; 
 
 const AppRoutes = () => {
+  const location = useLocation();
+
+  const isBackoffice =
+    location.pathname.startsWith('/admin') ||
+    location.pathname.startsWith('/parametres') ||
+    location.pathname === '/dashboard';
+
   const renderRoutes = (routes) => {
     return routes.map((route, index) => (
       <Route key={index} path={route.path} element={route.element}>
@@ -40,45 +48,50 @@ const AppRoutes = () => {
   };
 
   return (
-    <Routes>
-      {/* ── Accueil & Public ── */}
-      <Route path="/" element={<Home />} />
-      <Route path="/disciplines" element={<DisciplinesGame />} />
-      <Route path="/jeux" element={<DisciplinesGame />} />
-      <Route path="/actualites" element={<CreerActualite />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register-result" element={<RegisterResultPage />} />
-      <Route path="/ventbillet" element={<VenteBilletPage />} />
-      <Route path="/resultats" element={<Resultats />} />
-      <Route path="/payment/summary" element={<PaymentSummary />} />
+    <>
+      <Routes>
+        {/* ── Accueil & Public ── */}
+        <Route path="/" element={<Home />} />
+        <Route path="/disciplines" element={<DisciplinesGame />} />
+        <Route path="/jeux" element={<DisciplinesGame />} />
+        <Route path="/actualites" element={<CreerActualite />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register-result" element={<RegisterResultPage />} />
+        <Route path="/ventbillet" element={<VenteBilletPage />} />
+        <Route path="/resultats" element={<Resultats />} />
+        <Route path="/payment/summary" element={<PaymentSummary />} />
 
-      {/* SITES SECTION */}
-      <Route path="/sites" element={<Sites />} />
-      <Route path="/sites/:id" element={<DetailSite />} />
-      <Route path="/sites/:id/modifier" element={<SiteForm />} />
-      <Route path="/sites/ajout" element={<SiteForm />} />
+        {/* SITES SECTION */}
+        <Route path="/sites" element={<Sites />} />
+        <Route path="/sites/:id" element={<DetailSite />} />
+        <Route path="/sites/:id/modifier" element={<SiteForm />} />
+        <Route path="/sites/ajout" element={<SiteForm />} />
 
-      {/* EVENEMENTS SECTION */}
-      <Route path="/events" element={<Events />} />
-      <Route path="/evenements" element={<Events />} />
-      <Route path="/events/:id" element={<EventDetail />} />
-      <Route path="/events/create" element={<FormEvent />} />
+        {/* EVENEMENTS SECTION */}
+        <Route path="/events" element={<Events />} />
+        <Route path="/evenements" element={<Events />} />
+        <Route path="/events/:id" element={<EventDetail />} />
+        <Route path="/events/create" element={<FormEvent />} />
 
-      {/* COMPETITEURS SECTION */}
-      <Route path="/competiteurs" element={<GamesList />} />
-      <Route path="/competiteurs/ajout" element={<CompetiteurForm />} />
+        {/* COMPETITEURS SECTION */}
+        <Route path="/competiteurs" element={<GamesList />} />
+        <Route path="/competiteurs/ajout" element={<CompetiteurForm />} />
 
-      {/* ROUTES ADMINISTRATION PROTEGEES */}
-      {renderRoutes(routesAdmin)}
+        {/* ROUTES ADMINISTRATION PROTEGEES */}
+        {renderRoutes(routesAdmin)}
 
-      {/* Paramètres & Gestion admin */}
-      <Route path="/parametres" element={<ParamsPage />} />
-      <Route path="/parametres/ajouter-admin" element={<AjoutAdminPage />} />
-      <Route path="/admin/ajouter-admin" element={<AjoutAdminPage />} />
+        {/* Paramètres & Gestion admin */}
+        <Route path="/parametres" element={<ParamsPage />} />
+        <Route path="/parametres/ajouter-admin" element={<AjoutAdminPage />} />
+        <Route path="/admin/ajouter-admin" element={<AjoutAdminPage />} />
 
-      {/* Fallback */}
-      <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
-    </Routes>
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
+      </Routes>
+
+      {/* Chatbot présent sur toutes les pages publiques et exclu du backoffice */}
+      {!isBackoffice && <ChatbotAssistant />}
+    </>
   );
 };
 

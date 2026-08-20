@@ -3,11 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { Header } from "../../components/layout/Header";
 import { Footer } from "../../components/layout/Footer";
 import ContainerImg from "../../assets/images/Container.jpg";
-import api from "../../api/api";
+import api, { getImageUrl } from "../../api/api";
 import { Trophy, MapPin, Calendar, Ticket } from "lucide-react";
 
 // ── Sous-composant carte événement ────────────────────────────────────────────
 function CarteEvenement({ evenement, onReserver }) {
+  const urlImage = getImageUrl(evenement.image);
+
   return (
     <article className="rounded-2xl bg-white p-6 sm:p-7 lg:p-8
                         shadow-[0_0.4rem_1.5rem_rgba(0,0,0,.08)]
@@ -15,9 +17,9 @@ function CarteEvenement({ evenement, onReserver }) {
                         hover:shadow-[0_1rem_2rem_rgba(0,0,0,.08)] flex flex-col justify-between">
       <div>
         <div className="flex justify-center">
-          {evenement.image ? (
+          {urlImage ? (
             <img
-              src={evenement.image}
+              src={urlImage}
               alt={evenement.titre}
               className="h-24 w-24 sm:h-28 sm:w-28 rounded-full object-cover border border-[#eadfd9]"
             />

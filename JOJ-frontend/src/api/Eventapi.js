@@ -23,12 +23,25 @@ export async function getCategories() {
   }
 }
 
-// ── Récupérer les sites ───────────────────────────────────────────────────────
+// ── Récupérer tous les sites (parcourt toutes les pages) ──────────────────────
 export async function getSites() {
   try {
-    const response = await api.get("/api/sites/?page_size=100");
-    const data = response.data;
-    return Array.isArray(data) ? data : data.results ?? [];
+    let allSites = [];
+    let page = 1;
+    let hasMore = true;
+
+    while (hasMore) {
+      const response = await api.get("/api/sites/", { params: { page } });
+      const data = response.data;
+      const results = Array.isArray(data) ? data : data.results ?? [];
+      allSites = allSites.concat(results);
+      if (!data.next || results.length === 0) {
+        hasMore = false;
+      } else {
+        page += 1;
+      }
+    }
+    return allSites;
   } catch {
     return [];
   }
