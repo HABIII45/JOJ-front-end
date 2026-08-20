@@ -67,24 +67,70 @@ export function useAdminData() {
       const actualites = Array.isArray(actBrutes) ? actBrutes : actBrutes?.results ?? [];
 
       const ticketsBruts = ticketsRes.status === "fulfilled" ? ticketsRes.value : [];
-      const tickets = Array.isArray(ticketsBruts) ? ticketsBruts : ticketsBruts?.results ?? [];
+      let tickets = Array.isArray(ticketsBruts) ? ticketsBruts : ticketsBruts?.results ?? [];
 
       const paiementsBruts = paiementsRes.status === "fulfilled" ? paiementsRes.value : [];
-      const paiements = Array.isArray(paiementsBruts) ? paiementsBruts : paiementsBruts?.results ?? [];
+      let paiements = Array.isArray(paiementsBruts) ? paiementsBruts : paiementsBruts?.results ?? [];
 
-      // ── 1. Total Événements & Sites Réels (Prise en compte de la pagination Django) ──
+      // Fusion avec les ventes enregistrées
+      try {
+        const rawBilletsLocaux = localStorage.getItem("joj_tous_les_billets");
+        if (rawBilletsLocaux) {
+          const parsed = JSON.parse(rawBilletsLocaux);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const idsExistants = new Set(tickets.map((t) => String(t.id || t.code_unique || t.codeUnique)));
+            parsed.forEach((bLocal) => {
+              const idCle = String(bLocal.id || bLocal.code_unique || bLocal.codeUnique);
+              if (!idsExistants.has(idCle)) {
+                tickets.push({
+                  id: bLocal.id,
+                  type_billet: bLocal.categorie || bLocal.type_billet || "STANDARD",
+                  prix: bLocal.prix || (bLocal.categorie === "VIP" ? 15000 : 5000),
+                  date_commande: bLocal.date_commande || new Date().toISOString(),
+                });
+                idsExistants.add(idCle);
+              }
+            });
+          }
+        }
+      } catch (e) {
+        console.warn("Lecture billets locaux dashboard:", e);
+      }
+
+      // ── 1. Total Événements & Sites Réels ──
       const totalEvenements = evenements.totalCount ?? evenements.length;
       const sitesActifs = typeof sitesBruts?.count === "number" ? sitesBruts.count : sites.length;
       const actualitesPubliees = typeof actBrutes?.count === "number" 
         ? actBrutes.count 
         : (actualites.length > 0 ? actualites.length : resultats.length);
 
-      // ── 2. Calcul 100% Réel des Revenus Billets ──
+      // ── 2. Calcul Réel des Revenus Billets ──
       let revenusBillets = 0;
       const ventesParMois = {};
       NOMS_MOIS.forEach((m) => { ventesParMois[m] = 0; });
 
-      if (paiements.length > 0) {
+      if (tickets.length > 0) {
+        tickets.forEach((t) => {
+          let prix = 0;
+          if (t.type_billet === "VIP") prix = 15000;
+          else if (t.type_billet === "STANDARD") prix = 5000;
+          else if (t.prix) prix = Number(t.prix);
+
+          revenusBillets += prix;
+
+          const dStr = t.date_commande || t.created_at;
+          if (dStr) {
+            const date = new Date(dStr);
+            const idxMois = date.getMonth();
+            if (idxMois >= 0 && idxMois < 12) {
+              ventesParMois[NOMS_MOIS[idxMois]] += prix;
+            }
+          } else {
+            const idxMois = new Date().getMonth();
+            ventesParMois[NOMS_MOIS[idxMois]] += prix;
+          }
+        });
+      } else if (paiements.length > 0) {
         paiements.forEach((p) => {
           const montant = Number(p.montant || p.amount || 0);
           revenusBillets += montant;
@@ -97,23 +143,6 @@ export function useAdminData() {
             }
           }
         });
-      } else if (tickets.length > 0) {
-        tickets.forEach((t) => {
-          let prix = 0;
-          if (t.type_billet === "VIP") prix = 15000;
-          else if (t.type_billet === "STANDARD") prix = 5000;
-          else if (t.prix) prix = Number(t.prix);
-
-          revenusBillets += prix;
-
-          if (t.date_commande || t.created_at) {
-            const date = new Date(t.date_commande || t.created_at);
-            const idxMois = date.getMonth();
-            if (idxMois >= 0 && idxMois < 12) {
-              ventesParMois[NOMS_MOIS[idxMois]] += prix;
-            }
-          }
-        });
       }
 
       const ventesArray = NOMS_MOIS.map((mois) => ({
@@ -123,6 +152,18 @@ export function useAdminData() {
 
       // ── 3. Activités Récentes & Historique Complet ──
       const toutesActivites = [];
+
+      // Ventes de billets récentes
+      tickets.slice(0, 5).forEach((t) => {
+        toutesActivites.push({
+          id: `ticket-${t.id}`,
+          type: "creation",
+          titre: `Vente de billet ${t.type_billet || "Standard"}`,
+          detail: `Montant : ${Number(t.prix || 5000).toLocaleString("fr-FR")} FCFA`,
+          date: t.date_commande || new Date().toISOString(),
+          ilYA: libelleIlYa(t.date_commande || new Date().toISOString()),
+        });
+      });
 
       // Tous les événements réels
       [...evenements].reverse().forEach((ev) => {
@@ -146,18 +187,6 @@ export function useAdminData() {
           detail: `Score : ${res.score || "—"} • Épreuve #${res.evenement}`,
           date: res.created_at,
           ilYA: "Résultat validé",
-        });
-      });
-
-      // Toutes les actualités réelles
-      [...actualites].reverse().forEach((act) => {
-        toutesActivites.push({
-          id: `act-${act.id}`,
-          type: "modification",
-          titre: `Actualité : ${act.titre}`,
-          detail: act.resume || act.contenu?.slice(0, 50) || "Publication d'actualité",
-          date: act.date_publication,
-          ilYA: libelleIlYa(act.date_publication),
         });
       });
 

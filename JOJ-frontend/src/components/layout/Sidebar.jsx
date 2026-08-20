@@ -16,22 +16,22 @@ import {
   Newspaper,
   Ticket,
   Users,
-  UserRound,
   Medal,
   Settings,
   LogOut,
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 
-const routesResultats   = ["/resultats", "/register-result", "/admin/resultats"];
-const routesBillets     = ["/ventbillet", "/admin/ventbillet"];
-const routesSites       = ["/admin/sites", "/sites"];
-const routesCategories  = ["/admin/categories"];
-const routesDisciplines = ["/admin/disciplines", "/disciplines", "/jeux"];
-const routesEquipes     = ["/admin/equipes", "/competiteurs"];
-const routesEvenements  = ["/admin/evenements", "/events"];
-const routesActualites  = ["/admin/actualites", "/actualites"];
-const routesParams      = ["/parametres", "/admin/parametres"];
+const routesResultats    = ["/resultats", "/register-result", "/admin/resultats"];
+const routesBillets      = ["/ventbillet", "/admin/ventbillet"];
+const routesSites        = ["/admin/sites", "/sites"];
+const routesCategories   = ["/admin/categories"];
+const routesDisciplines  = ["/admin/disciplines", "/disciplines", "/jeux"];
+const routesEquipes      = ["/admin/equipes", "/admin/competiteurs", "/competiteurs"];
+const routesEvenements   = ["/admin/evenements", "/events"];
+const routesActualites   = ["/admin/actualites", "/actualites"];
+const routesUtilisateurs = ["/admin/utilisateurs"];
+const routesParams       = ["/parametres", "/admin/parametres"];
 
 export function Sidebar() {
   const location = useLocation();
@@ -42,17 +42,17 @@ export function Sidebar() {
   }
 
   const superAdmin = isSuperAdmin(utilisateur);
-  const isAdmin = superAdmin || Boolean(utilisateur);
 
-  const isResultatsActif   = routesResultats.some((r) => location.pathname.startsWith(r));
-  const isBilletsActif     = routesBillets.some((r) => location.pathname.startsWith(r));
-  const isSitesActif       = routesSites.some((r) => location.pathname.startsWith(r));
-  const isCategoriesActif  = routesCategories.some((r) => location.pathname.startsWith(r));
-  const isDisciplinesActif = routesDisciplines.some((r) => location.pathname.startsWith(r));
-  const isEquipesActif     = routesEquipes.some((r) => location.pathname.startsWith(r));
-  const isEvenementsActif  = routesEvenements.some((r) => location.pathname.startsWith(r));
-  const isActualitesActif  = routesActualites.some((r) => location.pathname.startsWith(r));
-  const isParamsActif      = routesParams.some((r) => location.pathname.startsWith(r));
+  const isResultatsActif    = routesResultats.some((r) => location.pathname.startsWith(r));
+  const isBilletsActif      = routesBillets.some((r) => location.pathname.startsWith(r));
+  const isSitesActif        = routesSites.some((r) => location.pathname.startsWith(r));
+  const isCategoriesActif   = routesCategories.some((r) => location.pathname.startsWith(r));
+  const isDisciplinesActif  = routesDisciplines.some((r) => location.pathname.startsWith(r));
+  const isEquipesActif      = routesEquipes.some((r) => location.pathname.startsWith(r));
+  const isEvenementsActif   = routesEvenements.some((r) => location.pathname.startsWith(r));
+  const isActualitesActif   = routesActualites.some((r) => location.pathname.startsWith(r));
+  const isUtilisateursActif = routesUtilisateurs.some((r) => location.pathname.startsWith(r));
+  const isParamsActif       = routesParams.some((r) => location.pathname.startsWith(r));
 
   const handleDeconnexion = async (e) => {
     e.preventDefault();
@@ -67,9 +67,9 @@ export function Sidebar() {
         <img src={JOJlogo} alt="JOJ Events" />
       </div>
 
-      {/* Navigation */}
+      {/* Navigation filtrée selon les permissions strictes */}
       <nav className="navigation">
-        {/* Dashboard accessible à tous les admins connectés */}
+        {/* 1. Dashboard : accessible à tous les connectés */}
         {utilisateur && (
           <NavLink
             to="/admin/dashboard"
@@ -82,8 +82,13 @@ export function Sidebar() {
           </NavLink>
         )}
 
+        {/* ── MODULES JEUX ── */}
         {/* Événements */}
+<<<<<<< HEAD
         {(superAdmin || hasPermission(utilisateur, PERMISSIONS.JEUX)) && (
+=======
+        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.EVENEMENTS)) && (
+>>>>>>> origin/feature/copistable
           <NavLink
             to="/admin/evenements"
             className={isEvenementsActif ? "active" : ""}
@@ -94,15 +99,27 @@ export function Sidebar() {
         )}
 
         {/* Disciplines */}
+<<<<<<< HEAD
         {(superAdmin || hasPermission(utilisateur, PERMISSIONS.JEUX)) && (
           <NavLink to="/admin/disciplines">
+=======
+        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.DISCIPLINES)) && (
+          <NavLink
+            to="/admin/disciplines"
+            className={isDisciplinesActif ? "active" : ""}
+          >
+>>>>>>> origin/feature/copistable
             <Trophy size={19} />
             <span>Disciplines</span>
           </NavLink>
         )}
 
         {/* Sites */}
+<<<<<<< HEAD
         {(superAdmin || hasPermission(utilisateur, PERMISSIONS.JEUX)) && (
+=======
+        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.SITES)) && (
+>>>>>>> origin/feature/copistable
           <NavLink
             to="/admin/sites"
             className={isSitesActif ? "active" : ""}
@@ -113,26 +130,40 @@ export function Sidebar() {
         )}
 
         {/* Catégories */}
+<<<<<<< HEAD
         {(superAdmin || hasPermission(utilisateur, PERMISSIONS.JEUX)) && (
           <NavLink to="/admin/categories">
+=======
+        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.CATEGORIES)) && (
+          <NavLink
+            to="/admin/categories"
+            className={isCategoriesActif ? "active" : ""}
+          >
+>>>>>>> origin/feature/copistable
             <Tags size={19} />
             <span>Catégories</span>
           </NavLink>
         )}
 
+<<<<<<< HEAD
         {/* Compétiteurs / Équipes */}
         {(superAdmin || hasPermission(utilisateur, PERMISSIONS.JEUX)) && (
+=======
+        {/* Équipes / Compétiteurs */}
+        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.EQUIPES)) && (
+>>>>>>> origin/feature/copistable
           <NavLink
             to="/admin/equipes"
             className={isEquipesActif ? "active" : ""}
           >
-            <UserRound size={19} />
+            <Trophy size={19} />
             <span>Équipes</span>
           </NavLink>
         )}
 
+        {/* ── MODULES ACTUALITÉS ── */}
         {/* Actualités */}
-        {(isAdmin || hasPermission(utilisateur, PERMISSIONS.ACTUALITES)) && (
+        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.ACTUALITES)) && (
           <NavLink
             to="/admin/actualites"
             className={isActualitesActif ? "active" : ""}
@@ -143,7 +174,11 @@ export function Sidebar() {
         )}
 
         {/* Résultats */}
+<<<<<<< HEAD
         {(superAdmin || hasPermission(utilisateur, PERMISSIONS.ACTUALITES)) && (
+=======
+        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.RESULTATS)) && (
+>>>>>>> origin/feature/copistable
           <NavLink
             to="/admin/resultats"
             className={isResultatsActif ? "active" : ""}
@@ -153,53 +188,75 @@ export function Sidebar() {
           </NavLink>
         )}
 
+<<<<<<< HEAD
         {/* Billets */}
         {(superAdmin || hasPermission(utilisateur, PERMISSIONS.TOUT)) && (
+=======
+        {/* ── BILLETTERIE & ADMIN (RÉSERVÉ EXCLUSIVEMENT AUX SUPERADMINS) ── */}
+        {superAdmin && (
+>>>>>>> origin/feature/copistable
           <NavLink
-            to="/ventbillet"
+            to="/admin/ventbillet"
             className={isBilletsActif ? "active" : ""}
           >
             <Ticket size={19} />
-            <span>Billets</span>
+            <span>Vente Billets</span>
           </NavLink>
         )}
 
-        {/* Utilisateurs / Administrateurs */}
+        {/* Gestion des Utilisateurs */}
         {(superAdmin || hasPermission(utilisateur, PERMISSIONS.UTILISATEURS)) && (
-          <NavLink to="/parametres/ajouter-admin">
+          <NavLink
+            to="/admin/utilisateurs"
+            className={isUtilisateursActif ? "active" : ""}
+          >
             <Users size={19} />
             <span>Utilisateurs</span>
           </NavLink>
         )}
-      </nav>
-
-      {/* Pied de sidebar */}
-      <div className="sidebar-bottom">
-        <div className="sidebar-separator"></div>
 
         {/* Paramètres */}
-        {utilisateur && (
+        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.PARAMETRES)) && (
           <NavLink
-            to="/parametres"
+            to="/admin/parametres"
             className={isParamsActif ? "active" : ""}
           >
             <Settings size={19} />
             <span>Paramètres</span>
           </NavLink>
         )}
+      </nav>
 
-        {/* Déconnexion */}
-        {utilisateur && (
-          <button
-            onClick={handleDeconnexion}
-            className="sidebar-logout-btn"
-            type="button"
-          >
-            <LogOut size={19} />
-            <span>Déconnexion</span>
-          </button>
-        )}
+      {/* Bas de sidebar : Profil & Bouton Déconnexion garanti */}
+      <div className="sidebar-bottom">
+        <div className="sidebar-profile">
+          <div className="profile-avatar">
+            {utilisateur?.first_name?.[0] || utilisateur?.username?.[0] || "A"}
+          </div>
+          <div className="profile-info">
+            <p className="profile-name">
+              {utilisateur?.first_name
+                ? `${utilisateur.first_name} ${utilisateur.last_name || ""}`.trim()
+                : utilisateur?.username || "Administrateur"}
+            </p>
+            <p className="profile-role">
+              {superAdmin ? "Super Admin" : "Administrateur"}
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className="sidebar-logout-btn"
+          onClick={handleDeconnexion}
+          title="Se déconnecter"
+        >
+          <LogOut size={16} />
+          <span>Déconnexion</span>
+        </button>
       </div>
     </div>
   );
 }
+
+export default Sidebar;

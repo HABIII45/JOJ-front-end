@@ -52,7 +52,7 @@ function ApercuBoutons({
           }));
 
         if (lignes.length === 0) {
-          setErreur("Veuillez saisir au moins un score avant de publier.");
+          setErreur("Veuillez saisir au moins un score avant d'enregistrer.");
           setChargement(false);
           return;
         }
@@ -75,7 +75,7 @@ function ApercuBoutons({
         ]);
 
         if (lignes.length === 0) {
-          setErreur("Aucun match à publier.");
+          setErreur("Aucun match à enregistrer.");
           setChargement(false);
           return;
         }
@@ -84,8 +84,8 @@ function ApercuBoutons({
       }
 
       setSucces(true);
-      // Retour vers /resultats après 1.2 s
-      setTimeout(() => navigate("/resultats"), 1200);
+      // Redirection immédiate vers la page de Gestion des Résultats
+      setTimeout(() => navigate("/admin/resultats"), 1000);
 
     } catch (err) {
       const data = err?.response?.data;
@@ -93,7 +93,7 @@ function ApercuBoutons({
         data?.detail                 ||
         data?.non_field_errors?.[0]  ||
         data?.score?.[0]             ||
-        "Une erreur est survenue lors de la publication.";
+        "Une erreur est survenue lors de l'enregistrement.";
       setErreur(Array.isArray(msg) ? msg[0] : msg);
     } finally {
       setChargement(false);
@@ -141,7 +141,7 @@ function ApercuBoutons({
       {/* Message succès */}
       {succes && (
         <p className="mb-3 text-sm text-green-600 font-medium">
-          {modeEdition ? "Modifications enregistrées !" : "Résultats publiés !"} Redirection…
+          {modeEdition ? "Modifications enregistrées !" : "Résultats publiés !"} Redirection vers la gestion des résultats…
         </p>
       )}
 
@@ -163,7 +163,8 @@ function ApercuBoutons({
       {/* Boutons */}
       <div className="flex gap-4">
         <button
-          onClick={() => navigate("/resultats")}
+          type="button"
+          onClick={() => navigate("/admin/resultats")}
           disabled={chargement}
           className="px-8 py-3 bg-white rounded-xl border-2 border-[#c85f18] cursor-pointer hover:bg-orange-50 transition-colors disabled:opacity-60"
         >
@@ -173,15 +174,16 @@ function ApercuBoutons({
         </button>
 
         <button
+          type="button"
           onClick={handleSoumettre}
           disabled={chargement || succes}
           className="px-8 py-3.5 bg-[#c85f18] rounded-xl cursor-pointer hover:bg-[#b35216] transition-colors disabled:opacity-60"
         >
           <span className="text-white font-medium text-base tracking-[0.02px]">
             {chargement
-              ? "Publication…"
+              ? "Enregistrement…"
               : modeEdition
-              ? "Modifier"
+              ? "Modifier le résultat"
               : "Publier les résultats"}
           </span>
         </button>

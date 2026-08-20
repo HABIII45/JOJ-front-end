@@ -7,8 +7,7 @@ function SaisieCollectif({ evenementId, categorieId, onDonneesChange }) {
   const [erreur,      setErreur]      = useState("");
 
   const charger = useCallback(async () => {
-    // Si l'épreuve ET la catégorie ne sont pas sélectionnées, ne rien afficher
-    if (!evenementId || !categorieId) {
+    if (!evenementId) {
       setMatchs([]);
       onDonneesChange?.([]);
       return;
@@ -22,8 +21,12 @@ function SaisieCollectif({ evenementId, categorieId, onDonneesChange }) {
         fetchResultatsParEvenement(evenementId),
       ]);
 
-      // Filtrer les équipes appartenant à la catégorie sélectionnée
+      const idsExistants = new Set(existants.map((r) => String(r.info_competiteur?.id || r.competiteur)));
+
+      // Filtrer les équipes appartenant à la catégorie OU ayant déjà un résultat
       const equipesFiltrees = toutesLesEquipes.filter((eq) => {
+        if (idsExistants.has(String(eq.id))) return true;
+        if (!categorieId) return true;
         const catEquipe = typeof eq.categorie === "object" ? eq.categorie?.id : eq.categorie;
         return String(catEquipe) === String(categorieId);
       });
@@ -35,18 +38,18 @@ function SaisieCollectif({ evenementId, categorieId, onDonneesChange }) {
         const eqB = equipesFiltrees[i + 1];
 
         const resA = existants.find(
-          (r) => r.info_competiteur?.id === eqA.id || r.competiteur === eqA.id
+          (r) => String(r.info_competiteur?.id || r.competiteur) === String(eqA.id)
         );
         const resB = existants.find(
-          (r) => r.info_competiteur?.id === eqB.id || r.competiteur === eqB.id
+          (r) => String(r.info_competiteur?.id || r.competiteur) === String(eqB.id)
         );
 
         paires.push({
           id:          i / 2 + 1,
           equipeA:     eqA,
           equipeB:     eqB,
-          scoreA:      resA?.score ?? "0",
-          scoreB:      resB?.score ?? "0",
+          scoreA:      resA?.score ?? "",
+          scoreB:      resB?.score ?? "",
           resultatIdA: resA?.id ?? null,
           resultatIdB: resB?.id ?? null,
         });
@@ -87,7 +90,7 @@ function SaisieCollectif({ evenementId, categorieId, onDonneesChange }) {
     </div>
   );
 
-  if (!evenementId || !categorieId) {
+  if (!evenementId) {
     return (
       <div className="bg-white rounded-3xl border border-dashed border-gray-300 p-12 text-center">
         <div className="mx-auto w-12 h-12 rounded-2xl bg-[#fff0e7] flex items-center justify-center text-[#d96814] mb-3">
@@ -98,112 +101,95 @@ function SaisieCollectif({ evenementId, categorieId, onDonneesChange }) {
           </svg>
         </div>
         <h3 className="text-base font-bold text-gray-800">Sélection requise</h3>
-        <p className="mt-1 text-sm text-gray-500 max-w-md mx-auto">
-          Veuillez sélectionner <strong>l'épreuve</strong> et la <strong>catégorie</strong> ci-dessus pour afficher les équipes et les matchs.
+        <p className="text-xs text-gray-400 mt-1 max-w-sm mx-auto">
+          Sélectionnez une épreuve ci-dessus pour afficher et modifier les scores des équipes.
         </p>
       </div>
     );
   }
 
-  if (chargement) {
-    return (
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 flex items-center justify-center h-40">
-        <span className="text-sm text-gray-400">Chargement des équipes de la catégorie…</span>
-      </div>
-    );
-  }
-
-  if (erreur) {
-    return (
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8">
-        <p className="text-sm text-red-500">{erreur}</p>
-        <button onClick={charger} className="mt-3 text-sm text-[#c85f18] hover:underline cursor-pointer">
-          Réessayer
-        </button>
-      </div>
-    );
-  }
-
-  if (matchs.length === 0) {
-    return (
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-10 text-center text-sm text-gray-400">
-        Aucun affrontement d'équipes disponible pour cette catégorie (au moins 2 équipes requises).
-      </div>
-    );
-  }
-
   return (
-    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8">
-      {/* En-tête */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 bg-[#fef3eb] rounded-xl flex items-center justify-center">
-          <svg className="w-4 h-4 text-[#c85f18]" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="9" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 2" />
-          </svg>
+    <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 mb-6">
+      <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+        <div>
+          <h2 className="text-base font-bold text-gray-900">
+            Saisie des Matchs Collectifs
+          </h2>
+          <p className="text-xs text-gray-400 mt-0.5">
+            Renseignez ou modifiez les scores des affrontements entre équipes.
+          </p>
         </div>
-        <span className="text-xl font-medium text-black">
-          Affrontements collectifs
-          <span className="ml-2 text-sm text-gray-400 font-normal">({matchs.length} match{matchs.length > 1 ? "s" : ""})</span>
+        <span className="bg-orange-50 text-[#d96814] text-xs font-bold px-3 py-1.5 rounded-full border border-orange-200">
+          {matchs.length} match{matchs.length > 1 ? "s" : ""}
         </span>
       </div>
 
-      {/* En-têtes colonnes */}
-      <div className="grid grid-cols-[1fr_120px_1fr] gap-4 mb-4">
-        <span className="text-xs font-semibold text-[#c85f18] tracking-[0.60px] uppercase">Équipe A</span>
-        <span className="text-xs font-semibold text-[#c85f18] tracking-[0.60px] text-center uppercase">SCORE</span>
-        <span className="text-xs font-semibold text-[#c85f18] tracking-[0.60px] uppercase">Équipe B</span>
-      </div>
-
-      {/* Matchs */}
-      {matchs.map((m) => (
-        <div key={m.id}
-          className="grid grid-cols-[1fr_120px_1fr] gap-4 items-center mb-3 last:mb-0">
-
-          {/* Équipe A */}
-          <div className="flex items-center gap-3 bg-gray-50 rounded-xl border border-gray-200 px-3 py-2">
-            <AvatarEquipe equipe={m.equipeA} />
-            <div>
-              <p className="m-0 text-sm font-medium text-black">{m.equipeA.nom}</p>
-              {m.equipeA.pays && (
-                <p className="m-0 text-xs text-gray-400">{m.equipeA.pays}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Score */}
-          <div className="flex items-center justify-center gap-2 bg-gray-50 rounded-xl border border-gray-200 px-3 py-2">
-            <input
-              type="number"
-              min="0"
-              value={m.scoreA}
-              onChange={(e) => handleScore(m.id, "A", e.target.value)}
-              className="w-10 bg-transparent text-center text-lg font-bold text-[#c85f18] outline-none border-none p-0"
-            />
-            <span className="text-sm text-gray-400 font-bold">-</span>
-            <input
-              type="number"
-              min="0"
-              value={m.scoreB}
-              onChange={(e) => handleScore(m.id, "B", e.target.value)}
-              className="w-10 bg-transparent text-center text-lg font-bold text-gray-700 outline-none border-none p-0"
-            />
-          </div>
-
-          {/* Équipe B */}
-          <div className="flex items-center gap-3 bg-gray-50 rounded-xl border border-gray-200 px-3 py-2">
-            <AvatarEquipe equipe={m.equipeB} />
-            <div>
-              <p className="m-0 text-sm font-medium text-black">{m.equipeB.nom}</p>
-              {m.equipeB.pays && (
-                <p className="m-0 text-xs text-gray-400">{m.equipeB.pays}</p>
-              )}
-            </div>
-          </div>
-
+      {chargement && (
+        <div className="py-12 text-center text-gray-400 text-xs">
+          <div className="w-6 h-6 border-2 border-[#d96814] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+          Chargement des équipes et matchs...
         </div>
-      ))}
+      )}
+
+      {erreur && (
+        <div className="p-4 bg-red-50 text-red-600 text-xs rounded-xl mb-4 font-medium">
+          {erreur}
+        </div>
+      )}
+
+      {!chargement && matchs.length === 0 && (
+        <div className="py-8 text-center text-gray-400 text-xs">
+          Aucune équipe enregistrée pour cette catégorie.
+        </div>
+      )}
+
+      {!chargement && matchs.length > 0 && (
+        <div className="space-y-4">
+          {matchs.map((m) => (
+            <div
+              key={m.id}
+              className="p-4 bg-[#fbfcfd] border border-gray-100 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4"
+            >
+              {/* Équipe A */}
+              <div className="flex items-center gap-3 flex-1 justify-start">
+                <AvatarEquipe equipe={m.equipeA} />
+                <div>
+                  <p className="font-bold text-xs text-gray-900">{m.equipeA.nom}</p>
+                  <p className="text-[10px] text-gray-400 uppercase font-semibold">{m.equipeA.pays || "SN"}</p>
+                </div>
+              </div>
+
+              {/* Scores confrontation */}
+              <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-xl border border-gray-200 shadow-xs">
+                <input
+                  type="text"
+                  value={m.scoreA}
+                  onChange={(e) => handleScore(m.id, "A", e.target.value)}
+                  placeholder="0"
+                  className="w-12 text-center text-sm font-black text-gray-900 outline-none focus:text-[#d96814]"
+                />
+                <span className="text-gray-400 font-bold text-xs">VS</span>
+                <input
+                  type="text"
+                  value={m.scoreB}
+                  onChange={(e) => handleScore(m.id, "B", e.target.value)}
+                  placeholder="0"
+                  className="w-12 text-center text-sm font-black text-gray-900 outline-none focus:text-[#d96814]"
+                />
+              </div>
+
+              {/* Équipe B */}
+              <div className="flex items-center gap-3 flex-1 justify-end">
+                <div className="text-right">
+                  <p className="font-bold text-xs text-gray-900">{m.equipeB.nom}</p>
+                  <p className="text-[10px] text-gray-400 uppercase font-semibold">{m.equipeB.pays || "SN"}</p>
+                </div>
+                <AvatarEquipe equipe={m.equipeB} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

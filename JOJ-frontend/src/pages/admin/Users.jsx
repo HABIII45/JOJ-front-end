@@ -19,9 +19,12 @@ import AdminLayout from "../../components/layouts/AdminLayout";
 const LIMITE_PAR_PAGE = 5;
 
 const LIBELLE_PERMISSION = {
-  EVENEMENTS: "Gestion des Evenement",
-  SITES: "Gestion des Sites",
+  JEUX: "Gestion des Jeux & Compétitions",
   ACTUALITES: "Gestion des Actualités",
+  UTILISATEURS: "Gestion des Utilisateurs",
+  TOUT: "Toutes les permissions (Superadmin)",
+  EVENEMENTS: "Gestion des Événements",
+  SITES: "Gestion des Sites",
   BILLETS: "Gestion des Billets",
   PAIEMENTS: "Gestion des Paiements",
   RESULTATS: "Gestion des Résultats",
@@ -29,9 +32,7 @@ const LIBELLE_PERMISSION = {
   DISCIPLINES: "Gestion des Disciplines",
   CATEGORIES: "Gestion des Catégories",
   COMPETITEURS: "Gestion des Compétiteurs",
-  UTILISATEURS: "Gestion des Utilisateurs",
   ZONES: "Gestion des Zones",
-  TOUT: "Toutes les permissions",
 };
 
 const LIBELLE_ROLE = {

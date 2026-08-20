@@ -95,19 +95,48 @@ function ListeResultats() {
   const getEvenement = (id) => evenements.find((e) => String(e.id) === String(id));
   const getCategorie = (id) => categories.find((c) => String(c.id) === String(id));
 
-  const getNomCompetiteur = (r) => {
-    if (r.info_competiteur?.nom_complet) {
-      return r.info_competiteur.nom_complet;
+  const getInfoCompetiteur = (r) => {
+    const compId = String(r.competiteur || r.info_competiteur?.id || "");
+    const info = r.info_competiteur || {};
+
+    const equipe = equipes.find(
+      (eq) => String(eq.id) === compId || String(eq.competiteur_ptr_id || "") === compId
+    );
+    if (equipe) {
+      return {
+        nom: equipe.nom,
+        type: "Équipe",
+        pays: equipe.pays || info.pays || "SN",
+      };
     }
-    const compId = r.competiteur || r.info_competiteur?.id;
-    if (compId) {
-      const joueur = joueurs.find((j) => String(j.id) === String(compId));
-      if (joueur) return `${joueur.prenom ?? ""} ${joueur.nom ?? ""}`.trim() || joueur.username;
-      const equipe = equipes.find((eq) => String(eq.id) === String(compId));
-      if (equipe) return equipe.nom;
+
+    const joueur = joueurs.find(
+      (j) => String(j.id) === compId || String(j.competiteur_ptr_id || "") === compId
+    );
+    if (joueur) {
+      return {
+        nom: `${joueur.prenom ?? ""} ${joueur.nom ?? ""}`.trim() || joueur.username || joueur.nom,
+        type: "Athlète",
+        pays: joueur.pays || info.pays || "SN",
+      };
     }
-    return "l'athlète / équipe";
+
+    if (info.nom_complet && info.nom_complet !== "l'athlète / équipe") {
+      return {
+        nom: info.nom_complet,
+        type: info.type === "equipe" ? "Équipe" : "Athlète",
+        pays: info.pays || "SN",
+      };
+    }
+
+    return {
+      nom: r.competiteur_nom || (compId ? `Compétiteur #${compId}` : "Équipe / Athlète"),
+      type: "Compétiteur",
+      pays: info.pays || "SN",
+    };
   };
+
+  const getNomCompetiteur = (r) => getInfoCompetiteur(r).nom;
 
   // Filtrage combiné
   const resultatsFiltres = resultats.filter((r) => {
@@ -421,12 +450,11 @@ function ListeResultats() {
             const ev = getEvenement(r.evenement);
             const catId = typeof ev?.categorie === "object" ? ev?.categorie?.id : ev?.categorie;
             const cat = getCategorie(catId);
-            const nomParticipant = getNomCompetiteur(r);
-            const comp = r.info_competiteur;
+            const compInfo = getInfoCompetiteur(r);
 
             return (
               <div
-                key={r.id || `${r.evenement}-${r.competiteur || comp?.id}-${index}`}
+                key={r.id || `${r.evenement}-${r.competiteur || r.info_competiteur?.id}-${index}`}
                 className="min-h-[64px] py-3 grid grid-cols-[1.8fr_1.5fr_1fr_1fr_90px] items-center px-6 border-b border-[#edf0f2] hover:bg-[#fbfcfd] transition-colors"
               >
                 {/* Épreuve */}
@@ -441,22 +469,25 @@ function ListeResultats() {
                   )}
                 </div>
 
-                {/* Compétiteur */}
+                {/* Compétiteur / Équipe */}
                 <div className="flex items-center gap-2.5 min-w-0 pr-3">
                   <div className="w-8 h-8 rounded-full bg-[#fff0e7] border border-[#fbd6bc] flex items-center justify-center shrink-0 overflow-hidden">
                     <span className="text-xs font-bold text-[#d96814]">
-                      {(nomParticipant || "C").slice(0, 2).toUpperCase()}
+                      {(compInfo.nom || "C").slice(0, 2).toUpperCase()}
                     </span>
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-gray-800 truncate">
-                      {nomParticipant}
+                      {compInfo.nom}
                     </p>
-                    {comp?.pays && (
+                    <div className="flex items-center gap-1.5 mt-0.5">
                       <span className="inline-block text-[10px] uppercase font-bold text-gray-500 bg-gray-100 px-1.5 py-0.2 rounded">
-                        {comp.pays}
+                        {compInfo.pays}
                       </span>
-                    )}
+                      <span className="text-[10px] text-gray-400">
+                        • {compInfo.type}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -476,24 +507,14 @@ function ListeResultats() {
 
                 {/* Actions */}
                 <div className="flex items-center justify-end gap-2 text-gray-400">
-                  {/* Modifier rapide */}
+                  {/* Modifier résultat complet */}
                   <button
                     type="button"
-                    onClick={() => ouvrirEdition(r)}
+                    onClick={() => navigate(`/admin/resultats/ajout?id=${r.evenement}&mode=edition`)}
                     className="p-1.5 rounded-lg hover:bg-orange-50 hover:text-[#d96814] transition-colors cursor-pointer"
-                    title="Modifier ce score"
+                    title="Modifier ce résultat"
                   >
                     <IconEditer />
-                  </button>
-
-                  {/* Accéder à l'épreuve complète */}
-                  <button
-                    type="button"
-                    onClick={() => navigate(`/register-result?id=${r.evenement}&mode=edition`)}
-                    className="p-1.5 rounded-lg hover:bg-gray-100 hover:text-gray-700 transition-colors cursor-pointer"
-                    title="Ouvrir la saisie complète"
-                  >
-                    <IconVoir />
                   </button>
 
                   {/* Supprimer */}

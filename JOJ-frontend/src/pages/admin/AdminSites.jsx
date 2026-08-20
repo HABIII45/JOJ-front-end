@@ -419,7 +419,7 @@ export default function SitesGestion() {
                               <Eye size={15} />
                             </button>
                             <button
-                              onClick={() => navigate(`/sites/${site.id}/modifier`)}
+                              onClick={() => navigate(`/admin/sites/${site.id}/modifier`)}
                               className="p-1.5 hover:text-gray-700 transition-colors cursor-pointer"
                               title="Modifier"
                             >
