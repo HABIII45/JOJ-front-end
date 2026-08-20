@@ -19,6 +19,7 @@ import DisciplineForm from "../pages/admin/DisciplineForm";
 import ParamsPage from "../pages/public/ParamsPage";
 import ProtectedRoute from "./ProtectedRoutes";
 import { PERMISSIONS } from "../utils/permissions";
+import DisciplineDetail from "../pages/admin/DisciplineDetail";
 
 export const routesAdmin = [
   {
@@ -91,6 +92,7 @@ export const routesAdmin = [
           { path: "/admin/equipes/ajout", element: <CompetiteurForm /> },
           { path: "/admin/disciplines", element: <Disciplines /> },
           { path: "/admin/disciplines/nouvelle", element: <DisciplineForm /> },
+          { path: "/admin/disciplines/:id", element: <DisciplineDetail /> },
           { path: "/admin/disciplines/:id/modifier", element: <DisciplineForm /> },
           { path: "/admin/categories", element: <AjoutCategorie /> },
           { path: "/admin/competiteurs", element: <GamesList /> },

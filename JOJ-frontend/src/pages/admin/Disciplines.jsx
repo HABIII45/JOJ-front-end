@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { Plus, Search, Pencil, Trash2 } from "lucide-react";
-import { isBackendConnected, disciplinesService, categoriesService } from "../../lib/api";
-import { disciplinesDemo, DEMO, COMPLEMENTS_DEMO, CATEGORIES_DEMO } from "../../lib/demoData";
+import { Plus, Search, Pencil, Trash2, Eye, ImageOff } from "lucide-react";
+import api, { ENDPOINTS } from "../../api/api";
+import { DEMO } from "../../lib/demoData";
 import AdminLayout from "../../components/layouts/AdminLayout";
 
 // Ajuste ce chemin si la liste des disciplines vit ailleurs dans ton routeur.
@@ -11,37 +10,48 @@ const ROUTE_LISTE = "/admin/disciplines";
 
 const COULEURS_ICONE = ["#C25B1E", "#16A34A", "#2563EB", "#9333EA", "#0891B2", "#DB2777", "#CA8A04", "#475569"];
 
-function iconeDiscipline(id, nom) {
-  const fond = COULEURS_ICONE[(id || 1) % COULEURS_ICONE.length];
+/** Vignette de la discipline : l'image venant de la DB si elle existe,
+ *  sinon un repli par initiale colorée (utile tant que toutes les
+ *  disciplines n'ont pas encore d'image en base). */
+function VignetteDiscipline({ discipline }) {
+  if (discipline.image) {
+    return (
+      <img
+        src={discipline.image}
+        alt=""
+        className="w-10 h-10 rounded-xl object-cover shrink-0 border border-gray-100"
+        onError={(e) => {
+          e.currentTarget.style.display = "none";
+          e.currentTarget.nextSibling.style.display = "flex";
+        }}
+      />
+    );
+  }
+  const fond = COULEURS_ICONE[(discipline.id || 1) % COULEURS_ICONE.length];
   return (
     <div
       className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0"
       style={{ backgroundColor: fond }}
       aria-hidden="true"
     >
-      {nom ? nom.charAt(0).toUpperCase() : "D"}
+      {discipline.nom ? discipline.nom.charAt(0).toUpperCase() : "D"}
     </div>
   );
 }
 
-function BadgeStatut({ actif }) {
+/** Cellule de texte tronquée (règle / accessibilité), avec le texte complet
+ *  visible au survol via `title`, et un tiret si le champ est vide. */
+function CelluleTexte({ valeur }) {
+  const texte = (valeur || "").trim();
+  if (!texte) {
+    return <span className="text-gray-300 text-xs">—</span>;
+  }
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
-        actif ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-gray-100 text-gray-500 border-gray-200"
-      }`}
-    >
-      <span className={`w-1.5 h-1.5 rounded-full ${actif ? "bg-emerald-500" : "bg-gray-400"}`} />
-      {actif ? "Active" : "Inactive"}
-    </span>
+    <p className="text-gray-600 text-xs max-w-[220px] truncate" title={texte}>
+      {texte}
+    </p>
   );
 }
-
-
-const siteDiscipline = (discipline) => {
-  const complement = COMPLEMENTS_DEMO[discipline.id];
-  return complement ? complement.site : "Arena Dakar";
-};
 
 const PAR_PAGE = 8;
 
@@ -49,66 +59,29 @@ export default function Disciplines() {
   const navigate = useNavigate();
   const [chargement, setChargement] = useState(true);
   const [disciplines, setDisciplines] = useState([]);
-  const [categories, setCategories] = useState(CATEGORIES_DEMO);
   const [recherche, setRecherche] = useState("");
-  const [categorieFiltre, setCategorieFiltre] = useState("Toutes");
-  const [statutFiltre, setStatutFiltre] = useState("Tous");
   const [page, setPage] = useState(1);
 
-  const chargerDonnees = () => {
-    if (!isBackendConnected()) {
+  const chargerDonnees = async () => {
+    setChargement(true);
+    try {
+      const { data } = await api.get(ENDPOINTS.disciplines.liste);
+      setDisciplines(Array.isArray(data) && data.length > 0 ? data : DEMO.disciplines);
+    } catch {
       setDisciplines(DEMO.disciplines);
-      setCategories(CATEGORIES_DEMO);
+    } finally {
       setChargement(false);
-      return;
     }
-
-    Promise.all([
-      disciplinesService.lister().catch(() => DEMO.disciplines),
-      categoriesService.lister().catch(() => CATEGORIES_DEMO),
-    ]).then(([discs, cats]) => {
-      setDisciplines(Array.isArray(discs) && discs.length > 0 ? discs : DEMO.disciplines);
-      setCategories(Array.isArray(cats) && cats.length > 0 ? cats : CATEGORIES_DEMO);
-      setChargement(false);
-    });
   };
 
   useEffect(() => {
     chargerDonnees();
   }, []);
 
-  const nomCategorie = (discipline) => {
-    const premiere = Array.isArray(discipline.categories) && discipline.categories.length > 0 ? discipline.categories[0] : null;
-    if (!premiere) {
-      const complement = COMPLEMENTS_DEMO[discipline.id];
-      return complement ? complement.categorie : "Non classée";
-    }
-    return typeof premiere === "string" ? premiere : premiere.nom;
-  };
-
-  const nbCompetiteurs = (discipline) => {
-    if (typeof discipline.nombre_competiteurs === "number") {
-      return discipline.nombre_competiteurs;
-    }
-    const complement = COMPLEMENTS_DEMO[discipline.id];
-    return complement ? complement.nb : 0;
-  };
-
   const listeFiltree = useMemo(() => {
     const terme = recherche.trim().toLowerCase();
-    return disciplines.filter((d) => {
-      const correspondRecherche = !terme || d.nom.toLowerCase().includes(terme);
-      const categorie = nomCategorie(d);
-      const correspondCategorie = categorieFiltre === "Toutes" || categorie === categorieFiltre;
-      const actif = nbCompetiteurs(d) > 0;
-      const correspondStatut =
-        statutFiltre === "Tous" ||
-        (statutFiltre === "Actif" && actif) ||
-        (statutFiltre === "Inactif" && !actif);
-
-      return correspondRecherche && correspondCategorie && correspondStatut;
-    });
-  }, [disciplines, recherche, categorieFiltre, statutFiltre]);
+    return disciplines.filter((d) => !terme || d.nom.toLowerCase().includes(terme));
+  }, [disciplines, recherche]);
 
   const total = listeFiltree.length;
   const totalPages = Math.max(1, Math.ceil(total / PAR_PAGE));
@@ -118,46 +91,35 @@ export default function Disciplines() {
 
   useEffect(() => {
     setPage(1);
-  }, [recherche, categorieFiltre, statutFiltre]);
+  }, [recherche]);
 
-  // Navigation vers la page dédiée (ajout / édition) au lieu d'ouvrir une modal
   const allerVersAjout = () => navigate(`${ROUTE_LISTE}/nouvelle`);
-const allerVersEdition = (discipline) => navigate(`${ROUTE_LISTE}/${discipline.id}/modifier`);
+  const allerVersDetail = (discipline) => navigate(`${ROUTE_LISTE}/${discipline.id}`);
+  const allerVersEdition = (discipline) => navigate(`${ROUTE_LISTE}/${discipline.id}/modifier`);
 
-  const supprimerDiscipline = async (discipline) => {
-    const confirme = window.confirm(
-      `Supprimer la discipline « ${discipline.nom} » ? Cette action est irréversible.`
-    );
-    if (!confirme) return;
+  // Suppression : passe désormais par `api` (donc les mêmes en-têtes / base
+  // URL / intercepteurs que le reste de l'app), au lieu d'un fetch séparé
+  // pointant potentiellement vers une URL différente. C'est ce décalage qui
+  // faisait qu'une discipline "supprimée" réapparaissait après un rechargement
+  // de la liste : la suppression ne persistait jamais vraiment côté serveur.
+const supprimerDiscipline = async (discipline) => {
+  const confirme = window.confirm(
+    `Supprimer la discipline « ${discipline.nom} » ? Cette action est irréversible.`
+  );
+  if (!confirme) return;
 
-    if (isBackendConnected()) {
-      try {
-        await fetch(
-          `${import.meta.env.VITE_API_URL.replace(/\/$/, "")}/api/disciplines/${discipline.id}/`,
-          {
-            method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("joj_token") || ""}`,
-            },
-          }
-        );
-      } catch {
-        alert("Impossible de supprimer la discipline côté serveur.");
-        return;
-      }
-    }
+  try {
+    // Nettoyage du slash de fin pour éviter les erreurs d'URL (ex: /disciplines/12/)
+    const baseUrl = ENDPOINTS.disciplines.liste.replace(/\/$/, "");
+    await api.delete(`${baseUrl}/${discipline.id}/`);
+    
+    // Mise à jour de l'état local
     setDisciplines((liste) => liste.filter((d) => d.id !== discipline.id));
-  };
-
-  if (chargement) {
-    return (
-      <AdminLayout>
-        <div className="p-8 flex items-center justify-center min-h-[50vh]">
-          <p className="text-sm text-gray-500">Chargement des disciplines...</p>
-        </div>
-      </AdminLayout>
-    );
+    toast.success(`Discipline « ${discipline.nom} » supprimée.`);
+  } catch (erreur) {
+    toast.error("Impossible de supprimer la discipline côté serveur.");
   }
+};
 
   return (
     <AdminLayout>
@@ -193,29 +155,6 @@ const allerVersEdition = (discipline) => navigate(`${ROUTE_LISTE}/${discipline.i
                 className="bg-transparent outline-none text-xs w-full text-gray-700 placeholder:text-gray-400"
               />
             </div>
-
-            <div className="flex items-center gap-3 w-full md:w-auto justify-end">
-              <select
-                value={categorieFiltre}
-                onChange={(e) => setCategorieFiltre(e.target.value)}
-                className="rounded-xl border border-gray-200 bg-white text-xs font-medium text-gray-600 px-4 py-3 outline-none focus:ring-2 focus:ring-[#D96B27]/20 cursor-pointer min-w-[170px]"
-              >
-                <option value="Toutes">Catégories: Toutes</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.nom}>{c.nom}</option>
-                ))}
-              </select>
-
-              <select
-                value={statutFiltre}
-                onChange={(e) => setStatutFiltre(e.target.value)}
-                className="rounded-xl border border-gray-200 bg-white text-xs font-medium text-gray-600 px-4 py-3 outline-none focus:ring-2 focus:ring-[#D96B27]/20 cursor-pointer min-w-[130px]"
-              >
-                <option value="Tous">Statut: Tous</option>
-                <option value="Actif">Active</option>
-                <option value="Inactif">Inactive</option>
-              </select>
-            </div>
           </div>
 
           <div className="rounded-2xl border border-gray-100 overflow-hidden bg-white mb-6">
@@ -224,9 +163,8 @@ const allerVersEdition = (discipline) => navigate(`${ROUTE_LISTE}/${discipline.i
                 <thead>
                   <tr className="bg-[#FAFBFD] border-b border-gray-100 text-[11px] font-bold uppercase tracking-wider text-gray-400 text-left">
                     <th className="px-6 py-4">Nom de la discipline</th>
-                    <th className="px-6 py-4">Catégorie</th>
-                    <th className="px-6 py-4">Site principal</th>
-                    <th className="px-6 py-4">Statut</th>
+                    <th className="px-6 py-4">Règle</th>
+                    <th className="px-6 py-4">Accessibilité</th>
                     <th className="px-6 py-4 text-right">Actions</th>
                   </tr>
                 </thead>
@@ -234,33 +172,44 @@ const allerVersEdition = (discipline) => navigate(`${ROUTE_LISTE}/${discipline.i
                   {pageDisciplines.map((d) => (
                     <tr key={d.id} className="hover:bg-gray-50/50 transition-colors">
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-3.5">
-                          {iconeDiscipline(d.id, d.nom)}
+                        <button
+                          onClick={() => allerVersDetail(d)}
+                          className="flex items-center gap-3.5 text-left group"
+                        >
+                          <VignetteDiscipline discipline={d} />
                           <div>
-                            <p className="font-bold text-gray-900 leading-tight">{d.nom}</p>
-                            <p className="text-[11px] text-gray-400 mt-0.5">15-18 Mai 2026</p>
+                            <p className="font-bold text-gray-900 leading-tight group-hover:text-[#D96B27] transition-colors">
+                              {d.nom}
+                            </p>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-gray-600 font-medium text-xs">{nomCategorie(d)}</td>
-                      <td className="px-6 py-4">
-                        <p className="font-semibold text-gray-800 text-xs">{siteDiscipline(d)}</p>
-                        <p className="text-[11px] text-gray-400">12 épreuves</p>
+                        </button>
                       </td>
                       <td className="px-6 py-4">
-                        <BadgeStatut actif={nbCompetiteurs(d) > 0} />
+                        <CelluleTexte valeur={d.regle} />
+                      </td>
+                      <td className="px-6 py-4">
+                        <CelluleTexte valeur={d.accessibilite} />
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-2">
                           <button
+                            onClick={() => allerVersDetail(d)}
+                            className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                            aria-label="Voir la discipline"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button
                             onClick={() => allerVersEdition(d)}
                             className="p-2 rounded-lg text-gray-400 hover:text-[#D96B27] hover:bg-orange-50 transition-colors"
+                            aria-label="Modifier la discipline"
                           >
                             <Pencil className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => supprimerDiscipline(d)}
                             className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                            aria-label="Supprimer la discipline"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
