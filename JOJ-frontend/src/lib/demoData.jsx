@@ -333,22 +333,90 @@ export const ICONE_DISCIPLINE = {
 };
 
 
+// ---------------------------------------------------------------------------
+// Données de démonstration (structure miroir du serializer Categorie)
+// ---------------------------------------------------------------------------
 export const CATEGORIES_DEMO = [
-  { id: 1, nom: "Sports Individuels", description: "" },
-  { id: 2, nom: "Sports Aquatiques", description: "" },
-  { id: 3, nom: "Sports Artistiques", description: "" },
-  { id: 4, nom: "Sports de Combat", description: "" },
-  { id: 5, nom: "Sports Collectifs", description: "" },
+  {
+    id: 1,
+    nom: "100m - Hommes",
+    description: "Épreuve reine de la vitesse, course en ligne droite sur 100 mètres.",
+    discipline: { id: 1, nom: "Athlétisme" },
+  },
+  {
+    id: 2,
+    nom: "100m - Femmes",
+    description: "Épreuve reine de la vitesse, course en ligne droite sur 100 mètres.",
+    discipline: { id: 1, nom: "Athlétisme" },
+  },
+  {
+    id: 3,
+    nom: "Saut en longueur - Hommes",
+    description: "Saut avec élan mesuré au mètre près selon le règlement World Athletics.",
+    discipline: { id: 1, nom: "Athlétisme" },
+  },
+  {
+    id: 4,
+    nom: "Tournoi 3x3 - Hommes",
+    description: "Format rapide sur demi-terrain, premier à 21 points ou temps réglementaire.",
+    discipline: { id: 2, nom: "Basket-ball" },
+  },
+  {
+    id: 5,
+    nom: "Tournoi 5x5 - Femmes",
+    description: "Tournoi réglementaire FIBA Jeunes en cinq contre cinq.",
+    discipline: { id: 2, nom: "Basket-ball" },
+  },
+  {
+    id: 6,
+    nom: "Tournoi - Hommes",
+    description: "Compétition complète par équipes, phases de poule puis éliminatoires.",
+    discipline: { id: 3, nom: "Football" },
+  },
+  {
+    id: 7,
+    nom: "-66kg - Hommes",
+    description: "Combats par catégories de poids selon le règlement IJF.",
+    discipline: { id: 4, nom: "Judo" },
+  },
+  {
+    id: 8,
+    nom: "-57kg - Femmes",
+    description: "Combats féminins par catégories de poids selon le règlement IJF.",
+    discipline: { id: 4, nom: "Judo" },
+  },
 ];
 
-export const COMPLEMENTS_DEMO = {
-  1: { categorie: "Sports Collectifs", nb: 4, site: "Complexe Iba Mar Diop" },
-  2: { categorie: "Sports Collectifs", nb: 12, site: "Dakar Arena" },
-  3: { categorie: "Sports Collectifs", nb: 0, site: "Complexe Iba Mar Diop" },
-  4: { categorie: "Sports de Combat", nb: 6, site: "Arena de Toubab Dialaw" },
-};
+// ---------------------------------------------------------------------------
+// Icône ronde par discipline (couleur + lettre, même style que Disciplines)
+// ---------------------------------------------------------------------------
+export const COULEURS_ICONE = [
+  "#C25B1E",
+  "#16A34A",
+  "#2563EB",
+  "#9333EA",
+  "#0891B2",
+  "#DB2777",
+  "#CA8A04",
+  "#475569",
+];
 
+
+// ---------------------------------------------------------------------------
+// Données de repli si l'API ne renvoie rien
+// ---------------------------------------------------------------------------
 export const DEMO = {
+  categories:
+    Array.isArray(CATEGORIES_DEMO) && CATEGORIES_DEMO.length > 0
+      ? CATEGORIES_DEMO
+      : [
+          {
+            id: 1,
+            nom: "100m - Hommes",
+            description: "",
+            discipline: { id: 1, nom: "Athlétisme" },
+          },
+        ],
   disciplines:
     Array.isArray(disciplinesDemo) && disciplinesDemo.length > 0
       ? disciplinesDemo

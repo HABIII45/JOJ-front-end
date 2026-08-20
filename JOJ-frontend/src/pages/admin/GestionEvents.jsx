@@ -263,8 +263,8 @@ export function GestionEvents() {
                             <Eye size={15} />
                           </button>
                           <button
-                            onClick={() => navigate(`/admin/evenements/ajout`)}
-                            className="p-1.5 hover:text-gray-700 transition-colors cursor-pointer"
+                            onClick={() => navigate(`/admin/evenements/${event.id}/modifier`)}
+                            className="p-1.5 hover:text-[#C25B1E] hover:bg-orange-50 rounded-lg transition-colors cursor-pointer"
                             title="Modifier"
                           >
                             <Pencil size={15} />

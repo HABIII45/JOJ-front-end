@@ -8,6 +8,7 @@ import LoginPage          from "../pages/public/LoginPage";
 import Events             from "../pages/public/Events";
 import EventDetail        from "../pages/public/EventsDetails";
 import VenteBilletPage    from "../pages/public/VenteBilletPage";
+import BilletsPage        from "../pages/public/BilletsPage";
 import PaymentSummary     from "../pages/public/PaymentSummary";
 import RegisterResultPage from "../pages/public/RegisterResultPage";
 import GestionResultatPage from "../pages/public/GestionResultatPage";
@@ -30,6 +31,7 @@ import FormEvent          from "../pages/admin/EventForm";
 import AjoutAdminPage     from "../pages/admin/AjoutAdminPage";
 
 import { routesAdmin } from './AdminRoutes'; 
+
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -58,6 +60,8 @@ const AppRoutes = () => {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register-result" element={<RegisterResultPage />} />
         <Route path="/ventbillet" element={<VenteBilletPage />} />
+        <Route path="/billets" element={<BilletsPage />} />
+        <Route path="/mes-billets" element={<BilletsPage />} />
         <Route path="/resultats" element={<Resultats />} />
         <Route path="/payment/summary" element={<PaymentSummary />} />
 
