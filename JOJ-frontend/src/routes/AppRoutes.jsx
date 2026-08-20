@@ -1,6 +1,6 @@
 // src/routes/AppRoutes.jsx
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { ChatbotAssistant } from "../components/chat/Chatbot";
+import  ChatbotAssistant  from "../components/chat/Chatbot";
 
 // ── Pages publiques ──────────────────────────────────────────────────────────
 import Home               from "../pages/public/Home";
