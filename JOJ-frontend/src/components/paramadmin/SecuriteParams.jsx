@@ -1,12 +1,15 @@
 import { useState } from "react";
+import { changerMotDePasse } from "../../api/auth";
 
 function SecuriteParams() {
   const [form, setForm] = useState({
-    actuel:    "",
-    nouveau:   "",
+    actuel:       "",
+    nouveau:      "",
+    confirmation: "",
   });
-  const [erreur,  setErreur]  = useState("");
-  const [succes,  setSucces]  = useState(false);
+  const [chargement, setChargement] = useState(false);
+  const [erreur,     setErreur]     = useState("");
+  const [succes,     setSucces]     = useState(false);
 
   const handleChange = (champ) => (e) => {
     setForm((prev) => ({ ...prev, [champ]: e.target.value }));
@@ -14,17 +17,39 @@ function SecuriteParams() {
     setSucces(false);
   };
 
-  const handleSoumettre = (e) => {
+  const handleSoumettre = async (e) => {
     e.preventDefault();
-    if (!form.actuel)  { setErreur("Veuillez saisir votre mot de passe actuel."); return; }
-    if (!form.nouveau) { setErreur("Veuillez saisir un nouveau mot de passe."); return; }
+    if (!form.actuel)       { setErreur("Veuillez saisir votre mot de passe actuel."); return; }
+    if (!form.nouveau)      { setErreur("Veuillez saisir un nouveau mot de passe."); return; }
     if (form.nouveau.length < 8) {
       setErreur("Le nouveau mot de passe doit contenir au moins 8 caractères.");
       return;
     }
-    console.log("Changement de mot de passe :", form);
-    setSucces(true);
-    setForm({ actuel: "", nouveau: "" });
+    if (form.nouveau !== form.confirmation) {
+      setErreur("Les deux nouveaux mots de passe ne correspondent pas.");
+      return;
+    }
+
+    setChargement(true);
+    setErreur("");
+    setSucces(false);
+
+    try {
+      await changerMotDePasse(form.actuel, form.nouveau);
+      setSucces(true);
+      setForm({ actuel: "", nouveau: "", confirmation: "" });
+    } catch (err) {
+      const data = err?.response?.data;
+      const msg =
+        data?.ancien_mot_de_passe      ||
+        data?.nouveau_mot_de_passe     ||
+        data?.non_field_errors?.[0]    ||
+        data?.detail                   ||
+        "Une erreur est survenue. Veuillez réessayer.";
+      setErreur(Array.isArray(msg) ? msg[0] : msg);
+    } finally {
+      setChargement(false);
+    }
   };
 
   return (
@@ -44,7 +69,7 @@ function SecuriteParams() {
 
         <form onSubmit={handleSoumettre}>
 
-          {/* Message erreur */}
+          {/* Messages feedback */}
           {erreur && (
             <p className="mt-[10px] text-xs text-red-500 font-medium">{erreur}</p>
           )}
@@ -82,11 +107,26 @@ function SecuriteParams() {
             />
           </div>
 
+          {/* Confirmation */}
+          <div className="mt-[12px]">
+            <label className="block mb-[6px] text-xs tracking-[1.5px] text-[#8e97a3] uppercase">
+              Confirmer le nouveau mot de passe
+            </label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              value={form.confirmation}
+              onChange={handleChange("confirmation")}
+              className="w-full h-[38px] box-border rounded-[8px] border border-[#e0e4e8] bg-[#f8f9fa] px-[10px] text-sm outline-none focus:border-[#d96814] transition-colors"
+            />
+          </div>
+
           <button
             type="submit"
-            className="mt-[12px] cursor-pointer w-full h-[38px] rounded-[7px] border border-[#ffb9b9] bg-white text-sm font-semibold text-[#ed3038] hover:bg-red-50 transition-colors"
+            disabled={chargement}
+            className="mt-[12px] cursor-pointer w-full h-[38px] rounded-[7px] border border-[#ffb9b9] bg-white text-sm font-semibold text-[#ed3038] hover:bg-red-50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Changer le mot de passe
+            {chargement ? "Modification…" : "Changer le mot de passe"}
           </button>
 
         </form>

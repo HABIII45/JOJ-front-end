@@ -10,7 +10,6 @@ const SiteForm = () => {
   const [longitude, setLongitude] = useState('');
   const [ville, setVille] = useState('');
   const [region, setRegion] = useState('');
-  const [adresse, setAdresse] = useState('');
   const [capaciteStandard, setCapaciteStandard] = useState('');
   const [capaciteVip, setCapaciteVip] = useState('');
   const [capacitePmr, setCapacitePmr] = useState('');
@@ -23,7 +22,6 @@ const SiteForm = () => {
     try {
       const siteData = {
         nom,
-        adresse,
         capacite: parseInt(capacite) || 0, 
         capaciteStandard: parseInt(capaciteStandard) || 0,
         capaciteVip: parseInt(capaciteVip) || 0,
@@ -41,7 +39,7 @@ const SiteForm = () => {
       
       setNom(''); setCapacite(''); setDescription(''); setService('');
       setLatitude(''); setLongitude(''); setVille(''); setRegion('');
-      setAdresse(''); setCapaciteStandard(''); setCapaciteVip(''); setCapacitePmr('');
+      setCapaciteStandard(''); setCapaciteVip(''); setCapacitePmr('');
       
     } catch (error) {
       console.error("Erreur lors de la création d'un nouveau site", error);

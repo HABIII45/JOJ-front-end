@@ -1,53 +1,88 @@
+// src/components/Sidebar.jsx
 import "./Sidebar.css";
 import JOJlogo from "../../assets/images/JOJlogo.jpg";
-
-import {LayoutDashboard,CalendarDays,Trophy,MapPin,Tags,Newspaper,Ticket,Users,UserRound,Medal,Settings,LogOut} from "lucide-react";
+import { useAuth } from "../../contexts/useAuth";
+import {
+  LayoutDashboard,
+  CalendarDays,
+  Trophy,
+  MapPin,
+  Tags,
+  Newspaper,
+  Ticket,
+  Users,
+  UserRound,
+  Medal,
+  Settings,
+  LogOut
+} from "lucide-react";
 
 import { NavLink, useLocation } from "react-router-dom";
 
-// Pages considérées comme sous-pages de "Résultats"
 const routesResultats = ["/resultats", "/register-result"];
-
-// Pages considérées comme sous-pages de "Billets"
 const routesBillets = ["/ventbillet"];
 
 export function Sidebar() {
-    const location = useLocation();
+  const location = useLocation();
 
-    const isResultatsActif = routesResultats.some((r) => location.pathname.startsWith(r));
-    const isBilletsActif   = routesBillets.some((r) => location.pathname.startsWith(r));
+  const { utilisateur, seDeconnecter, chargement } = useAuth(); 
 
-    return (
-        <div className="sidebar">
+  // Gestion du chargement : si on est en train de charger, on affiche rien ou un spinner
+  if (chargement) {
+    return <div className="sidebar-loading">Chargement...</div>;
+  }
 
-            {/* Logo */}
-            <div className="sidebar-logo">
-                <img src={JOJlogo} alt="JOJ Events" />
-            </div>
+  // Fonction pour vérifier les permissions
+  const aAcces = (permission) => {
+    if (!utilisateur) return false;
+    if (utilisateur.role === "superadmin") return true;
+    return utilisateur.permissions?.includes(permission);
+  };
 
-            {/* Navigation */}
-            <nav className="navigation">
+  const isResultatsActif = routesResultats.some((r) => location.pathname.startsWith(r));
+  const isBilletsActif   = routesBillets.some((r) => location.pathname.startsWith(r));
 
-                <NavLink to="/dashboard">
-                    <LayoutDashboard size={19} />
-                    <span>Dashboard</span>
-                </NavLink>
+  // Deconnexion
+  const handleDeconnexion = async (e) => {
+    e.preventDefault(); 
+    await seDeconnecter();
+    window.location.href = "/"; 
+  };
 
-                <NavLink to="/events">
-                    <CalendarDays size={19} />
-                    <span>Événements</span>
-                </NavLink>
+  return (
+    <div className="sidebar">
+      {/* Logo */}
+      <div className="sidebar-logo">
+        <img src={JOJlogo} alt="JOJ Events" />
+      </div>
 
-                <NavLink to="/disciplines">
-                    <Trophy size={19} />
-                    <span>Disciplines</span>
-                </NavLink>
+      {/* Navigation */}
+      <nav className="navigation">
+        {/* Accessible à tous les admins connectés (Dashboard) */}
+        {utilisateur && (
+          <NavLink to="/dashboard">
+            <LayoutDashboard size={19} />
+            <span>Dashboard</span>
+          </NavLink>
+        )}
 
-                <NavLink to="/sites">
-                    <MapPin size={19} />
-                    <span>Sites</span>
-                </NavLink>
+        {/* ROUTES POUR PERMISSION JEUX */}
+        {aAcces("JEUX") && (
+          <>
+            <NavLink to="/admin/evenements"> {/* Assurez-vous que les chemins correspondent à vos routes */}
+              <CalendarDays size={19} />
+              <span>Événements</span>
+            </NavLink>
 
+            <NavLink to="/admin/disciplines">
+              <Trophy size={19} />
+              <span>Disciplines</span>
+            </NavLink>
+
+            <NavLink to="/admin/sites">
+              <MapPin size={19} />
+              <span>Sites</span>
+            </NavLink>
                 <NavLink to="admin/categories">
                     <Tags size={19} />
                     <span>Catégories</span>
@@ -58,50 +93,68 @@ export function Sidebar() {
                     <span>Actualités</span>
                 </NavLink>
 
-                <NavLink
-                    to="/ventbillet"
-                    className={isBilletsActif ? "active" : ""}
-                >
-                    <Ticket size={19} />
-                    <span>Billets</span>
-                </NavLink>
+            <NavLink to="/admin/categories">
+              <Tags size={19} />
+              <span>Catégories</span>
+            </NavLink>
 
-                <NavLink to="/utilisateurs">
-                    <Users size={19} />
-                    <span>Utilisateurs</span>
-                </NavLink>
+            <NavLink to="/admin/equipes">
+              <UserRound size={19} />
+              <span>Équipes</span>
+            </NavLink>
+          </>
+        )}
 
-                <NavLink to="/equipes">
-                    <UserRound size={19} />
-                    <span>Équipes</span>
-                </NavLink>
+        {/* ROUTES POUR PERMISSION ACTUALITES / RESULTATS */}
+        {aAcces("ACTUALITES") && (
+          <>
+            <NavLink to="/admin/actualites">
+              <Newspaper size={19} />
+              <span>Actualités</span>
+            </NavLink>
 
-                <NavLink
-                    to="/resultats"
-                    className={isResultatsActif ? "active" : ""}
-                >
-                    <Medal size={19} />
-                    <span>Résultats</span>
-                </NavLink>
+            <NavLink to="/admin/resultats" className={isResultatsActif ? "active" : ""}>
+              <Medal size={19} />
+              <span>Résultats</span>
+            </NavLink>
+          </>
+        )}
 
-            </nav>
+        {/* ROUTES POUR UTILISATEURS / BILLETS */}
+        {aAcces("UTILISATEURS") && (
+          <>
+            <NavLink to="/admin/ventbillet" className={isBilletsActif ? "active" : ""}>
+              <Ticket size={19} />
+              <span>Billets</span>
+            </NavLink>
 
-            <div className="sidebar-bottom">
+            <NavLink to="/admin/utilisateurs">
+              <Users size={19} />
+              <span>Utilisateurs</span>
+            </NavLink>
+          </>
+        )}
+      </nav>
 
-                <div className="sidebar-separator"></div>
+      <div className="sidebar-bottom">
+        <div className="sidebar-separator"></div>
 
-                <NavLink to="/parametres">
-                    <Settings size={19} />
-                    <span>Paramètres</span>
-                </NavLink>
+        {/* LIEN COMMUN (Paramètres) */}
+        {utilisateur && (
+          <NavLink to="/admin/parametres">
+            <Settings size={19} />
+            <span>Paramètres</span>
+          </NavLink>
+        )}
 
-                <NavLink to="/deconnexion">
-                    <LogOut size={19} />
-                    <span>Déconnexion</span>
-                </NavLink>
-
-            </div>
-
-        </div>
-    );
+        {/* Deconnexion */}
+        {utilisateur && (
+          <button onClick={handleDeconnexion} className="sidebar-logout-btn">
+            <LogOut size={19} />
+            <span>Déconnexion</span>
+          </button>
+        )}
+      </div>
+    </div>
+  );
 }

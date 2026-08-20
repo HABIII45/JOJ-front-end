@@ -1,8 +1,55 @@
+import { useState, useEffect } from "react";
+import { fetchResultatsParEvenement } from "../../api/resultats";
+import api from "../../api/api";
+
 function CartesStatResultat() {
+  const [stats,      setStats]      = useState(null);
+  const [chargement, setChargement] = useState(true);
+
+  useEffect(() => {
+    const charger = async () => {
+      setChargement(true);
+      try {
+        // Récupère tous les résultats (pas de filtre événement)
+        const { data } = await api.get("/api/resultats/");
+        const tous = Array.isArray(data) ? data : data.results ?? [];
+
+        // Le modèle Resultat n'a pas de champ statut en base —
+        // on calcule depuis les données disponibles
+        const total = tous.length;
+
+        // Dernière création : tri par id décroissant
+        const dernier = tous.length > 0
+          ? tous.reduce((a, b) => (b.id > a.id ? b : a), tous[0])
+          : null;
+
+        const derniereMaj = dernier
+          ? new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
+          : "—";
+
+        // Événements distincts ayant au moins un résultat
+        const evenementsAvecResultats = new Set(tous.map((r) => r.evenement)).size;
+
+        setStats({
+          totalResultats:          total,
+          evenementsAvecResultats,
+          derniereMaj,
+        });
+      } catch {
+        setStats({ totalResultats: "—", evenementsAvecResultats: "—", derniereMaj: "—" });
+      } finally {
+        setChargement(false);
+      }
+    };
+    charger();
+  }, []);
+
+  const val = (v) => (chargement ? "…" : v);
+
   return (
     <section className="grid grid-cols-3 gap-[16px] mt-[23px]">
 
-      {/* Carte 1 — Total Résultats Publiés */}
+      {/* Carte 1 — Total Résultats */}
       <div className="h-[130px] bg-white border border-[#e2e5e8] rounded-[19px] px-[22px] pt-[20px]">
         <div className="flex items-start justify-between">
           <div className="w-[34px] h-[34px] rounded-[9px] bg-[#fee2e2] flex items-center justify-center">
@@ -14,13 +61,14 @@ function CartesStatResultat() {
               <path d="M17 7h3a3 3 0 0 1-3 3" />
             </svg>
           </div>
-          <span className="text-[13px] font-semibold text-[#14a957] mt-[5px]">+12.5%</span>
         </div>
-        <p className="mt-[12px] text-[13px] text-[#68717e]">Total Résultats Publiés</p>
-        <p className="mt-[3px] text-xl font-semibold text-[#15171a]">156</p>
+        <p className="mt-[12px] text-[13px] text-[#68717e]">Total Résultats</p>
+        <p className="mt-[3px] text-xl font-semibold text-[#15171a]">
+          {val(stats?.totalResultats)}
+        </p>
       </div>
 
-      {/* Carte 2 — Épreuves en attente */}
+      {/* Carte 2 — Épreuves avec résultats */}
       <div className="h-[130px] bg-white border border-[#e2e5e8] rounded-[19px] px-[22px] pt-[20px]">
         <div className="flex items-start justify-between">
           <div className="w-[34px] h-[34px] rounded-[9px] bg-[#fff0dd] flex items-center justify-center">
@@ -30,10 +78,11 @@ function CartesStatResultat() {
               <path d="M7 13h5" />
             </svg>
           </div>
-          <span className="text-[13px] font-semibold text-[#df6717] mt-[5px]">Attention</span>
         </div>
-        <p className="mt-[12px] text-[13px] text-[#68717e]">Épreuves en attente</p>
-        <p className="mt-[3px] text-xl font-semibold text-[#15171a]">24</p>
+        <p className="mt-[12px] text-[13px] text-[#68717e]">Épreuves avec résultats</p>
+        <p className="mt-[3px] text-xl font-semibold text-[#15171a]">
+          {val(stats?.evenementsAvecResultats)}
+        </p>
       </div>
 
       {/* Carte 3 — Dernière mise à jour */}
@@ -48,7 +97,9 @@ function CartesStatResultat() {
           <span className="text-[13px] text-[#9299a4] mt-[5px]">Aujourd'hui</span>
         </div>
         <p className="mt-[12px] text-[13px] text-[#68717e]">Dernière mise à jour</p>
-        <p className="mt-[3px] text-xl font-semibold text-[#15171a]">14:30</p>
+        <p className="mt-[3px] text-xl font-semibold text-[#15171a]">
+          {val(stats?.derniereMaj)}
+        </p>
       </div>
 
     </section>
