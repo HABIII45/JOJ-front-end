@@ -23,13 +23,15 @@ import {
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 
-const routesResultats  = ["/resultats", "/register-result", "/admin/resultats"];
-const routesBillets    = ["/ventbillet", "/admin/ventbillet"];
-const routesSites      = ["/admin/sites", "/sites"];
-const routesEquipes    = ["/admin/equipes", "/competiteurs"];
-const routesEvenements = ["/admin/evenements", "/events"];
-const routesActualites = ["/admin/actualites", "/actualites"];
-const routesParams     = ["/parametres", "/admin/parametres"];
+const routesResultats   = ["/resultats", "/register-result", "/admin/resultats"];
+const routesBillets     = ["/ventbillet", "/admin/ventbillet"];
+const routesSites       = ["/admin/sites", "/sites"];
+const routesCategories  = ["/admin/categories"];
+const routesDisciplines = ["/admin/disciplines", "/disciplines", "/jeux"];
+const routesEquipes     = ["/admin/equipes", "/competiteurs"];
+const routesEvenements  = ["/admin/evenements", "/events"];
+const routesActualites  = ["/admin/actualites", "/actualites"];
+const routesParams      = ["/parametres", "/admin/parametres"];
 
 export function Sidebar() {
   const location = useLocation();
@@ -40,14 +42,17 @@ export function Sidebar() {
   }
 
   const superAdmin = isSuperAdmin(utilisateur);
+  const isAdmin = superAdmin || Boolean(utilisateur);
 
-  const isResultatsActif  = routesResultats.some((r) => location.pathname.startsWith(r));
-  const isBilletsActif    = routesBillets.some((r) => location.pathname.startsWith(r));
-  const isSitesActif      = routesSites.some((r) => location.pathname.startsWith(r));
-  const isEquipesActif    = routesEquipes.some((r) => location.pathname.startsWith(r));
-  const isEvenementsActif = routesEvenements.some((r) => location.pathname.startsWith(r));
-  const isActualitesActif = routesActualites.some((r) => location.pathname.startsWith(r));
-  const isParamsActif     = routesParams.some((r) => location.pathname.startsWith(r));
+  const isResultatsActif   = routesResultats.some((r) => location.pathname.startsWith(r));
+  const isBilletsActif     = routesBillets.some((r) => location.pathname.startsWith(r));
+  const isSitesActif       = routesSites.some((r) => location.pathname.startsWith(r));
+  const isCategoriesActif  = routesCategories.some((r) => location.pathname.startsWith(r));
+  const isDisciplinesActif = routesDisciplines.some((r) => location.pathname.startsWith(r));
+  const isEquipesActif     = routesEquipes.some((r) => location.pathname.startsWith(r));
+  const isEvenementsActif  = routesEvenements.some((r) => location.pathname.startsWith(r));
+  const isActualitesActif  = routesActualites.some((r) => location.pathname.startsWith(r));
+  const isParamsActif      = routesParams.some((r) => location.pathname.startsWith(r));
 
   const handleDeconnexion = async (e) => {
     e.preventDefault();
@@ -78,7 +83,7 @@ export function Sidebar() {
         )}
 
         {/* Événements */}
-        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.EVENEMENTS)) && (
+        {(isAdmin || hasPermission(utilisateur, PERMISSIONS.EVENEMENTS)) && (
           <NavLink
             to="/admin/evenements"
             className={isEvenementsActif ? "active" : ""}
@@ -89,15 +94,18 @@ export function Sidebar() {
         )}
 
         {/* Disciplines */}
-        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.DISCIPLINES)) && (
-          <NavLink to="/admin/disciplines">
+        {(isAdmin || hasPermission(utilisateur, PERMISSIONS.DISCIPLINES)) && (
+          <NavLink
+            to="/admin/disciplines"
+            className={isDisciplinesActif ? "active" : ""}
+          >
             <Trophy size={19} />
             <span>Disciplines</span>
           </NavLink>
         )}
 
         {/* Sites */}
-        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.SITES)) && (
+        {(isAdmin || hasPermission(utilisateur, PERMISSIONS.SITES)) && (
           <NavLink
             to="/admin/sites"
             className={isSitesActif ? "active" : ""}
@@ -108,15 +116,18 @@ export function Sidebar() {
         )}
 
         {/* Catégories */}
-        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.CATEGORIES)) && (
-          <NavLink to="/admin/categories">
+        {(isAdmin || hasPermission(utilisateur, PERMISSIONS.CATEGORIES)) && (
+          <NavLink
+            to="/admin/categories"
+            className={isCategoriesActif ? "active" : ""}
+          >
             <Tags size={19} />
             <span>Catégories</span>
           </NavLink>
         )}
 
         {/* Compétiteurs / Équipes */}
-        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.COMPETITEURS)) && (
+        {(isAdmin || hasPermission(utilisateur, PERMISSIONS.COMPETITEURS)) && (
           <NavLink
             to="/admin/equipes"
             className={isEquipesActif ? "active" : ""}
@@ -127,7 +138,7 @@ export function Sidebar() {
         )}
 
         {/* Actualités */}
-        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.ACTUALITES)) && (
+        {(isAdmin || hasPermission(utilisateur, PERMISSIONS.ACTUALITES)) && (
           <NavLink
             to="/admin/actualites"
             className={isActualitesActif ? "active" : ""}
@@ -138,7 +149,7 @@ export function Sidebar() {
         )}
 
         {/* Résultats */}
-        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.RESULTATS)) && (
+        {(isAdmin || hasPermission(utilisateur, PERMISSIONS.RESULTATS)) && (
           <NavLink
             to="/admin/resultats"
             className={isResultatsActif ? "active" : ""}
@@ -149,7 +160,7 @@ export function Sidebar() {
         )}
 
         {/* Billets */}
-        {(superAdmin || hasPermission(utilisateur, PERMISSIONS.BILLETS)) && (
+        {(isAdmin || hasPermission(utilisateur, PERMISSIONS.BILLETS)) && (
           <NavLink
             to="/ventbillet"
             className={isBilletsActif ? "active" : ""}
