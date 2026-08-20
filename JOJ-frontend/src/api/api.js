@@ -83,6 +83,12 @@ export const ENDPOINTS = {
     liste:  "/api/equipes/",
     detail: (id) => `/api/equipes/${id}/`,
   },
+
+  disciplines: {
+    liste:      "/api/disciplines/",
+    creer:      "/api/disciplines/",
+    categories: (id) => `/api/disciplines/${id}/categories/`,
+  },
 };
 
 export default api;

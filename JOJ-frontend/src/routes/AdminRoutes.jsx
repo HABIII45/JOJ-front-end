@@ -14,9 +14,12 @@ import AdminCategorie from "../pages/admin/AdminCategorie";
 import AjoutCategorie from "../pages/admin/ajoutCategorie";
 import VenteBilletPage from "../pages/public/VenteBilletPage";
 import AjoutAdminPage from "../pages/admin/AjoutAdminPage";
+import Disciplines from "../pages/admin/Disciplines";
+import DisciplineForm from "../pages/admin/DisciplineForm";
 import ParamsPage from "../pages/public/ParamsPage";
 import ProtectedRoute from "./ProtectedRoutes";
 import { PERMISSIONS } from "../utils/permissions";
+import DisciplineDetail from "../pages/admin/DisciplineDetail";
 
 export const routesAdmin = [
   {
@@ -80,13 +83,7 @@ export const routesAdmin = [
         ],
       },
 
-      // ROUTES GESTION DES DISCIPLINES
-      {
-        element: <ProtectedRoute permissionRequise={[PERMISSIONS.DISCIPLINES, PERMISSIONS.COMPETITEURS]} />,
-        children: [
-          { path: "/admin/disciplines", element: <GamesList /> },
-        ],
-      },
+  
 
       // ROUTES GESTION DES ÉQUIPES / COMPÉTITEURS
       {
@@ -94,6 +91,11 @@ export const routesAdmin = [
         children: [
           { path: "/admin/equipes", element: <GamesList /> },
           { path: "/admin/equipes/ajout", element: <CompetiteurForm /> },
+          { path: "/admin/disciplines", element: <Disciplines /> },
+          { path: "/admin/disciplines/nouvelle", element: <DisciplineForm /> },
+          { path: "/admin/disciplines/:id", element: <DisciplineDetail /> },
+          { path: "/admin/disciplines/:id/modifier", element: <DisciplineForm /> },
+          { path: "/admin/categories", element: <AjoutCategorie /> },
           { path: "/admin/competiteurs", element: <GamesList /> },
           { path: "/admin/competiteurs/ajout", element: <CompetiteurForm /> },
         ],
