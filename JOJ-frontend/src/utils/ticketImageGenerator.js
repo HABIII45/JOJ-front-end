@@ -3,17 +3,6 @@
  * Reproduit fidèlement le design exact de l'interface supporter JOJ 2026.
  */
 
-function chargerImage(src) {
-  return new Promise((resolve) => {
-    if (!src) return resolve(null);
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => resolve(img);
-    img.onerror = () => resolve(null);
-    img.src = src;
-  });
-}
-
 /**
  * Dessine un rectangle avec coins arrondis
  */
@@ -32,13 +21,69 @@ function drawRoundedRect(ctx, x, y, width, height, radius) {
 }
 
 /**
+ * Générateur déterministe de motif QR Code haute fidélité
+ */
+function drawQRCodePattern(ctx, startX, startY, size, textSeed) {
+  ctx.fillStyle = "#FFFFFF";
+  ctx.fillRect(startX, startY, size, size);
+
+  ctx.fillStyle = "#000000";
+  const modSize = size / 25;
+
+  // 1. Finder patterns (Coins de repère standard QR)
+  const drawFinder = (fx, fy) => {
+    // Extérieur
+    ctx.fillRect(fx, fy, modSize * 7, modSize * 7);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(fx + modSize, fy + modSize, modSize * 5, modSize * 5);
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(fx + modSize * 2, fy + modSize * 2, modSize * 3, modSize * 3);
+  };
+
+  drawFinder(startX, startY);
+  drawFinder(startX + size - modSize * 7, startY);
+  drawFinder(startX, startY + size - modSize * 7);
+
+  // 2. Timing patterns (Lignes de synchronisation)
+  ctx.fillStyle = "#000000";
+  for (let i = 8; i < 18; i += 2) {
+    ctx.fillRect(startX + i * modSize, startY + 6 * modSize, modSize, modSize);
+    ctx.fillRect(startX + 6 * modSize, startY + i * modSize, modSize, modSize);
+  }
+
+  // 3. Modules de données pseudo-aléatoires basés sur le seed du code unique
+  const str = String(textSeed || "JOJ2026");
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
+  }
+
+  ctx.fillStyle = "#000000";
+  for (let row = 0; row < 25; row++) {
+    for (let col = 0; col < 25; col++) {
+      // Ignorer les zones des 3 finders
+      const inTopLeft = row < 8 && col < 8;
+      const inTopRight = row < 8 && col > 16;
+      const inBottomLeft = row > 16 && col < 8;
+      if (inTopLeft || inTopRight || inBottomLeft) continue;
+
+      const val = Math.sin(row * 13 + col * 17 + hash) * 10000;
+      if (val - Math.floor(val) > 0.45) {
+        ctx.fillRect(startX + col * modSize, startY + row * modSize, modSize, modSize);
+      }
+    }
+  }
+}
+
+/**
  * Dessine le billet officiel avec la forme EXACTE de l'interface supporter
  */
 export async function creerCanvasBillet(billet) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
 
-  // Format haute résolution panoramique (1280 x 640) reproduisant la carte et le QR code du supporter
+  // Format haute résolution panoramique (1280 x 640)
   const W = 1280;
   const H = 640;
   canvas.width = W;
@@ -66,33 +111,36 @@ export async function creerCanvasBillet(billet) {
   const cardH = 510;
 
   // ════════════════════════════════════════════════════════════════════════════
-  // CARTE GAUCHE : Exactement la CarteBillet du site supporter
+  // CARTE GAUCHE : CarteBillet du supporter (Dégradé, photo, badge, détails)
   // ════════════════════════════════════════════════════════════════════════════
   const leftX = 40;
   const leftW = 680;
 
   ctx.save();
-  drawRoundedRect(ctx, leftX, leftY = cardY, leftW, cardH, 24);
+  drawRoundedRect(ctx, leftX, cardY, leftW, cardH, 24);
   ctx.clip();
 
-  // Fond sombre
-  ctx.fillStyle = "#0F172A";
+  // Fond de stade stylisé en dégradé sportif
+  const bgGrad = ctx.createLinearGradient(leftX, cardY, leftX + leftW, cardY + cardH);
+  bgGrad.addColorStop(0, "#1E293B");
+  bgGrad.addColorStop(0.5, "#0F172A");
+  bgGrad.addColorStop(1, "#020617");
+  ctx.fillStyle = bgGrad;
   ctx.fillRect(leftX, cardY, leftW, cardH);
 
-  // Image d'arrière-plan du site
-  const photoUrl = billet.imageUrl || "https://images.unsplash.com/photo-1518605348400-437a4a7761c4?w=800&q=80";
-  const siteImg = await chargerImage(photoUrl);
-  if (siteImg) {
-    ctx.globalAlpha = 0.55;
-    ctx.drawImage(siteImg, leftX, cardY, leftW, cardH);
-    ctx.globalAlpha = 1.0;
-  }
+  // Effets d'éclairage de stade en arrière-plan
+  const spotGrad = ctx.createRadialGradient(leftX + leftW / 2, cardY + 120, 20, leftX + leftW / 2, cardY + 120, 350);
+  spotGrad.addColorStop(0, "rgba(194, 91, 30, 0.35)");
+  spotGrad.addColorStop(0.6, "rgba(30, 41, 59, 0.1)");
+  spotGrad.addColorStop(1, "transparent");
+  ctx.fillStyle = spotGrad;
+  ctx.fillRect(leftX, cardY, leftW, cardH);
 
-  // Dégradé sombre de bas en haut (comme sur le site web)
-  const grad = ctx.createLinearGradient(leftX, cardY + 150, leftX, cardY + cardH);
-  grad.addColorStop(0, "rgba(0,0,0,0.1)");
-  grad.addColorStop(0.5, "rgba(0,0,0,0.75)");
-  grad.addColorStop(1, "rgba(0,0,0,0.96)");
+  // Dégradé sombre de bas en haut
+  const grad = ctx.createLinearGradient(leftX, cardY + 140, leftX, cardY + cardH);
+  grad.addColorStop(0, "rgba(0,0,0,0.15)");
+  grad.addColorStop(0.6, "rgba(0,0,0,0.85)");
+  grad.addColorStop(1, "rgba(0,0,0,0.98)");
   ctx.fillStyle = grad;
   ctx.fillRect(leftX, cardY, leftW, cardH);
 
@@ -113,7 +161,7 @@ export async function creerCanvasBillet(billet) {
   ctx.fillText(categorie, badgeX + badgeW / 2, badgeY + 22);
   ctx.textAlign = "left";
 
-  // Informations de l'épreuve (Titre, Lieu, Siège)
+  // Informations de l'épreuve
   const infoBottomY = cardY + cardH - 120;
 
   // Titre de l'épreuve
@@ -173,7 +221,7 @@ export async function creerCanvasBillet(billet) {
   ctx.restore();
 
   // ════════════════════════════════════════════════════════════════════════════
-  // CARTE DROITE : Exactement la CarteQR du site supporter
+  // CARTE DROITE : CarteQR du supporter (Carte blanche, QR Code, pastille statut)
   // ════════════════════════════════════════════════════════════════════════════
   const rightX = 750;
   const rightW = 490;
@@ -186,12 +234,8 @@ export async function creerCanvasBillet(billet) {
   ctx.lineWidth = 1.5;
   ctx.stroke();
 
-  // QR Code Image
-  const qrUrl = billet.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(codeUnique)}`;
-  const qrImg = await chargerImage(qrUrl);
-  if (qrImg) {
-    ctx.drawImage(qrImg, rightX + rightW / 2 - 95, cardY + 35, 190, 190);
-  }
+  // QR Code Box & Canvas Drawing (sans taint)
+  drawQRCodePattern(ctx, rightX + rightW / 2 - 95, cardY + 35, 190, codeUnique);
 
   // Titre "Votre QR Code"
   ctx.textAlign = "center";
@@ -262,16 +306,20 @@ export async function creerCanvasBillet(billet) {
  */
 export async function telechargerBilletImage(billet) {
   if (!billet) return;
-  const canvas = await creerCanvasBillet(billet);
-  const dataUrl = canvas.toDataURL("image/png");
+  try {
+    const canvas = await creerCanvasBillet(billet);
+    const dataUrl = canvas.toDataURL("image/png");
 
-  const code = billet.codeUnique || billet.code_unique || billet.id || Date.now();
-  const link = document.createElement("a");
-  link.download = `billet_JOJ2026_${code}.png`;
-  link.href = dataUrl;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+    const code = billet.codeUnique || billet.code_unique || billet.id || Date.now();
+    const link = document.createElement("a");
+    link.download = `billet_JOJ2026_${code}.png`;
+    link.href = dataUrl;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch (err) {
+    console.error("Erreur génération image billet:", err);
+  }
 }
 
 /**

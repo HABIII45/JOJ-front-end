@@ -1,6 +1,10 @@
 /**
  * Utilitaires et constantes de permissions applicatives JOJ 2026.
- * Aligné avec le modèle Django `PermissionApp` et `RolePersonnel` de l'application `utilisateurs`.
+ * Règles d'accès :
+ * - Dashboard : accessible à tous
+ * - Jeux : Événements, Disciplines, Sites, Catégories, Équipes/Compétiteurs
+ * - Actualités : Actualités, Résultats
+ * - Utilisateurs : Gestion des comptes et paramètres (réservé admin/superadmin)
  */
 
 export const ROLES = {
@@ -14,58 +18,56 @@ export const PERMISSIONS = {
   ACTUALITES: "ACTUALITES",
   UTILISATEURS: "UTILISATEURS",
 
-  // Alias rétrocompatibles pointant vers JEUX
-  EVENEMENTS: "JEUX",
-  SITES: "JEUX",
-  DISCIPLINES: "JEUX",
-  CATEGORIES: "JEUX",
-  COMPETITEURS: "JEUX",
-  RESULTATS: "JEUX",
-  BILLETS: "JEUX",
-  PAIEMENTS: "JEUX",
-  NOTIFICATIONS: "JEUX",
-  ZONES: "JEUX",
+  // Sous-modules rattachés à JEUX
+  EVENEMENTS: "EVENEMENTS",
+  DISCIPLINES: "DISCIPLINES",
+  SITES: "SITES",
+  CATEGORIES: "CATEGORIES",
+  EQUIPES: "EQUIPES",
+  COMPETITEURS: "COMPETITEURS",
+  BILLETS: "BILLETS",
+
+  // Sous-modules rattachés à ACTUALITES
+  RESULTATS: "RESULTATS",
+  PARAMETRES: "PARAMETRES",
 };
 
 export const PERMISSION_LABELS = {
-  [PERMISSIONS.TOUT]: "Toutes les permissions",
-  [PERMISSIONS.JEUX]: "Gestion des Jeux & Compétitions",
-  [PERMISSIONS.ACTUALITES]: "Gestion des Actualités",
+  [PERMISSIONS.TOUT]: "Toutes les permissions (Superadmin)",
+  [PERMISSIONS.JEUX]: "Jeux (Événements, Disciplines, Sites, Catégories, Équipes)",
+  [PERMISSIONS.ACTUALITES]: "Actualités (Actualités, Résultats)",
   [PERMISSIONS.UTILISATEURS]: "Gestion des Utilisateurs",
 };
 
 export const PERMISSION_OPTIONS = [
   {
     value: "JEUX",
-    label: "Gestion des Jeux & Compétitions",
-    desc: "Gestion des Événements, Sites, Disciplines, Catégories, Compétiteurs, Billets et Résultats",
+    label: "Jeux (Événements, Disciplines, Sites, Catégories, Équipes)",
+    desc: "Accès complet aux modules Événements, Disciplines, Sites, Catégories et Équipes/Compétiteurs",
     icon: "Trophy",
   },
   {
     value: "ACTUALITES",
-    label: "Gestion des Actualités",
-    desc: "Création, modification et publication des actualités et communiqués officiels",
+    label: "Actualités (Actualités, Résultats)",
+    desc: "Accès à la publication des Actualités et à la saisie et gestion des Résultats sportifs",
     icon: "Newspaper",
   },
   {
     value: "UTILISATEURS",
     label: "Gestion des Utilisateurs",
-    desc: "Administration des comptes, création d'administrateurs et gestion des accès",
+    desc: "Administration des comptes administrateurs et accès aux paramètres avancés",
     icon: "Users",
   },
   {
     value: "TOUT",
     label: "Toutes les permissions (Superadmin)",
-    desc: "Accès intégral et sans restriction à tous les modules de la plateforme",
+    desc: "Accès intégral sans restriction à l'ensemble de la plateforme",
     icon: "ShieldCheck",
   },
 ];
 
 const PERMISSIONS_STORAGE_KEY = "joj_admin_permissions_registry";
 
-/**
- * Enregistre les permissions d'un utilisateur dans le stockage persistant local
- */
 export function saveUserPermissions(identifier, permissions) {
   if (!identifier) return;
   try {
@@ -79,9 +81,6 @@ export function saveUserPermissions(identifier, permissions) {
   }
 }
 
-/**
- * Récupère les permissions d'un utilisateur depuis le stockage local
- */
 export function getUserPermissions(identifier) {
   if (!identifier) return [];
   try {
@@ -94,11 +93,6 @@ export function getUserPermissions(identifier) {
   }
 }
 
-/**
- * Vérifie si un utilisateur est superadministrateur
- * @param {Object|null} user 
- * @returns {boolean}
- */
 export function isSuperAdmin(user) {
   if (!user) return false;
   if (user.is_superuser === true) return true;
@@ -113,7 +107,6 @@ export function isSuperAdmin(user) {
     return true;
   }
 
-  // Vérifie si TOUT est présent dans les permissions
   if (Array.isArray(user.permissions_app) && user.permissions_app.includes("TOUT")) {
     return true;
   }
@@ -124,11 +117,6 @@ export function isSuperAdmin(user) {
   return false;
 }
 
-/**
- * Récupère la liste complète des permissions effectives d'un utilisateur
- * @param {Object|null} user 
- * @returns {string[]}
- */
 export function getPermissionsList(user) {
   if (!user) return [];
   if (isSuperAdmin(user)) {
@@ -151,29 +139,9 @@ export function getPermissionsList(user) {
   const fromEmail = user.email ? getUserPermissions(user.email) : [];
   fromEmail.forEach((p) => perms.add(String(p).toUpperCase()));
 
-  // Si l'utilisateur a JEUX, lui accorder les sous-modules correspondants
-  if (perms.has("JEUX") || perms.has("TOUT")) {
-    perms.add("EVENEMENTS");
-    perms.add("SITES");
-    perms.add("DISCIPLINES");
-    perms.add("CATEGORIES");
-    perms.add("COMPETITEURS");
-    perms.add("RESULTATS");
-    perms.add("BILLETS");
-    perms.add("PAIEMENTS");
-    perms.add("NOTIFICATIONS");
-    perms.add("ZONES");
-  }
-
   return Array.from(perms);
 }
 
-/**
- * Vérifie si un utilisateur a une permission donnée
- * @param {Object|null} user 
- * @param {string|string[]} permission - Une permission ou un tableau de permissions
- * @returns {boolean}
- */
 export function hasPermission(user, permission) {
   if (!user) return false;
   if (isSuperAdmin(user)) return true;
@@ -184,9 +152,31 @@ export function hasPermission(user, permission) {
   const verifierUnePermission = (pReq) => {
     const pNorm = String(pReq).toUpperCase().trim();
     if (userPerms.includes(pNorm)) return true;
-    if (pNorm === "EVENEMENTS" || pNorm === "SITES" || pNorm === "DISCIPLINES" || pNorm === "CATEGORIES" || pNorm === "COMPETITEURS" || pNorm === "RESULTATS" || pNorm === "BILLETS") {
+
+    // Règle 1: Jeux (Evenement, Discipline, Site, Categorie, Equipe, Competiteurs, Billets)
+    if (
+      pNorm === "JEUX" ||
+      pNorm === "EVENEMENTS" ||
+      pNorm === "DISCIPLINES" ||
+      pNorm === "SITES" ||
+      pNorm === "CATEGORIES" ||
+      pNorm === "EQUIPES" ||
+      pNorm === "COMPETITEURS" ||
+      pNorm === "BILLETS"
+    ) {
       return userPerms.includes("JEUX");
     }
+
+    // Règle 2: Actualite (Actualite, Resultat)
+    if (pNorm === "ACTUALITES" || pNorm === "RESULTATS") {
+      return userPerms.includes("ACTUALITES");
+    }
+
+    // Règle 3: Utilisateurs & Paramètres
+    if (pNorm === "UTILISATEURS" || pNorm === "PARAMETRES") {
+      return userPerms.includes("UTILISATEURS");
+    }
+
     return false;
   };
 
