@@ -13,6 +13,8 @@ import CompetiteurForm from "../pages/admin/CompetiteurForm";
 import { AjoutCategorie } from "../pages/admin/ajoutCategorie";
 import VenteBilletPage from "../pages/public/VenteBilletPage";
 import AjoutAdminPage from "../pages/admin/AjoutAdminPage";
+import Disciplines from "../pages/admin/Disciplines";
+import DisciplineForm from "../pages/admin/DisciplineForm";
 import ParamsPage from "../pages/public/ParamsPage";
 import ProtectedRoute from "./ProtectedRoutes";
 import { PERMISSIONS } from "../utils/permissions";
@@ -70,7 +72,9 @@ export const routesAdmin = [
         children: [
           { path: "/admin/equipes", element: <GamesList /> },
           { path: "/admin/equipes/ajout", element: <CompetiteurForm /> },
-          { path: "/admin/disciplines", element: <GamesList /> },
+          { path: "/admin/disciplines", element: <Disciplines /> },
+          { path: "/admin/disciplines/nouvelle", element: <DisciplineForm /> },
+          { path: "/admin/disciplines/:id/modifier", element: <DisciplineForm /> },
           { path: "/admin/categories", element: <AjoutCategorie /> },
         ],
       },

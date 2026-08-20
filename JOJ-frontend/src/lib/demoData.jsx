@@ -332,3 +332,31 @@ export const ICONE_DISCIPLINE = {
   Natation: "🏊",
   Handball: "🤾",
 };
+
+
+export const CATEGORIES_DEMO = [
+  { id: 1, nom: "Sports Individuels", description: "" },
+  { id: 2, nom: "Sports Aquatiques", description: "" },
+  { id: 3, nom: "Sports Artistiques", description: "" },
+  { id: 4, nom: "Sports de Combat", description: "" },
+  { id: 5, nom: "Sports Collectifs", description: "" },
+];
+
+export const COMPLEMENTS_DEMO = {
+  1: { categorie: "Sports Collectifs", nb: 4, site: "Complexe Iba Mar Diop" },
+  2: { categorie: "Sports Collectifs", nb: 12, site: "Dakar Arena" },
+  3: { categorie: "Sports Collectifs", nb: 0, site: "Complexe Iba Mar Diop" },
+  4: { categorie: "Sports de Combat", nb: 6, site: "Arena de Toubab Dialaw" },
+};
+
+export const DEMO = {
+  disciplines:
+    Array.isArray(disciplinesDemo) && disciplinesDemo.length > 0
+      ? disciplinesDemo
+      : [
+          { id: 1, nom: "Athlétisme", regle: "", accessibilite: "", categories: [], nombre_competiteurs: 4 },
+          { id: 2, nom: "Basket-ball", regle: "", accessibilite: "", categories: [], nombre_competiteurs: 12 },
+          { id: 3, nom: "Football", regle: "", accessibilite: "", categories: [], nombre_competiteurs: 0 },
+          { id: 4, nom: "Judo", regle: "", accessibilite: "", categories: [], nombre_competiteurs: 6 },
+        ],
+};
