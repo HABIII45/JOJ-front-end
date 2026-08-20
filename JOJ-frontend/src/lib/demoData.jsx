@@ -427,3 +427,11 @@ export const DEMO = {
           { id: 4, nom: "Judo", regle: "", accessibilite: "", categories: [], nombre_competiteurs: 6 },
         ],
 };
+export const COMPLEMENTS_DEMO = {
+  1: { site: "Arena Dakar", categorie: "Sports de combat", nb: 24 },
+  2: { site: "Piscine Olympique", categorie: "Sports aquatiques", nb: 18 },
+  3: { site: "Stade Iba Mar Diop", categorie: "Athlétisme", nb: 30 },
+  4: { site: "Arena Dakar", categorie: "Sports collectifs", nb: 12 },
+  5: { site: "Gymnase National", categorie: "Gymnastique", nb: 15 },
+  6: { site: "Terrain Annexe", categorie: "Sports de raquette", nb: 20 },
+};

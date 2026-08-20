@@ -82,12 +82,12 @@ export const routesAdmin = [
       },
 
       // ROUTES GESTION DES DISCIPLINES
-      {
-        element: <ProtectedRoute permissionRequise={[PERMISSIONS.DISCIPLINES, PERMISSIONS.COMPETITEURS]} />,
-        children: [
-          { path: "/admin/disciplines", element: <GamesList /> },
-        ],
-      },
+      // {
+      //   element: <ProtectedRoute permissionRequise={[PERMISSIONS.DISCIPLINES, PERMISSIONS.COMPETITEURS]} />,
+      //   children: [
+      //     { path: "/admin/disciplines", element: <GamesList /> },
+      //   ],
+      // },
 
       // ROUTES GESTION DES ÉQUIPES / COMPÉTITEURS
       {

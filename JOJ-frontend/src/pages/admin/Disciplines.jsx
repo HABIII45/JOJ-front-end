@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Plus, Search, Pencil, Trash2 } from "lucide-react";
 import { isBackendConnected, disciplinesService, categoriesService } from "../../lib/api";
-import { disciplinesDemo, DEMO, CATEGORIES_DEMO } from "../../lib/demoData";
+import { disciplinesDemo, DEMO,COMPLEMENTS_DEMO, CATEGORIES_DEMO } from "../../lib/demoData";
 import AdminLayout from "../../components/layouts/AdminLayout";
 
 // Ajuste ce chemin si la liste des disciplines vit ailleurs dans ton routeur.
@@ -45,7 +45,7 @@ const siteDiscipline = (discipline) => {
 const PAR_PAGE = 8;
 
 export default function Disciplines() {
-  const [, setLocation] = useLocation();
+  // const [, setLocation] = useLocation();
   const [chargement, setChargement] = useState(true);
   const [disciplines, setDisciplines] = useState([]);
   const [categories, setCategories] = useState(CATEGORIES_DEMO);
