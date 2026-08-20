@@ -19,6 +19,8 @@ export function AuthProvider({ children }) {
   const enrichirProfil = (profil) => {
     if (!profil) return null;
     const perms = getPermissionsList(profil);
+    console.log("Les permissions de l'utilisateur et profil ", perms )
+
     return {
       ...profil,
       permissions_app: perms,

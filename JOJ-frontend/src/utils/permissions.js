@@ -10,49 +10,22 @@ export const ROLES = {
 
 export const PERMISSIONS = {
   TOUT: "TOUT",
-  EVENEMENTS: "EVENEMENTS",
-  ZONES: "ZONES",
-  RESULTATS: "RESULTATS",
-  BILLETS: "BILLETS",
-  PAIEMENTS: "PAIEMENTS",
+  JEUX: "JEUX",
   ACTUALITES: "ACTUALITES",
-  SITES: "SITES",
-  NOTIFICATIONS: "NOTIFICATIONS",
   UTILISATEURS: "UTILISATEURS",
-  DISCIPLINES: "DISCIPLINES",
-  CATEGORIES: "CATEGORIES",
-  COMPETITEURS: "COMPETITEURS",
 };
 
 export const PERMISSION_LABELS = {
   [PERMISSIONS.TOUT]: "Toutes les permissions",
-  [PERMISSIONS.EVENEMENTS]: "Gestion des Événements",
+  [PERMISSIONS.JEUX]: "Gestion des Événements",
   [PERMISSIONS.UTILISATEURS]: "Gestion des Utilisateurs",
-  [PERMISSIONS.RESULTATS]: "Gestion des Résultats",
-  [PERMISSIONS.BILLETS]: "Gestion des Billets",
-  [PERMISSIONS.SITES]: "Gestion des Sites",
-  [PERMISSIONS.DISCIPLINES]: "Gestion des Disciplines",
   [PERMISSIONS.ACTUALITES]: "Gestion des Actualités",
-  [PERMISSIONS.CATEGORIES]: "Gestion des Catégories",
-  [PERMISSIONS.COMPETITEURS]: "Gestion des Compétiteurs & Équipes",
-  [PERMISSIONS.PAIEMENTS]: "Gestion des Paiements",
-  [PERMISSIONS.NOTIFICATIONS]: "Gestion des Notifications",
-  [PERMISSIONS.ZONES]: "Gestion des Zones",
 };
 
 export const PERMISSION_OPTIONS = [
-  { value: PERMISSIONS.RESULTATS, label: "Gestion des Résultats", desc: "Saisie et consultation des scores et classements", icon: "Medal" },
-  { value: PERMISSIONS.EVENEMENTS, label: "Gestion des Événements", desc: "Création, modification et gestion des événements sportifs", icon: "CalendarDays" },
-  { value: PERMISSIONS.BILLETS, label: "Gestion des Billets", desc: "Gestion des ventes et validation des tickets", icon: "Ticket" },
-  { value: PERMISSIONS.SITES, label: "Gestion des Sites", desc: "Administration des sites et infrastructures", icon: "MapPin" },
-  { value: PERMISSIONS.DISCIPLINES, label: "Gestion des Disciplines", desc: "Gestion des disciplines et épreuves sportives", icon: "Trophy" },
+  { value: PERMISSIONS.JEUX, label: "Gestion des jeux", desc: "Création, modification et gestion des jeux, sites, disciplines...", icon: "CalendarDays" },
   { value: PERMISSIONS.ACTUALITES, label: "Gestion des Actualités", desc: "Publication et gestion des actualités", icon: "Newspaper" },
-  { value: PERMISSIONS.CATEGORIES, label: "Gestion des Catégories", desc: "Gestion des catégories d'épreuves", icon: "Tags" },
-  { value: PERMISSIONS.COMPETITEURS, label: "Gestion des Compétiteurs & Équipes", desc: "Gestion des athlètes et équipes", icon: "UserRound" },
   { value: PERMISSIONS.UTILISATEURS, label: "Gestion des Utilisateurs", desc: "Gestion des administrateurs et des utilisateurs", icon: "Users" },
-  { value: PERMISSIONS.PAIEMENTS, label: "Gestion des Paiements", desc: "Suivi des transactions et paiements", icon: "CreditCard" },
-  { value: PERMISSIONS.NOTIFICATIONS, label: "Gestion des Notifications", desc: "Envoi et gestion des notifications", icon: "Bell" },
-  { value: PERMISSIONS.ZONES, label: "Gestion des Zones", desc: "Configuration des zones de compétition", icon: "Grid" },
 ];
 
 const PERMISSIONS_STORAGE_KEY = "joj_admin_permissions_registry";
