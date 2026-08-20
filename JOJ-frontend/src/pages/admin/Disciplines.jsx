@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Plus, Search, Pencil, Trash2 } from "lucide-react";
 import { isBackendConnected, disciplinesService, categoriesService } from "../../lib/api";
 import { disciplinesDemo, DEMO, COMPLEMENTS_DEMO, CATEGORIES_DEMO } from "../../lib/demoData";
@@ -45,7 +46,7 @@ const siteDiscipline = (discipline) => {
 const PAR_PAGE = 8;
 
 export default function Disciplines() {
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
   const [chargement, setChargement] = useState(true);
   const [disciplines, setDisciplines] = useState([]);
   const [categories, setCategories] = useState(CATEGORIES_DEMO);
@@ -120,8 +121,8 @@ export default function Disciplines() {
   }, [recherche, categorieFiltre, statutFiltre]);
 
   // Navigation vers la page dédiée (ajout / édition) au lieu d'ouvrir une modal
-  const allerVersAjout = () => setLocation(`${ROUTE_LISTE}/nouvelle`);
-  const allerVersEdition = (discipline) => setLocation(`${ROUTE_LISTE}/${discipline.id}/modifier`);
+  const allerVersAjout = () => navigate(`${ROUTE_LISTE}/nouvelle`);
+const allerVersEdition = (discipline) => navigate(`${ROUTE_LISTE}/${discipline.id}/modifier`);
 
   const supprimerDiscipline = async (discipline) => {
     const confirme = window.confirm(

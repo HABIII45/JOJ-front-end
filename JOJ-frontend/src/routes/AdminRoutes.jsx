@@ -10,7 +10,8 @@ import SiteDetail from "../pages/admin/SitesDetail";
 import SiteForm from "../pages/admin/SiteForm";
 import GamesList from "../pages/admin/Games";
 import CompetiteurForm from "../pages/admin/CompetiteurForm";
-import { AjoutCategorie } from "../pages/admin/ajoutCategorie";
+import AdminCategorie from "../pages/admin/AdminCategorie";
+import AjoutCategorie from "../pages/admin/ajoutCategorie";
 import VenteBilletPage from "../pages/public/VenteBilletPage";
 import AjoutAdminPage from "../pages/admin/AjoutAdminPage";
 import Disciplines from "../pages/admin/Disciplines";
@@ -46,12 +47,14 @@ export const routesAdmin = [
         ],
       },
 
-      // ROUTES GESTION DES ÉVÉNEMENTS
+      // ROUTES GESTION DES ÉVÉNEMENTS (Création & Modification)
       {
         element: <ProtectedRoute permissionRequise={PERMISSIONS.EVENEMENTS} />,
         children: [
           { path: "/admin/evenements", element: <GestionEvents /> },
           { path: "/admin/evenements/ajout", element: <FormEvent /> },
+          { path: "/admin/evenements/:id/modifier", element: <FormEvent /> },
+          { path: "/admin/evenements/modifier/:id", element: <FormEvent /> },
         ],
       },
 
@@ -63,10 +66,24 @@ export const routesAdmin = [
           { path: "/admin/sites/:id", element: <SiteDetail /> },
           { path: "/admin/sites/ajout", element: <SiteForm /> },
           { path: "/admin/sites/nouveau", element: <SiteForm /> },
+          { path: "/admin/sites/:id/modifier", element: <SiteForm /> },
         ],
       },
 
-      // ROUTES GESTION DES ÉQUIPES / COMPÉTITEURS / DISCIPLINES / CATÉGORIES
+      // ROUTES GESTION DES CATÉGORIES
+      {
+        element: <ProtectedRoute permissionRequise={[PERMISSIONS.CATEGORIES, PERMISSIONS.DISCIPLINES, PERMISSIONS.COMPETITEURS]} />,
+        children: [
+          { path: "/admin/categories", element: <AdminCategorie /> },
+          { path: "/admin/categories/ajout", element: <AjoutCategorie /> },
+          { path: "/admin/categories/:id/modifier", element: <AjoutCategorie /> },
+          { path: "/admin/categories/modifier/:id", element: <AjoutCategorie /> },
+        ],
+      },
+
+  
+
+      // ROUTES GESTION DES ÉQUIPES / COMPÉTITEURS
       {
         element: <ProtectedRoute permissionRequise={PERMISSIONS.COMPETITEURS} />,
         children: [
@@ -76,6 +93,8 @@ export const routesAdmin = [
           { path: "/admin/disciplines/nouvelle", element: <DisciplineForm /> },
           { path: "/admin/disciplines/:id/modifier", element: <DisciplineForm /> },
           { path: "/admin/categories", element: <AjoutCategorie /> },
+          { path: "/admin/competiteurs", element: <GamesList /> },
+          { path: "/admin/competiteurs/ajout", element: <CompetiteurForm /> },
         ],
       },
 

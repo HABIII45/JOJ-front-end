@@ -25,12 +25,18 @@ export function normaliserBillet(billet) {
     : "Date officielle";
 
   const heureFormatted = evenement.heure ? evenement.heure.slice(0, 5) : "18:00";
+  const codeUnique = billet.code_unique || billet.codeUnique || (billet.id ? `JOJ-${billet.id}` : `JOJ-${Date.now()}`);
+
+  // URL du QR Code récupérée depuis le backend ou générée à partir du code_unique réel du billet
+  const qrCodeUrl = billet.qr_code_url
+    ? getImageUrl(billet.qr_code_url)
+    : `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(codeUnique)}`;
 
   return {
     // Identification
     id:          billet.id,
-    codeUnique:  billet.code_unique || `JOJ-${billet.id}`,
-    label:       `Billet #${billet.id}`,
+    codeUnique:  codeUnique,
+    label:       `Billet #${billet.id || ""}`,
 
     // Catégorie / type
     categorie:   billet.type_billet || "STANDARD",
@@ -55,8 +61,8 @@ export function normaliserBillet(billet) {
     // Image du site
     imageUrl:    getImageUrl(site.image || evenement.image),
 
-    // QR Code
-    qrCodeUrl:   getImageUrl(billet.qr_code_url),
+    // QR Code réel
+    qrCodeUrl:   qrCodeUrl,
 
     // Statut
     statut:      billet.statut || "VALIDE",
