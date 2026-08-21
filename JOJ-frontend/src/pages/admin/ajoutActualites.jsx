@@ -13,8 +13,10 @@ import {
   FiLoader,
 } from "react-icons/fi";
 
+import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/layouts/AdminLayout";
 import { getActualites, supprimerActualite } from "../../services/actualite";
+import { getImageUrl } from "../../api/api";
 
 // ==========================================
 // IMAGES PAR DÉFAUT (SI SANS IMAGE DANS LA BDD)
@@ -25,6 +27,8 @@ const DEFAULT_AVATAR =
   "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80";
 
 export default function GestionActualites({ onNavigateToCreate }) {
+  const navigate = useNavigate();
+
   // --- ÉTATS DONNÉES ET CHARGEMENT ---
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,6 +38,7 @@ export default function GestionActualites({ onNavigateToCreate }) {
   const [search, setSearch] = useState("");
   const [categorie, setCategorie] = useState("Toutes les catégories");
   const [statut, setStatut] = useState("Tous les statuts");
+  const [idEnSuppression, setIdEnSuppression] = useState(null);
 
   // --- CHARGEMENT DYNAMIQUE DEPUIS DJANGO ---
   const chargerActualites = async () => {
@@ -55,16 +60,34 @@ export default function GestionActualites({ onNavigateToCreate }) {
     chargerActualites();
   }, []);
 
-  // --- SUPPRESSION D'UN ARTICLE VIA API ---
+  const handleVoir = (id) => {
+    if (!id) return;
+    window.open(`/actualites/${id}`, "_blank", "noopener,noreferrer");
+  };
+
+  const handleModifier = (id) => {
+    if (!id) return;
+    navigate(`/admin/actualites/${id}/modifier`);
+  };
+
   const handleDelete = async (id) => {
+    if (!id) {
+      alert("Impossible de supprimer cet article : identifiant manquant.");
+      return;
+    }
     if (!window.confirm("Voulez-vous vraiment supprimer cet article ?")) return;
 
     try {
+      setIdEnSuppression(id);
       await supprimerActualite(id);
-      // Mise à jour instantanée du state local
       setArticles((prev) => prev.filter((art) => art.id !== id));
     } catch (err) {
-      alert("Une erreur est survenue lors de la suppression.");
+      const detail =
+        err.response?.data?.detail ||
+        (typeof err.response?.data === "string" ? err.response.data : null);
+      alert(detail || "Une erreur est survenue lors de la suppression.");
+    } finally {
+      setIdEnSuppression(null);
     }
   };
 
@@ -115,7 +138,11 @@ export default function GestionActualites({ onNavigateToCreate }) {
           </div>
 
           <button
-            onClick={onNavigateToCreate}
+            onClick={() =>
+              onNavigateToCreate
+                ? onNavigateToCreate()
+                : navigate("/admin/actualites/ajout")
+            }
             className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#D9531E] hover:bg-[#c24818] text-white font-semibold text-sm rounded-xl shadow-lg shadow-[#D9531E]/20 hover:shadow-xl hover:shadow-[#D9531E]/30 transition-all active:scale-[0.98]"
           >
             <FiPlus size={18} />
@@ -300,7 +327,7 @@ export default function GestionActualites({ onNavigateToCreate }) {
                           <td className="py-4 px-6">
                             <div className="flex items-center gap-4 max-w-md">
                               <img
-                                src={art.image || DEFAULT_ARTICLE_IMAGE}
+                                src={getImageUrl(art.image) || DEFAULT_ARTICLE_IMAGE}
                                 alt={art.titre}
                                 className="w-16 h-12 rounded-xl object-cover shrink-0 shadow-xs border border-slate-100"
                                 onError={(e) => {
@@ -370,23 +397,33 @@ export default function GestionActualites({ onNavigateToCreate }) {
                           <td className="py-4 px-6 text-right">
                             <div className="inline-flex items-center gap-1 text-slate-400">
                               <button
-                                title="Aperçu"
+                                type="button"
+                                title="Voir"
+                                onClick={() => handleVoir(art.id)}
                                 className="p-1.5 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
                               >
                                 <FiEye size={16} />
                               </button>
                               <button
+                                type="button"
                                 title="Modifier"
+                                onClick={() => handleModifier(art.id)}
                                 className="p-1.5 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                               >
                                 <FiEdit3 size={16} />
                               </button>
                               <button
+                                type="button"
                                 title="Supprimer"
+                                disabled={idEnSuppression === art.id}
                                 onClick={() => handleDelete(art.id)}
-                                className="p-1.5 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                className="p-1.5 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-40"
                               >
-                                <FiTrash2 size={16} />
+                                {idEnSuppression === art.id ? (
+                                  <FiLoader size={16} className="animate-spin" />
+                                ) : (
+                                  <FiTrash2 size={16} />
+                                )}
                               </button>
                             </div>
                           </td>

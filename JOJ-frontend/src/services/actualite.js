@@ -27,7 +27,7 @@ export const creerActualite = async (formData) => {
  */
 export const getActualites = async () => {
   try {
-    const response = await axios.get(`${API_URL}/actualites/`);
+    const response = await api.get("/api/actualites/");
     return response.data;
   } catch (error) {
     console.error(
@@ -39,11 +39,39 @@ export const getActualites = async () => {
 };
 
 /**
+ * Récupérer une actualité par son ID
+ */
+export const getActualite = async (id) => {
+  const response = await api.get(`/api/actualites/${id}/`);
+  return response.data;
+};
+
+/**
+ * Modifier une actualité (PATCH multipart)
+ */
+export const modifierActualite = async (id, formData) => {
+  try {
+    const response = await api.patch(`/api/actualites/${id}/`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Erreur lors de la modification de l'actualité :",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+/**
  * Supprimer une actualité par son ID
  */
 export const supprimerActualite = async (id) => {
   try {
-    const response = await axios.delete(`${API_URL}/actualites/${id}/`);
+    const response = await api.delete(`/api/actualites/${id}/`);
     return response.data;
   } catch (error) {
     console.error(

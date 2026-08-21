@@ -17,7 +17,8 @@ import Sites              from "../pages/public/Site";
 import DetailSite         from "../pages/public/DetailSite";
 import ParamsPage         from "../pages/public/ParamsPage";
 import { DisciplinesGame } from "../pages/public/Game";
-import CreerActualite     from "../pages/admin/actualites";
+import Actualitees        from "../pages/public/Actualitees";
+import DetailsActualite   from "../pages/public/DetailsActualite";
 
 // ── Pages admin ──────────────────────────────────────────────────────────────
 import Dashboard          from "../pages/admin/Dashboard";
@@ -56,7 +57,8 @@ const AppRoutes = () => {
         <Route path="/" element={<Home />} />
         <Route path="/disciplines" element={<DisciplinesGame />} />
         <Route path="/jeux" element={<DisciplinesGame />} />
-        <Route path="/actualites" element={<CreerActualite />} />
+        <Route path="/actualites" element={<Actualitees />} />
+        <Route path="/actualites/:id" element={<DetailsActualite />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register-result" element={<RegisterResultPage />} />
         <Route path="/ventbillet" element={<VenteBilletPage />} />

@@ -4,39 +4,60 @@ import { Header } from "../../components/layout/Header";
 import { Footer } from "../../components/layout/Footer";
 import ContainerImg from "../../assets/images/Container.jpg";
 import api, { getImageUrl } from "../../api/api";
+import { getAllEvents } from "../../api/Eventapi";
 import { Trophy, MapPin, Calendar, Ticket } from "lucide-react";
 
+function urlImageEvenement(evenement) {
+  return (
+    getImageUrl(evenement?.image) ||
+    getImageUrl(evenement?.photo) ||
+    getImageUrl(evenement?.image_url) ||
+    getImageUrl(evenement?.site_detail?.image) ||
+    getImageUrl(evenement?.site?.image) ||
+    null
+  );
+}
+
 // ── Sous-composant carte événement ────────────────────────────────────────────
-function CarteEvenement({ evenement, onReserver }) {
-  const urlImage = getImageUrl(evenement.image);
+function nomSiteEvenement(evenement, sitesListe = []) {
+  if (evenement.site_nom) return evenement.site_nom;
+  if (evenement.site?.nom) return evenement.site.nom;
+  const siteId = evenement.site?.id ?? evenement.site;
+  const site = sitesListe.find((s) => String(s.id) === String(siteId));
+  return site?.nom || "Site Olympique";
+}
+
+function CarteEvenement({ evenement, sitesListe, onReserver }) {
+  const urlImage = urlImageEvenement(evenement);
 
   return (
-    <article className="rounded-2xl bg-white p-6 sm:p-7 lg:p-8
+    <article className="rounded-2xl bg-white overflow-hidden
                         shadow-[0_0.4rem_1.5rem_rgba(0,0,0,.08)]
                         transition-transform duration-200 hover:-translate-y-1
                         hover:shadow-[0_1rem_2rem_rgba(0,0,0,.08)] flex flex-col justify-between">
       <div>
-        <div className="flex justify-center">
+        <div className="h-44 sm:h-48 w-full bg-[#fff2ec]">
           {urlImage ? (
             <img
               src={urlImage}
               alt={evenement.titre}
-              className="h-24 w-24 sm:h-28 sm:w-28 rounded-full object-cover border border-[#eadfd9]"
+              className="h-full w-full object-cover"
             />
           ) : (
-            <div className="h-24 w-24 sm:h-28 sm:w-28 rounded-full bg-orange-50 border border-orange-200 flex items-center justify-center text-[#C25B1E]">
-              <Trophy size={36} />
+            <div className="h-full w-full flex items-center justify-center text-[#C25B1E]">
+              <Trophy size={42} />
             </div>
           )}
         </div>
 
-        <h3 className="mt-6 text-center text-lg sm:text-xl lg:text-2xl font-extrabold text-gray-900">
+        <div className="p-6 sm:p-7">
+        <h3 className="text-center text-lg sm:text-xl lg:text-2xl font-extrabold text-gray-900">
           {evenement.titre}
         </h3>
 
         <p className="mt-1 text-center text-sm sm:text-base text-[#d85d16] font-semibold flex items-center justify-center gap-1.5">
           <MapPin size={15} />
-          {evenement.site_nom || evenement.site?.nom || "Site Olympique"}
+          {nomSiteEvenement(evenement, sitesListe)}
         </p>
 
         <div className="mt-5 rounded-xl border border-[#f2ddd4] bg-[#fffaf8] py-3 px-4
@@ -44,17 +65,20 @@ function CarteEvenement({ evenement, onReserver }) {
           <Calendar size={16} className="text-[#d85d16]" />
           {evenement.date || "Date à venir"} {evenement.heure ? `• ${evenement.heure.slice(0, 5)}` : ""}
         </div>
+        </div>
       </div>
 
+      <div className="px-6 sm:px-7 pb-6 sm:pb-7">
       <button
         onClick={() => onReserver(evenement)}
-        className="mt-6 w-full rounded-xl bg-black py-3.5
+        className="w-full rounded-xl bg-black py-3.5
                    text-sm sm:text-base font-bold text-white
                    hover:bg-[#222] transition-colors cursor-pointer flex items-center justify-center gap-2"
       >
         <Ticket size={16} />
         Réserver maintenant
       </button>
+      </div>
     </article>
   );
 }
@@ -93,15 +117,15 @@ function Events() {
   const chargerEvenements = useCallback(async () => {
     try {
       setChargement(true);
-      const [eventsRes, sitesRes] = await Promise.allSettled([
-        api.get("/api/events/?page_size=100"),
+      const [eventsData, sitesRes] = await Promise.allSettled([
+        getAllEvents(),
         api.get("/api/sites/?page_size=100"),
       ]);
 
-      const eventsData = eventsRes.status === "fulfilled" ? eventsRes.value.data : [];
+      const listeEvents = eventsData.status === "fulfilled" ? eventsData.value : [];
       const sitesData = sitesRes.status === "fulfilled" ? sitesRes.value.data : [];
 
-      setEvenements(Array.isArray(eventsData) ? eventsData : eventsData.results ?? []);
+      setEvenements(Array.isArray(listeEvents) ? listeEvents : []);
       setSitesListe(Array.isArray(sitesData) ? sitesData : sitesData.results ?? []);
     } catch (err) {
       console.error("Erreur lors du chargement des événements:", err);
@@ -278,7 +302,12 @@ function Events() {
               ) : (
                 <div className="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
                   {evenementsAffiches.map((evt) => (
-                    <CarteEvenement key={evt.id} evenement={evt} onReserver={handleReserver} />
+                    <CarteEvenement
+                      key={evt.id}
+                      evenement={evt}
+                      sitesListe={sitesListe}
+                      onReserver={handleReserver}
+                    />
                   ))}
                 </div>
               )}

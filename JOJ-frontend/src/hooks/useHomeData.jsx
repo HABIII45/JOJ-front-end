@@ -7,7 +7,6 @@ import {
   sitesService,
 } from "../lib/api";
 import {
-  actualitesDemo,
   disciplinesDemo,
   evenementsDemo,
   sitesDemo,
@@ -59,6 +58,33 @@ function unwrap(result, fallback) {
   return fallback;
 }
 
+function extraireListe(result) {
+  if (result.status !== "fulfilled" || !result.value) return [];
+  const val = result.value;
+  if (Array.isArray(val)) return val;
+  if (Array.isArray(val.results)) return val.results;
+  if (Array.isArray(val.data)) return val.data;
+  if (val.data && Array.isArray(val.data.results)) return val.data.results;
+  return [];
+}
+
+/** Uniquement les articles publiés, les plus récents d'abord. */
+function actualitesPubliques(liste) {
+  const maintenant = Date.now();
+  return liste
+    .filter((item) => item && item.brouillon !== true)
+    .filter((item) => {
+      if (!item.date_publication) return false;
+      const t = new Date(item.date_publication).getTime();
+      return Number.isNaN(t) || t <= maintenant;
+    })
+    .sort((a, b) => {
+      const da = new Date(a.date_publication || 0).getTime();
+      const db = new Date(b.date_publication || 0).getTime();
+      return db - da;
+    });
+}
+
 /**
  * Retourne les données de la page d'accueil (mode API ou démo).
  * @returns {{ chargement: boolean, evenements: any[], sites: any[], disciplines: any[], actualites: any[], source: string }}
@@ -70,13 +96,13 @@ export function useHomeData() {
     let ignore = false;
 
     if (!isBackendConnected()) {
-      // Mode démo : données immédiates
+      // Mode démo : données immédiates — pas d'actualités inventées
       setData({
         chargement: false,
         evenements: evenementsDemo,
         sites: sitesDemo,
         disciplines: disciplinesDemo,
-        actualites: actualitesDemo,
+        actualites: [],
         source: "demo",
       });
       return;
@@ -96,7 +122,7 @@ export function useHomeData() {
         evenements: unwrap(ev, evenementsDemo),
         sites: unwrap(sites, sitesDemo),
         disciplines: unwrap(disc, disciplinesDemo),
-        actualites: unwrap(act, actualitesDemo),
+        actualites: actualitesPubliques(extraireListe(act)),
         source: "api",
       });
     });

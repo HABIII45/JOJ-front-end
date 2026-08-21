@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import AdminLayout from "../../components/layouts/AdminLayout";
 import {
   FiUploadCloud,
@@ -16,12 +17,33 @@ import {
 
 import {
   creerActualite,
+  getActualite,
   getEvenements,
+  modifierActualite,
 } from "../../services/actualite";
+import { getImageUrl } from "../../api/api";
 
 import "./actualites.css";
 
+function idEvenement(evenementLie) {
+  if (evenementLie == null) return "";
+  if (typeof evenementLie === "object") return String(evenementLie.id ?? "");
+  return String(evenementLie);
+}
+
+function toDatetimeLocal(valeur) {
+  if (!valeur) return "";
+  const date = new Date(valeur);
+  if (Number.isNaN(date.getTime())) return "";
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
 export default function CreerActualite() {
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const estEdition = Boolean(id);
+
   const [titre, setTitre] = useState("");
   const [description, setDescription] = useState("");
   const [evenement, setEvenement] = useState("");
@@ -31,17 +53,16 @@ export default function CreerActualite() {
   const [previewImage, setPreviewImage] = useState(null);
   const [evenements, setEvenements] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [chargementArticle, setChargementArticle] = useState(estEdition);
 
   const editorRef = useRef(null);
   const fileInputRef = useRef(null);
+  const contenuCharge = useRef(false);
 
-  // Charger les événements
   useEffect(() => {
     const chargerEvenements = async () => {
       try {
         const data = await getEvenements();
-
-        // Au cas où ton API est paginée
         setEvenements(data.results || data);
       } catch (error) {
         console.error("Impossible de charger les événements");
@@ -50,6 +71,49 @@ export default function CreerActualite() {
 
     chargerEvenements();
   }, []);
+
+  useEffect(() => {
+    if (!estEdition) {
+      setChargementArticle(false);
+      return;
+    }
+
+    let ignore = false;
+    contenuCharge.current = false;
+    setChargementArticle(true);
+
+    (async () => {
+      try {
+        const data = await getActualite(id);
+        if (ignore) return;
+        setTitre(data.titre || "");
+        setDescription(data.description || "");
+        setEvenement(idEvenement(data.evenement_lie));
+        setBrouillon(Boolean(data.brouillon));
+        setDatePublication(toDatetimeLocal(data.date_publication));
+        setImage(null);
+        setPreviewImage(getImageUrl(data.image));
+      } catch {
+        if (!ignore) {
+          alert("Actualité introuvable.");
+          navigate("/admin/actualites");
+        }
+      } finally {
+        if (!ignore) setChargementArticle(false);
+      }
+    })();
+
+    return () => {
+      ignore = true;
+    };
+  }, [estEdition, id, navigate]);
+
+  useEffect(() => {
+    if (estEdition && !chargementArticle && editorRef.current && !contenuCharge.current) {
+      editorRef.current.innerHTML = description || "";
+      contenuCharge.current = true;
+    }
+  }, [estEdition, chargementArticle, description]);
 
   // Gestion de l'image
   const handleImageChange = (file) => {
@@ -123,18 +187,25 @@ export default function CreerActualite() {
       return;
     }
 
+    if (!evenement) {
+      alert("Veuillez lier l'article à un événement.");
+      return;
+    }
+
+    if (!brouillon && !datePublication) {
+      alert("La date de publication est obligatoire pour un article publié.");
+      return;
+    }
+
     const formData = new FormData();
 
     formData.append("titre", titre);
     formData.append("description", description);
     formData.append("brouillon", brouillon);
-
-    if (evenement) {
-      formData.append("evenement_lie", evenement);
-    }
+    formData.append("evenement_lie", evenement);
 
     if (datePublication) {
-      formData.append("date_publication", datePublication);
+      formData.append("date_publication", new Date(datePublication).toISOString());
     }
 
     if (image) {
@@ -144,6 +215,17 @@ export default function CreerActualite() {
     try {
       setLoading(true);
 
+      if (estEdition) {
+        await modifierActualite(id, formData);
+        alert(
+          brouillon
+            ? "Brouillon mis à jour."
+            : "Actualité mise à jour avec succès."
+        );
+        navigate("/admin/actualites");
+        return;
+      }
+
       await creerActualite(formData);
 
       alert(
@@ -152,7 +234,6 @@ export default function CreerActualite() {
           : "Actualité publiée avec succès !"
       );
 
-      // Réinitialisation
       setTitre("");
       setDescription("");
       setEvenement("");
@@ -180,15 +261,19 @@ export default function CreerActualite() {
       <div className="create-news-content">
         {/* HEADER */}
         <div className="page-header">
-          <h1>Créer une Actualité</h1>
+          <h1>{estEdition ? "Modifier l'actualité" : "Créer une Actualité"}</h1>
 
           <p>
-            Remplissez les détails pour publier un nouvel article sur la
-            plateforme.
+            {estEdition
+              ? "Mettez à jour le contenu, l'image et les paramètres de publication."
+              : "Remplissez les détails pour publier un nouvel article sur la plateforme."}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="actualite-form">
+          {chargementArticle ? (
+            <p className="text-sm text-slate-500">Chargement de l'article...</p>
+          ) : (
           <div className="form-layout">
 
             {/* PARTIE GAUCHE */}
@@ -425,7 +510,11 @@ export default function CreerActualite() {
                   <FiPlus />
 
                   {loading
-                    ? "Publication..."
+                    ? estEdition
+                      ? "Enregistrement..."
+                      : "Publication..."
+                    : estEdition
+                    ? "Enregistrer les modifications"
                     : brouillon
                     ? "Enregistrer le brouillon"
                     : "Publier l'article"}
@@ -434,13 +523,14 @@ export default function CreerActualite() {
                 <button
                   type="button"
                   className="cancel-button"
-                  onClick={() => window.history.back()}
+                  onClick={() => navigate("/admin/actualites")}
                 >
                   Annuler
                 </button>
               </div>
             </aside>
           </div>
+          )}
         </form>
       </div>
     </main>

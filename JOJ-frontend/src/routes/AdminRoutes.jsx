@@ -3,6 +3,7 @@ import Dashboard from "../pages/admin/Dashboard";
 import GestionResultatPage from "../pages/public/GestionResultatPage";
 import RegisterResultPage from "../pages/public/RegisterResultPage";
 import CreerActualite from "../pages/admin/actualites";
+import GestionActualites from "../pages/admin/ajoutActualites";
 import GestionEvents from "../pages/admin/GestionEvents";
 import FormEvent from "../pages/admin/EventForm";
 import AdminSites from "../pages/admin/AdminSites";
@@ -43,8 +44,10 @@ export const routesAdmin = [
       {
         element: <ProtectedRoute permissionRequise={PERMISSIONS.ACTUALITES} />,
         children: [
-          { path: "/admin/actualites", element: <CreerActualite /> },
+          { path: "/admin/actualites", element: <GestionActualites /> },
           { path: "/admin/actualites/ajout", element: <CreerActualite /> },
+          { path: "/admin/actualites/:id/modifier", element: <CreerActualite /> },
+          { path: "/admin/actualites/modifier/:id", element: <CreerActualite /> },
         ],
       },
 

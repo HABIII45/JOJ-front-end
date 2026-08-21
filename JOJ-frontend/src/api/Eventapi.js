@@ -6,6 +6,33 @@ export async function getEvents(params = {}) {
   return response.data; // { count, next, previous, results: [...] }
 }
 
+/** Parcourt toutes les pages pour récupérer chaque événement avec son image. */
+export async function getAllEvents() {
+  try {
+    let tous = [];
+    let page = 1;
+    let hasMore = true;
+
+    while (hasMore) {
+      const response = await api.get("/api/events/", {
+        params: { page, page_size: 100 },
+      });
+      const data = response.data;
+      const results = Array.isArray(data) ? data : data.results ?? [];
+      tous = tous.concat(results);
+      if (!data?.next || results.length === 0) {
+        hasMore = false;
+      } else {
+        page += 1;
+      }
+    }
+    return tous;
+  } catch (err) {
+    console.error("Erreur lors du chargement des événements:", err);
+    return [];
+  }
+}
+
 // ── Récupérer un événement spécifique ─────────────────────────────────────────
 export async function getEventDetail(id) {
   const response = await api.get(`/api/events/${id}/`);
@@ -62,12 +89,18 @@ export async function getCompetiteurs() {
   }
 }
 
+export async function getActualites() {
+  const response = await api.get("/api/actualites/");
+  return response.data;
+}
+
+export async function getActualite(id) {
+  const response = await api.get(`/api/actualites/${id}/`);
+  return response.data;
+}
+
 // ── Créer un événement ────────────────────────────────────────────────────────
 export async function createEvent(eventData) {
-  const response = await api.post("/api/events/", eventData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+  const response = await api.post("/api/events/", eventData);
   return response.data;
 }

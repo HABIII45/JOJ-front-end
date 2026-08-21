@@ -19,6 +19,10 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    // Laisser le navigateur poser le boundary multipart, sinon l'image n'est pas reçue.
+    if (typeof FormData !== "undefined" && config.data instanceof FormData) {
+      delete config.headers["Content-Type"];
+    }
     return config;
   },
   (error) => Promise.reject(error)
@@ -38,7 +42,10 @@ api.interceptors.response.use(
 // ── Helper pour formater les URLs d'images retournées par le backend ───────
 export function getImageUrl(imagePath) {
   if (!imagePath) return null;
-  if (typeof imagePath !== "string") return null;
+  if (typeof imagePath === "object") {
+    imagePath = imagePath.url || imagePath.image || imagePath.src || "";
+  }
+  if (typeof imagePath !== "string" || !imagePath.trim()) return null;
   if (
     imagePath.startsWith("http://") ||
     imagePath.startsWith("https://") ||

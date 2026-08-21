@@ -51,14 +51,7 @@ export default function Home() {
     ? disciplines 
     : IMAGES_FALLBACK.jeux;
 
-  const listNews = Array.isArray(actualites) && actualites.length > 0 
-    ? actualites 
-    : [
-        { id: 1, titre: "Résultats du jour et classements provisoires", tags: ["Résultats"], image: IMAGES_FALLBACK.sites[0] },
-        { id: 2, titre: "Grand succès des essais pour la tribune officielle", tags: ["Presse"], image: IMAGES_FALLBACK.sites[1] },
-        { id: 3, titre: "Épreuves en direct et vidéos des moments forts", tags: ["Résultats"], image: IMAGES_FALLBACK.sites[2] },
-        { id: 4, titre: "Conseils d'orientation et accès aux transports", tags: ["Information"], image: IMAGES_FALLBACK.sites[0] }
-      ];
+  const listNews = Array.isArray(actualites) ? actualites : [];
 
   return (
     <div className="min-h-screen flex flex-col bg-white font-sans antialiased">
