@@ -63,7 +63,7 @@ export function Sidebar() {
   return (
     <div className="sidebar width-64 text-white flex flex-col justify-between">
       {/* Logo */}
-      <div className="sidebar-logo bg-white">
+      <div className="sidebar-logo bg-white w-full flex items-center justify-center">
         <img src={JOJlogo} alt="JOJ Events" />
       </div>
 
